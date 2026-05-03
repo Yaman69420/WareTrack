@@ -15,7 +15,7 @@ use Spatie\Activitylog\Models\Concerns\CausesActivity;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, CausesActivity;
+    use CausesActivity, HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     protected $fillable = [
         'name',

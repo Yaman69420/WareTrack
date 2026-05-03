@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 test('warehouse worker cannot access admin-only routes', function () {
     $worker = workerUser();
 

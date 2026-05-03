@@ -11,7 +11,7 @@ class WarehouseFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => 'Warehouse ' . fake()->unique()->lexify('??'),
+            'name' => 'Warehouse '.fake()->unique()->lexify('??'),
             'location' => fake()->city(),
             'description' => fake()->optional()->sentence(),
         ];

@@ -17,7 +17,7 @@ class ProductFactory extends Factory
         return [
             'category_id' => Category::factory(),
             'name' => ucwords($name),
-            'sku' => strtoupper(Str::random(3) . '-' . fake()->unique()->numerify('####')),
+            'sku' => strtoupper(Str::random(3).'-'.fake()->unique()->numerify('####')),
             'description' => fake()->optional()->paragraph(),
             'image_path' => null,
             'min_stock' => fake()->numberBetween(0, 20),

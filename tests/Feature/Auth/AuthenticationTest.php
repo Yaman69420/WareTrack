@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\UserRole;
-use App\Models\User;
 
 test('guests are redirected to login', function () {
     $this->get(route('dashboard'))->assertRedirect(route('login'));

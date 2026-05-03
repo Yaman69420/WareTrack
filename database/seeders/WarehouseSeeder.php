@@ -26,7 +26,7 @@ class WarehouseSeeder extends Seeder
             Location::create([
                 'warehouse_id' => $warehouseA->id,
                 'code' => $code,
-                'name' => 'Aisle ' . $code,
+                'name' => 'Aisle '.$code,
             ]);
         }
 
@@ -34,7 +34,7 @@ class WarehouseSeeder extends Seeder
             Location::create([
                 'warehouse_id' => $warehouseB->id,
                 'code' => $code,
-                'name' => 'Section ' . $code,
+                'name' => 'Section '.$code,
             ]);
         }
     }
