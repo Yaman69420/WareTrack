@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Dashboard;
 use App\Livewire\Products\Create;
 use App\Livewire\Products\Edit;
 use App\Livewire\Stock\Movements;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', Dashboard::class)->name('dashboard');
 
     // Accessible by admin and warehouse_worker
     Route::get('/suppliers', Index::class)->name('suppliers.index');
