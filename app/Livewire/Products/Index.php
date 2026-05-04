@@ -4,6 +4,7 @@ namespace App\Livewire\Products;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Warehouse;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -19,6 +20,7 @@ class Index extends Component
 
     public ?int $filterCategory = null;
 
+    // Create/Edit modal
     public bool $showModal = false;
 
     public ?int $editingId = null;
@@ -32,6 +34,13 @@ class Index extends Component
     public string $description = '';
 
     public ?int $minStock = 0;
+
+    // Locations modal
+    public bool $showLocationsModal = false;
+
+    public ?int $managingProductId = null;
+
+    public array $selectedLocations = [];
 
     public function updatedSearch(): void
     {
@@ -61,6 +70,20 @@ class Index extends Component
             ->paginate(10);
     }
 
+    #[Computed]
+    public function warehousesWithLocations()
+    {
+        return Warehouse::with('locations')->orderBy('name')->get();
+    }
+
+    #[Computed]
+    public function managingProduct(): ?Product
+    {
+        return $this->managingProductId
+            ? Product::with('locations')->find($this->managingProductId)
+            : null;
+    }
+
     public function openCreate(): void
     {
         $this->reset(['name', 'sku', 'categoryId', 'description', 'minStock', 'editingId']);
@@ -79,6 +102,25 @@ class Index extends Component
         $this->minStock = $product->min_stock;
         $this->resetValidation();
         $this->showModal = true;
+    }
+
+    public function openLocations(Product $product): void
+    {
+        $this->managingProductId = $product->id;
+        $this->selectedLocations = $product->locations()->pluck('locations.id')->map(fn ($id) => (string) $id)->toArray();
+        unset($this->managingProduct);
+        $this->showLocationsModal = true;
+    }
+
+    public function saveLocations(): void
+    {
+        $product = Product::findOrFail($this->managingProductId);
+        $product->locations()->sync($this->selectedLocations);
+        activity()->causedBy(auth()->user())->performedOn($product)->log('locations updated');
+        Flux::toast(__('Locations updated.'), variant: 'success');
+        $this->showLocationsModal = false;
+        $this->reset(['managingProductId', 'selectedLocations']);
+        unset($this->managingProduct, $this->products);
     }
 
     public function save(): void

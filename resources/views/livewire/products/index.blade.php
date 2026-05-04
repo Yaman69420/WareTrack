@@ -71,6 +71,12 @@
                                 >
                                     {{ __('Edit') }}
                                 </flux:menu.item>
+                                <flux:menu.item
+                                    icon="map-pin"
+                                    wire:click="openLocations({{ $product->id }})"
+                                >
+                                    {{ __('Manage Locations') }}
+                                </flux:menu.item>
                                 <flux:menu.separator />
                                 <flux:menu.item
                                     icon="trash"
@@ -149,6 +155,64 @@
                 <flux:button wire:click="save" variant="primary">
                     {{ $editingId ? __('Update') : __('Create') }}
                 </flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Manage Locations Modal --}}
+    <flux:modal wire:model="showLocationsModal" class="max-w-lg">
+        <div class="flex flex-col gap-6 p-6">
+            <div>
+                <flux:heading size="lg">{{ __('Manage Locations') }}</flux:heading>
+                @if($this->managingProduct)
+                    <flux:subheading>{{ $this->managingProduct->name }} ({{ $this->managingProduct->sku }})</flux:subheading>
+                @endif
+            </div>
+
+            @if($this->warehousesWithLocations->isEmpty())
+                <flux:text class="text-zinc-500">{{ __('No warehouses or locations available. Create them first.') }}</flux:text>
+            @else
+                <div class="flex flex-col gap-4 max-h-80 overflow-y-auto">
+                    @foreach($this->warehousesWithLocations as $warehouse)
+                        @if($warehouse->locations->isNotEmpty())
+                            <div>
+                                <flux:text class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                                    {{ $warehouse->name }} — {{ $warehouse->location }}
+                                </flux:text>
+                                <div class="flex flex-col gap-1">
+                                    @foreach($warehouse->locations as $location)
+                                        <label class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800">
+                                            <flux:checkbox
+                                                wire:model="selectedLocations"
+                                                value="{{ $location->id }}"
+                                            />
+                                            <span class="text-sm">
+                                                <span class="font-medium">{{ $location->code }}</span>
+                                                @if($location->name)
+                                                    <span class="text-zinc-400"> — {{ $location->name }}</span>
+                                                @endif
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+
+            <div class="flex items-center justify-between">
+                <flux:text class="text-sm text-zinc-400">
+                    {{ count($selectedLocations) }} {{ __('selected') }}
+                </flux:text>
+                <div class="flex gap-3">
+                    <flux:button wire:click="$set('showLocationsModal', false)" variant="ghost">
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button wire:click="saveLocations" variant="primary">
+                        {{ __('Save') }}
+                    </flux:button>
+                </div>
             </div>
         </div>
     </flux:modal>
