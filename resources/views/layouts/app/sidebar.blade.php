@@ -11,11 +11,51 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.group :heading="__('General')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="cube" :href="route('stock.index')" :current="request()->routeIs('stock.*')" wire:navigate>
+                        {{ __('Stock') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="truck" :href="route('deliveries.index')" :current="request()->routeIs('deliveries.*')" wire:navigate>
+                        {{ __('Deliveries') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="building-storefront" :href="route('suppliers.index')" :current="request()->routeIs('suppliers.*')" wire:navigate>
+                        {{ __('Suppliers') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="chart-bar" :href="route('reports.index')" :current="request()->routeIs('reports.*')" wire:navigate>
+                        {{ __('Reports') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                @if(auth()->user()?->isAdmin())
+                    <flux:sidebar.group :heading="__('Admin')" class="grid">
+                        <flux:sidebar.item icon="tag" :href="route('categories.index')" :current="request()->routeIs('categories.*')" wire:navigate>
+                            {{ __('Categories') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="archive-box" :href="route('products.index')" :current="request()->routeIs('products.*')" wire:navigate>
+                            {{ __('Products') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="building-office" :href="route('warehouses.index')" :current="request()->routeIs('warehouses.*')" wire:navigate>
+                            {{ __('Warehouses') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="map-pin" :href="route('locations.index')" :current="request()->routeIs('locations.*')" wire:navigate>
+                            {{ __('Locations') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')" wire:navigate>
+                            {{ __('Users') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
             </flux:sidebar.nav>
 
             <flux:spacer />
