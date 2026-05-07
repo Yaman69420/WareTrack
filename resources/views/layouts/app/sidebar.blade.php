@@ -16,20 +16,8 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="cube" :href="route('stock.index')" :current="request()->routeIs('stock.*')" wire:navigate>
-                        {{ __('Stock') }}
-                    </flux:sidebar.item>
-
-                    <flux:sidebar.item icon="truck" :href="route('deliveries.index')" :current="request()->routeIs('deliveries.*')" wire:navigate>
-                        {{ __('Deliveries') }}
-                    </flux:sidebar.item>
-
                     <flux:sidebar.item icon="building-storefront" :href="route('suppliers.index')" :current="request()->routeIs('suppliers.*')" wire:navigate>
                         {{ __('Suppliers') }}
-                    </flux:sidebar.item>
-
-                    <flux:sidebar.item icon="chart-bar" :href="route('reports.index')" :current="request()->routeIs('reports.*')" wire:navigate>
-                        {{ __('Reports') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
 
@@ -49,10 +37,6 @@
 
                         <flux:sidebar.item icon="map-pin" :href="route('locations.index')" :current="request()->routeIs('locations.*')" wire:navigate>
                             {{ __('Locations') }}
-                        </flux:sidebar.item>
-
-                        <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')" wire:navigate>
-                            {{ __('Users') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
                 @endif
