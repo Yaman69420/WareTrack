@@ -1,1 +1,104 @@
-<div>Movements</div>
+<div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
+
+    {{-- Header --}}
+    <div class="flex items-center justify-between">
+        <flux:heading size="xl">{{ __('Stock Movements') }}</flux:heading>
+        <flux:button :href="route('stock.movements.create')" wire:navigate variant="primary" icon="plus">
+            {{ __('Register Movement') }}
+        </flux:button>
+    </div>
+
+    {{-- Filters --}}
+    <div class="flex flex-wrap gap-3">
+        <div class="w-64">
+            <flux:input
+                wire:model.live.debounce.300ms="search"
+                icon="magnifying-glass"
+                placeholder="{{ __('Search by product...') }}"
+            />
+        </div>
+        <div class="w-48">
+            <flux:select wire:model.live="filterType" placeholder="{{ __('All types') }}">
+                <flux:select.option value="">{{ __('All types') }}</flux:select.option>
+                @foreach ($this->types as $type)
+                    <flux:select.option value="{{ $type->value }}">{{ ucfirst($type->value) }}</flux:select.option>
+                @endforeach
+            </flux:select>
+        </div>
+    </div>
+
+    {{-- Table --}}
+    <flux:table>
+        <flux:table.columns>
+            <flux:table.column>{{ __('Product') }}</flux:table.column>
+            <flux:table.column>{{ __('Type') }}</flux:table.column>
+            <flux:table.column>{{ __('Location') }}</flux:table.column>
+            <flux:table.column>{{ __('Qty') }}</flux:table.column>
+            <flux:table.column>{{ __('Reference') }}</flux:table.column>
+            <flux:table.column>{{ __('By') }}</flux:table.column>
+            <flux:table.column>{{ __('Date') }}</flux:table.column>
+        </flux:table.columns>
+
+        <flux:table.rows>
+            @forelse ($this->movements as $movement)
+                <flux:table.row :key="$movement->id">
+                    <flux:table.cell variant="strong">
+                        {{ $movement->product->name }}
+                        <div class="text-xs font-normal text-zinc-400">{{ $movement->product->sku }}</div>
+                    </flux:table.cell>
+
+                    <flux:table.cell>
+                        @php
+                            $typeVariant = match($movement->type->value) {
+                                'incoming' => 'success',
+                                'outgoing' => 'danger',
+                                'transfer' => 'warning',
+                                'correction' => 'outline',
+                                default => 'outline',
+                            };
+                        @endphp
+                        <flux:badge variant="{{ $typeVariant }}">{{ ucfirst($movement->type->value) }}</flux:badge>
+                    </flux:table.cell>
+
+                    <flux:table.cell class="text-sm">
+                        @if ($movement->type->value === 'transfer')
+                            <span class="text-zinc-500">{{ $movement->fromLocation?->code }}</span>
+                            → {{ $movement->toLocation?->code }}
+                        @else
+                            {{ $movement->location?->code ?? '—' }}
+                        @endif
+                    </flux:table.cell>
+
+                    <flux:table.cell>
+                        <span class="{{ $movement->quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium">
+                            {{ $movement->quantity > 0 ? '+' : '' }}{{ $movement->quantity }}
+                        </span>
+                    </flux:table.cell>
+
+                    <flux:table.cell class="text-sm text-zinc-500">
+                        {{ $movement->reference ?? '—' }}
+                    </flux:table.cell>
+
+                    <flux:table.cell class="text-sm">
+                        {{ $movement->user->name }}
+                    </flux:table.cell>
+
+                    <flux:table.cell class="text-sm text-zinc-400">
+                        {{ $movement->created_at->diffForHumans() }}
+                    </flux:table.cell>
+                </flux:table.row>
+            @empty
+                <flux:table.row>
+                    <flux:table.cell colspan="7" class="py-12 text-center">
+                        {{ $search || $filterType ? __('No movements match your filters.') : __('No stock movements yet.') }}
+                    </flux:table.cell>
+                </flux:table.row>
+            @endforelse
+        </flux:table.rows>
+    </flux:table>
+
+    <div>
+        {{ $this->movements->links() }}
+    </div>
+
+</div>

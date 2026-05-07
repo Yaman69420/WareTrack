@@ -16,6 +16,10 @@
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
 
+                    <flux:sidebar.item icon="cube" :href="route('stock.index')" :current="request()->routeIs('stock.*')" wire:navigate>
+                        {{ __('Stock') }}
+                    </flux:sidebar.item>
+
                     <flux:sidebar.item icon="building-storefront" :href="route('suppliers.index')" :current="request()->routeIs('suppliers.*')" wire:navigate>
                         {{ __('Suppliers') }}
                     </flux:sidebar.item>
