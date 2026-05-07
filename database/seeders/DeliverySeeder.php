@@ -7,6 +7,7 @@ use App\Models\Delivery;
 use App\Models\DeliveryItem;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\Stock;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Services\StockService;
@@ -151,7 +152,7 @@ class DeliverySeeder extends Seeder
         // --- Extra movements for Reports demo variety ---
 
         // Outgoing: screwdrivers picked from A1
-        $screwdriverStock = \App\Models\Stock::where('product_id', $screwdriver->id)->first();
+        $screwdriverStock = Stock::where('product_id', $screwdriver->id)->first();
         if ($screwdriverStock && $screwdriverStock->quantity >= 3) {
             $stock->registerOutgoing(
                 $screwdriver,
@@ -164,7 +165,7 @@ class DeliverySeeder extends Seeder
         }
 
         // Transfer: move some HDMI cables from A1 → A2
-        $hdmiStockA1 = \App\Models\Stock::where('product_id', $hdmi->id)
+        $hdmiStockA1 = Stock::where('product_id', $hdmi->id)
             ->where('location_id', $locationA1->id)
             ->first();
 
@@ -173,7 +174,7 @@ class DeliverySeeder extends Seeder
         }
 
         // Correction: safety helmet count corrected after physical count
-        $helmetStock = \App\Models\Stock::where('product_id', $helmet->id)->first();
+        $helmetStock = Stock::where('product_id', $helmet->id)->first();
         if ($helmetStock) {
             $helmetLocation = Location::find($helmetStock->location_id);
             $stock->adjust($helmet, $helmetLocation, $helmetStock->quantity + 2, $admin, 'Physical count correction +2');
