@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StockMovement extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'product_id',
         'location_id',

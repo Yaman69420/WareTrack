@@ -110,7 +110,7 @@ test('transfer throws InsufficientStockException when source has too little stoc
 
 test('transfer to same location throws InvalidArgumentException', function () {
     expect(fn () => $this->service->transfer($this->product, $this->locationA, $this->locationA, 5, $this->user))
-        ->toThrow(\InvalidArgumentException::class);
+        ->toThrow(InvalidArgumentException::class);
 });
 
 // --- Correction ---

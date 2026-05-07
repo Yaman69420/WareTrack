@@ -3,7 +3,6 @@
 namespace App\Livewire\Stock;
 
 use App\Enums\StockMovementType;
-use App\Models\Product;
 use App\Models\StockMovement;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;

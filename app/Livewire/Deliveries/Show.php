@@ -88,7 +88,7 @@ class Show extends Component
 
             $this->initReceivedQuantities();
         } catch (InsufficientStockException $e) {
-            Flux::toast(__('Stock error: ') . $e->getMessage(), variant: 'danger');
+            Flux::toast(__('Stock error: ').$e->getMessage(), variant: 'danger');
         }
     }
 

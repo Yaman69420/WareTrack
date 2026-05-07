@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DeliveryItem extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'delivery_id',
         'product_id',

@@ -5,6 +5,7 @@ namespace App\Livewire\Users;
 use App\Enums\UserRole;
 use App\Models\User;
 use Flux\Flux;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -131,7 +132,7 @@ class Index extends Component
             activity()->causedBy(auth()->user())->performedOn($user)->log('deleted');
             Flux::toast(__('User deleted.'), variant: 'success');
             unset($this->users);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             Flux::toast(__('Cannot delete user: they have linked stock movements or deliveries.'), variant: 'danger');
         }
     }

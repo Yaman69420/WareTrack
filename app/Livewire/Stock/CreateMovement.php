@@ -6,7 +6,6 @@ use App\Enums\StockMovementType;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Location;
 use App\Models\Product;
-use App\Models\Warehouse;
 use App\Services\StockService;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
@@ -104,7 +103,7 @@ class CreateMovement extends Component
             Flux::toast(__('Stock movement registered.'), variant: 'success');
             $this->redirect(route('stock.movements'), navigate: true);
         } catch (InsufficientStockException $e) {
-            $this->addError('quantity', __('Insufficient stock: ') . $e->getMessage());
+            $this->addError('quantity', __('Insufficient stock: ').$e->getMessage());
         }
     }
 
