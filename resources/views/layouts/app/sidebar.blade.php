@@ -20,6 +20,10 @@
                         {{ __('Stock') }}
                     </flux:sidebar.item>
 
+                    <flux:sidebar.item icon="chart-bar" :href="route('reports.index')" :current="request()->routeIs('reports.*')" wire:navigate>
+                        {{ __('Reports') }}
+                    </flux:sidebar.item>
+
                     <flux:sidebar.item icon="truck" :href="route('deliveries.index')" :current="request()->routeIs('deliveries.*')" wire:navigate>
                         {{ __('Deliveries') }}
                     </flux:sidebar.item>
