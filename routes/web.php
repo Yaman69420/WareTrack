@@ -11,6 +11,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Accessible by admin and warehouse_worker
     Route::get('/suppliers', App\Livewire\Suppliers\Index::class)->name('suppliers.index');
 
+    Route::get('/deliveries', App\Livewire\Deliveries\Index::class)->name('deliveries.index');
+    Route::get('/deliveries/create', App\Livewire\Deliveries\Create::class)->name('deliveries.create');
+    Route::get('/deliveries/{delivery}', App\Livewire\Deliveries\Show::class)->name('deliveries.show');
+
     Route::get('/stock', App\Livewire\Stock\Index::class)->name('stock.index');
     Route::get('/stock/movements', App\Livewire\Stock\Movements::class)->name('stock.movements');
     Route::get('/stock/movements/create', App\Livewire\Stock\CreateMovement::class)->name('stock.movements.create');
