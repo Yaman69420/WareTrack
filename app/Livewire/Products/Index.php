@@ -6,15 +6,18 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Warehouse;
 use Flux\Flux;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
 class Index extends Component
 {
-    use WithPagination;
+    use WithFileUploads, WithPagination;
 
     public string $search = '';
 
@@ -34,6 +37,11 @@ class Index extends Component
     public string $description = '';
 
     public ?int $minStock = 0;
+
+    /** @var TemporaryUploadedFile|null */
+    public $image = null;
+
+    public ?string $existingImagePath = null;
 
     // Locations modal
     public bool $showLocationsModal = false;
@@ -86,7 +94,7 @@ class Index extends Component
 
     public function openCreate(): void
     {
-        $this->reset(['name', 'sku', 'categoryId', 'description', 'minStock', 'editingId']);
+        $this->reset(['name', 'sku', 'categoryId', 'description', 'minStock', 'editingId', 'image', 'existingImagePath']);
         $this->minStock = 0;
         $this->resetValidation();
         $this->showModal = true;
@@ -100,6 +108,8 @@ class Index extends Component
         $this->categoryId = $product->category_id;
         $this->description = $product->description ?? '';
         $this->minStock = $product->min_stock;
+        $this->image = null;
+        $this->existingImagePath = $product->image_path;
         $this->resetValidation();
         $this->showModal = true;
     }
@@ -135,6 +145,7 @@ class Index extends Component
             'categoryId' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'minStock' => 'nullable|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
         ]);
 
         $data = [
@@ -145,8 +156,18 @@ class Index extends Component
             'min_stock' => $this->minStock ?? 0,
         ];
 
+        if ($this->image) {
+            $data['image_path'] = $this->image->store('products', 'public');
+        }
+
         if ($this->editingId) {
             $product = Product::findOrFail($this->editingId);
+
+            // Delete old image if a new one was uploaded
+            if ($this->image && $product->image_path) {
+                Storage::disk('public')->delete($product->image_path);
+            }
+
             $product->update($data);
             activity()->causedBy(auth()->user())->performedOn($product)->log('updated');
             Flux::toast(__('Product updated.'), variant: 'success');
@@ -157,7 +178,7 @@ class Index extends Component
         }
 
         $this->showModal = false;
-        $this->reset(['name', 'sku', 'categoryId', 'description', 'minStock', 'editingId']);
+        $this->reset(['name', 'sku', 'categoryId', 'description', 'minStock', 'editingId', 'image', 'existingImagePath']);
         unset($this->products);
     }
 

@@ -30,6 +30,7 @@
     {{-- Table --}}
     <flux:table>
         <flux:table.columns>
+            <flux:table.column></flux:table.column>
             <flux:table.column>{{ __('Name') }}</flux:table.column>
             <flux:table.column>{{ __('SKU') }}</flux:table.column>
             <flux:table.column>{{ __('Category') }}</flux:table.column>
@@ -41,6 +42,19 @@
         <flux:table.rows>
             @forelse ($this->products as $product)
                 <flux:table.row :key="$product->id">
+                    <flux:table.cell>
+                        @if ($product->image_path)
+                            <img
+                                src="{{ Storage::url($product->image_path) }}"
+                                alt="{{ $product->name }}"
+                                class="size-10 rounded-lg object-cover"
+                            />
+                        @else
+                            <div class="flex size-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                                <flux:icon.photo class="size-5 text-zinc-400" />
+                            </div>
+                        @endif
+                    </flux:table.cell>
                     <flux:table.cell variant="strong">
                         {{ $product->name }}
                     </flux:table.cell>
@@ -50,7 +64,7 @@
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        {{ $product->category->name }}
+                        {{ $product->category?->name ?? '—' }}
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -92,7 +106,7 @@
                 </flux:table.row>
             @empty
                 <flux:table.row>
-                    <flux:table.cell colspan="6" class="py-12 text-center">
+                    <flux:table.cell colspan="7" class="py-12 text-center">
                         {{ $search || $filterCategory ? __('No products match your filters.') : __('No products yet.') }}
                     </flux:table.cell>
                 </flux:table.row>
@@ -145,6 +159,25 @@
                     <flux:label>{{ __('Description') }} <span class="text-zinc-400 text-xs font-normal">({{ __('optional') }})</span></flux:label>
                     <flux:textarea wire:model="description" rows="3" placeholder="{{ __('Short description...') }}" />
                     <flux:error name="description" />
+                </flux:field>
+
+                <flux:field class="col-span-2">
+                    <flux:label>{{ __('Image') }} <span class="text-zinc-400 text-xs font-normal">({{ __('optional') }}, JPEG / PNG / WebP, max 2 MB)</span></flux:label>
+
+                    {{-- Preview: new upload takes priority, otherwise show existing --}}
+                    @if ($image)
+                        <img src="{{ $image->temporaryUrl() }}" alt="Preview" class="mb-2 h-24 w-24 rounded-lg object-cover" />
+                    @elseif ($existingImagePath)
+                        <img src="{{ Storage::url($existingImagePath) }}" alt="{{ __('Current image') }}" class="mb-2 h-24 w-24 rounded-lg object-cover" />
+                    @endif
+
+                    <input
+                        type="file"
+                        wire:model="image"
+                        accept="image/jpeg,image/png,image/webp"
+                        class="block w-full text-sm text-zinc-500 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300"
+                    />
+                    <flux:error name="image" />
                 </flux:field>
             </div>
 

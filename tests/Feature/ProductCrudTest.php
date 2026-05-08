@@ -4,6 +4,8 @@ use App\Livewire\Products\Index;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -124,6 +126,83 @@ test('products are searchable by name and sku', function () {
         ->set('search', 'Wireless')
         ->assertSee('Wireless Mouse')
         ->assertDontSee('Keyboard');
+});
+
+test('admin can upload an image when creating a product', function () {
+    Storage::fake('public');
+
+    $file = UploadedFile::fake()->image('product.jpg', 200, 200);
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('openCreate')
+        ->set('name', 'Camera')
+        ->set('sku', 'CAM-001')
+        ->set('categoryId', $this->category->id)
+        ->set('image', $file)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $product = Product::where('sku', 'CAM-001')->first();
+    expect($product->image_path)->not->toBeNull();
+    Storage::disk('public')->assertExists($product->image_path);
+});
+
+test('uploaded image replaces old image on edit', function () {
+    Storage::fake('public');
+
+    $old = UploadedFile::fake()->image('old.jpg');
+    $oldPath = $old->store('products', 'public');
+
+    $product = Product::factory()->create([
+        'category_id' => $this->category->id,
+        'image_path' => $oldPath,
+    ]);
+
+    $newFile = UploadedFile::fake()->image('new.jpg', 300, 300);
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('openEdit', $product)
+        ->set('image', $newFile)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    Storage::disk('public')->assertMissing($oldPath);
+    Storage::disk('public')->assertExists($product->fresh()->image_path);
+});
+
+test('image must be jpeg png or webp — gif is rejected', function () {
+    Storage::fake('public');
+
+    // GIF is a valid image but not in our whitelist (jpeg/png/webp)
+    $file = UploadedFile::fake()->image('product.gif')->mimeType('image/gif');
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('openCreate')
+        ->set('name', 'Bad Upload')
+        ->set('sku', 'BAD-001')
+        ->set('categoryId', $this->category->id)
+        ->set('image', $file)
+        ->call('save')
+        ->assertHasErrors(['image']);
+});
+
+test('image max size is 2mb', function () {
+    Storage::fake('public');
+
+    $file = UploadedFile::fake()->image('big.jpg')->size(3000);
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('openCreate')
+        ->set('name', 'Big Image')
+        ->set('sku', 'BIG-001')
+        ->set('categoryId', $this->category->id)
+        ->set('image', $file)
+        ->call('save')
+        ->assertHasErrors(['image']);
 });
 
 test('products can be filtered by category', function () {
