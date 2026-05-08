@@ -2,7 +2,10 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('Stock Overview') }}</flux:heading>
+        <div>
+            <flux:heading size="xl">{{ __('Stock Overview') }}</flux:heading>
+            <flux:subheading>{{ __('Current stock levels per product and location') }}</flux:subheading>
+        </div>
         <flux:button :href="route('stock.movements.create')" wire:navigate variant="primary" icon="plus">
             {{ __('Register Movement') }}
         </flux:button>
@@ -30,6 +33,7 @@
     {{-- Table --}}
     <flux:table>
         <flux:table.columns>
+            <flux:table.column></flux:table.column>
             <flux:table.column>{{ __('Product') }}</flux:table.column>
             <flux:table.column>{{ __('SKU') }}</flux:table.column>
             <flux:table.column>{{ __('Category') }}</flux:table.column>
@@ -40,39 +44,98 @@
 
         <flux:table.rows>
             @forelse ($this->stockLines as $product)
+                @php
+                    $totalQty   = $product->stock->sum('quantity');
+                    $belowMin   = $product->min_stock > 0 && $totalQty < $product->min_stock;
+                    $rowClass   = $belowMin ? 'bg-red-50/60 dark:bg-red-900/5' : '';
+                @endphp
+
                 @if ($product->stock->isEmpty())
-                    <flux:table.row :key="'p-'.$product->id">
+                    <flux:table.row :key="'p-'.$product->id" class="{{ $rowClass }}">
+                        {{-- Image --}}
+                        <flux:table.cell>
+                            @if ($product->image_path)
+                                <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="size-9 rounded-lg object-cover" />
+                            @else
+                                <div class="flex size-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                                    <flux:icon.photo class="size-4 text-zinc-400" />
+                                </div>
+                            @endif
+                        </flux:table.cell>
                         <flux:table.cell variant="strong">{{ $product->name }}</flux:table.cell>
                         <flux:table.cell><flux:badge>{{ $product->sku }}</flux:badge></flux:table.cell>
                         <flux:table.cell>{{ $product->category?->name ?? '—' }}</flux:table.cell>
-                        <flux:table.cell class="text-zinc-400">{{ __('No stock registered') }}</flux:table.cell>
-                        <flux:table.cell>0</flux:table.cell>
+                        <flux:table.cell class="text-zinc-400 italic">{{ __('No stock registered') }}</flux:table.cell>
+                        <flux:table.cell>
+                            <span class="font-bold text-zinc-400">0</span>
+                        </flux:table.cell>
                         <flux:table.cell>
                             @if($product->min_stock > 0)
-                                <flux:badge variant="danger">{{ __('Below minimum') }}</flux:badge>
+                                <flux:badge variant="danger" icon="exclamation-triangle">{{ __('Below minimum') }}</flux:badge>
+                            @else
+                                <flux:badge variant="outline">{{ __('No minimum') }}</flux:badge>
                             @endif
                         </flux:table.cell>
                     </flux:table.row>
                 @else
-                    @foreach ($product->stock as $stockLine)
-                        <flux:table.row :key="'s-'.$stockLine->id">
-                            <flux:table.cell variant="strong">{{ $product->name }}</flux:table.cell>
-                            <flux:table.cell><flux:badge>{{ $product->sku }}</flux:badge></flux:table.cell>
-                            <flux:table.cell>{{ $product->category?->name ?? '—' }}</flux:table.cell>
+                    @foreach ($product->stock as $i => $stockLine)
+                        <flux:table.row :key="'s-'.$stockLine->id" class="{{ $rowClass }}">
+                            {{-- Image only on first row --}}
                             <flux:table.cell>
-                                <span class="text-sm">
-                                    {{ $stockLine->location->warehouse->name }} —
-                                    <span class="font-medium">{{ $stockLine->location->code }}</span>
+                                @if ($i === 0)
+                                    @if ($product->image_path)
+                                        <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="size-9 rounded-lg object-cover" />
+                                    @else
+                                        <div class="flex size-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                                            <flux:icon.photo class="size-4 text-zinc-400" />
+                                        </div>
+                                    @endif
+                                @endif
+                            </flux:table.cell>
+
+                            <flux:table.cell variant="strong">
+                                @if ($i === 0)
+                                    {{ $product->name }}
+                                    @if ($product->stock->count() > 1)
+                                        <span class="ml-1 text-xs font-normal text-zinc-400">({{ $product->stock->count() }} {{ __('locations') }})</span>
+                                    @endif
+                                @endif
+                            </flux:table.cell>
+
+                            <flux:table.cell>
+                                @if ($i === 0)
+                                    <flux:badge>{{ $product->sku }}</flux:badge>
+                                @endif
+                            </flux:table.cell>
+
+                            <flux:table.cell>
+                                @if ($i === 0)
+                                    {{ $product->category?->name ?? '—' }}
+                                @endif
+                            </flux:table.cell>
+
+                            <flux:table.cell>
+                                <div class="flex items-center gap-1.5 text-sm">
+                                    <flux:icon.building-office class="size-3.5 text-zinc-400" />
+                                    <span class="text-zinc-500">{{ $stockLine->location->warehouse->name }}</span>
+                                    <span class="text-zinc-300 dark:text-zinc-600">·</span>
+                                    <span class="font-medium font-mono">{{ $stockLine->location->code }}</span>
+                                </div>
+                            </flux:table.cell>
+
+                            <flux:table.cell>
+                                <span class="text-lg font-bold {{ $belowMin && $i === 0 ? 'text-red-600 dark:text-red-400' : 'text-zinc-900 dark:text-zinc-100' }}">
+                                    {{ $stockLine->quantity }}
                                 </span>
                             </flux:table.cell>
+
                             <flux:table.cell>
-                                <span class="font-medium">{{ $stockLine->quantity }}</span>
-                            </flux:table.cell>
-                            <flux:table.cell>
-                                @if ($product->min_stock > 0 && $product->totalStock() < $product->min_stock)
-                                    <flux:badge variant="danger">{{ __('Below minimum') }}</flux:badge>
-                                @else
-                                    <flux:badge variant="success">{{ __('OK') }}</flux:badge>
+                                @if ($i === 0)
+                                    @if ($belowMin)
+                                        <flux:badge variant="danger" icon="exclamation-triangle">{{ __('Below minimum') }}</flux:badge>
+                                    @else
+                                        <flux:badge variant="success" icon="check">{{ __('OK') }}</flux:badge>
+                                    @endif
                                 @endif
                             </flux:table.cell>
                         </flux:table.row>
@@ -80,8 +143,13 @@
                 @endif
             @empty
                 <flux:table.row>
-                    <flux:table.cell colspan="6" class="py-12 text-center">
-                        {{ $search || $filterWarehouse ? __('No products match your filters.') : __('No products found.') }}
+                    <flux:table.cell colspan="7" class="py-16 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <flux:icon.cube class="size-10 text-zinc-300" />
+                            <span class="text-zinc-500">
+                                {{ $search || $filterWarehouse ? __('No products match your filters.') : __('No products found.') }}
+                            </span>
+                        </div>
                     </flux:table.cell>
                 </flux:table.row>
             @endforelse

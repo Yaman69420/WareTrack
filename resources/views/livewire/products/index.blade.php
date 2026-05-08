@@ -2,7 +2,10 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('Products') }}</flux:heading>
+        <div>
+            <flux:heading size="xl">{{ __('Products') }}</flux:heading>
+            <flux:subheading>{{ __('Manage your product catalogue, SKUs and categories') }}</flux:subheading>
+        </div>
         <flux:button wire:click="openCreate" variant="primary" icon="plus">
             {{ __('New Product') }}
         </flux:button>

@@ -5,7 +5,9 @@ namespace App\Livewire;
 use App\Models\Category;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\StockMovement;
 use App\Models\Warehouse;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -17,11 +19,16 @@ class Dashboard extends Component
     #[Computed]
     public function stats(): array
     {
+        $totalStock = (int) DB::table('stock')->sum('quantity');
+        $movementsToday = StockMovement::whereDate('created_at', today())->count();
+
         return [
             'products' => Product::count(),
             'categories' => Category::count(),
             'warehouses' => Warehouse::count(),
             'locations' => Location::count(),
+            'total_stock' => $totalStock,
+            'movements_today' => $movementsToday,
         ];
     }
 

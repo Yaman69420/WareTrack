@@ -2,7 +2,10 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('Deliveries') }}</flux:heading>
+        <div>
+            <flux:heading size="xl">{{ __('Deliveries') }}</flux:heading>
+            <flux:subheading>{{ __('Incoming deliveries and their processing status') }}</flux:subheading>
+        </div>
         @if(auth()->user()->isAdmin())
             <flux:button :href="route('deliveries.create')" wire:navigate variant="primary" icon="plus">
                 {{ __('New Delivery') }}
@@ -78,8 +81,11 @@
                 </flux:table.row>
             @empty
                 <flux:table.row>
-                    <flux:table.cell colspan="7" class="py-12 text-center">
-                        {{ $filterStatus ? __('No deliveries with this status.') : __('No deliveries yet.') }}
+                    <flux:table.cell colspan="7" class="py-16 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <flux:icon.inbox-arrow-down class="size-10 text-zinc-300" />
+                            <span class="text-zinc-500">{{ $filterStatus ? __('No deliveries with this status.') : __('No deliveries yet.') }}</span>
+                        </div>
                     </flux:table.cell>
                 </flux:table.row>
             @endforelse
