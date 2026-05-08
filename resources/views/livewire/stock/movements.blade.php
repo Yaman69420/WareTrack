@@ -2,7 +2,10 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('Stock Movements') }}</flux:heading>
+        <div>
+            <flux:heading size="xl">{{ __('Stock Movements') }}</flux:heading>
+            <flux:subheading>{{ __('Full history of all incoming, outgoing, transfer and correction events') }}</flux:subheading>
+        </div>
         <flux:button :href="route('stock.movements.create')" wire:navigate variant="primary" icon="plus">
             {{ __('Register Movement') }}
         </flux:button>
@@ -44,33 +47,43 @@
                 <flux:table.row :key="$movement->id">
                     <flux:table.cell variant="strong">
                         {{ $movement->product->name }}
-                        <div class="text-xs font-normal text-zinc-400">{{ $movement->product->sku }}</div>
+                        <div class="text-xs font-mono font-normal text-zinc-400">{{ $movement->product->sku }}</div>
                     </flux:table.cell>
 
                     <flux:table.cell>
                         @php
-                            $typeVariant = match($movement->type->value) {
-                                'incoming' => 'success',
-                                'outgoing' => 'danger',
-                                'transfer' => 'warning',
-                                'correction' => 'outline',
-                                default => 'outline',
+                            [$variant, $icon] = match($movement->type->value) {
+                                'incoming'   => ['success', 'arrow-down-tray'],
+                                'outgoing'   => ['danger', 'arrow-up-tray'],
+                                'transfer'   => ['warning', 'arrows-right-left'],
+                                'correction' => ['outline', 'pencil-square'],
+                                default      => ['outline', 'question-mark-circle'],
                             };
                         @endphp
-                        <flux:badge variant="{{ $typeVariant }}">{{ ucfirst($movement->type->value) }}</flux:badge>
+                        <flux:badge variant="{{ $variant }}" icon="{{ $icon }}">{{ ucfirst($movement->type->value) }}</flux:badge>
                     </flux:table.cell>
 
                     <flux:table.cell class="text-sm">
                         @if ($movement->type->value === 'transfer')
-                            <span class="text-zinc-500">{{ $movement->fromLocation?->code }}</span>
-                            → {{ $movement->toLocation?->code }}
+                            <span class="flex items-center gap-1">
+                                <span class="font-mono font-medium">{{ $movement->fromLocation?->code ?? '—' }}</span>
+                                <flux:icon.arrow-right class="size-3 text-zinc-400" />
+                                <span class="font-mono font-medium">{{ $movement->toLocation?->code ?? '—' }}</span>
+                            </span>
                         @else
-                            {{ $movement->location?->code ?? '—' }}
+                            <span class="font-mono font-medium">{{ $movement->location?->code ?? '—' }}</span>
                         @endif
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        <span class="{{ $movement->quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} font-medium">
+                        @php
+                            $qtyClass = match(true) {
+                                $movement->quantity > 0  => 'text-emerald-600 dark:text-emerald-400',
+                                $movement->quantity < 0  => 'text-red-600 dark:text-red-400',
+                                default                  => 'text-zinc-500',
+                            };
+                        @endphp
+                        <span class="text-base font-bold {{ $qtyClass }}">
                             {{ $movement->quantity > 0 ? '+' : '' }}{{ $movement->quantity }}
                         </span>
                     </flux:table.cell>
@@ -79,18 +92,28 @@
                         {{ $movement->reference ?? '—' }}
                     </flux:table.cell>
 
-                    <flux:table.cell class="text-sm">
-                        {{ $movement->user->name }}
+                    <flux:table.cell>
+                        <div class="flex items-center gap-2">
+                            <flux:avatar size="xs" :name="$movement->user->name" />
+                            <span class="text-sm">{{ $movement->user->name }}</span>
+                        </div>
                     </flux:table.cell>
 
                     <flux:table.cell class="text-sm text-zinc-400">
-                        {{ $movement->created_at->diffForHumans() }}
+                        <span title="{{ $movement->created_at->format('d/m/Y H:i') }}">
+                            {{ $movement->created_at->diffForHumans() }}
+                        </span>
                     </flux:table.cell>
                 </flux:table.row>
             @empty
                 <flux:table.row>
-                    <flux:table.cell colspan="7" class="py-12 text-center">
-                        {{ $search || $filterType ? __('No movements match your filters.') : __('No stock movements yet.') }}
+                    <flux:table.cell colspan="7" class="py-16 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <flux:icon.arrow-path class="size-10 text-zinc-300" />
+                            <span class="text-zinc-500">
+                                {{ $search || $filterType ? __('No movements match your filters.') : __('No stock movements yet.') }}
+                            </span>
+                        </div>
                     </flux:table.cell>
                 </flux:table.row>
             @endforelse
