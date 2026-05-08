@@ -2,7 +2,10 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('Locations') }}</flux:heading>
+        <div>
+            <flux:heading size="xl">{{ __('Locations') }}</flux:heading>
+            <flux:subheading>{{ __('Storage positions within your warehouses') }}</flux:subheading>
+        </div>
         <flux:button wire:click="openCreate" variant="primary" icon="plus">
             {{ __('New Location') }}
         </flux:button>
@@ -42,7 +45,7 @@
             @forelse ($this->locations as $location)
                 <flux:table.row :key="$location->id">
                     <flux:table.cell variant="strong">
-                        <flux:badge>{{ $location->code }}</flux:badge>
+                        <span class="rounded-md bg-zinc-100 px-2.5 py-1 font-mono text-sm font-semibold text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">{{ $location->code }}</span>
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -86,8 +89,11 @@
                 </flux:table.row>
             @empty
                 <flux:table.row>
-                    <flux:table.cell colspan="6" class="py-12 text-center">
-                        {{ $search || $filterWarehouse ? __('No locations match your filters.') : __('No locations yet.') }}
+                    <flux:table.cell colspan="6" class="py-16 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <flux:icon.map-pin class="size-10 text-zinc-300" />
+                            <span class="text-zinc-500">{{ $search || $filterWarehouse ? __('No locations match your filters.') : __('No locations yet.') }}</span>
+                        </div>
                     </flux:table.cell>
                 </flux:table.row>
             @endforelse

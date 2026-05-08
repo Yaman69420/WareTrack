@@ -2,7 +2,10 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('Categories') }}</flux:heading>
+        <div>
+            <flux:heading size="xl">{{ __('Categories') }}</flux:heading>
+            <flux:subheading>{{ __('Organise your products into logical groups') }}</flux:subheading>
+        </div>
         <flux:button wire:click="openCreate" variant="primary" icon="plus">
             {{ __('New Category') }}
         </flux:button>
@@ -31,15 +34,22 @@
             @forelse ($this->categories as $category)
                 <flux:table.row :key="$category->id">
                     <flux:table.cell variant="strong">
-                        {{ $category->name }}
+                        <div class="flex items-center gap-2.5">
+                            <div class="rounded-md bg-violet-50 p-1.5 dark:bg-violet-900/30">
+                                <flux:icon.tag class="size-4 text-violet-600 dark:text-violet-400" />
+                            </div>
+                            {{ $category->name }}
+                        </div>
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        {{ $category->description ?? '—' }}
+                        <span class="text-zinc-500">{{ $category->description ?? '—' }}</span>
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        <flux:badge variant="outline">{{ $category->products_count }}</flux:badge>
+                        <flux:badge variant="{{ $category->products_count > 0 ? 'outline' : 'ghost' }}">
+                            {{ $category->products_count }} {{ __('products') }}
+                        </flux:badge>
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -71,8 +81,11 @@
                 </flux:table.row>
             @empty
                 <flux:table.row>
-                    <flux:table.cell colspan="5" class="py-12 text-center">
-                        {{ $search ? __('No categories match your search.') : __('No categories yet.') }}
+                    <flux:table.cell colspan="5" class="py-16 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <flux:icon.tag class="size-10 text-zinc-300" />
+                            <span class="text-zinc-500">{{ $search ? __('No categories match your search.') : __('No categories yet.') }}</span>
+                        </div>
                     </flux:table.cell>
                 </flux:table.row>
             @endforelse
