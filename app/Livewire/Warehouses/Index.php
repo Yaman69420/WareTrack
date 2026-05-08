@@ -4,6 +4,7 @@ namespace App\Livewire\Warehouses;
 
 use App\Models\Warehouse;
 use Flux\Flux;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Rule;
@@ -38,7 +39,10 @@ class Index extends Component
     #[Computed]
     public function warehouses()
     {
+        $totalStockSub = DB::raw('(SELECT COALESCE(SUM(s.quantity), 0) FROM stock s INNER JOIN locations l ON s.location_id = l.id WHERE l.warehouse_id = warehouses.id AND l.deleted_at IS NULL) as total_stock');
+
         return Warehouse::query()
+            ->addSelect(['warehouses.*', $totalStockSub])
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
                 ->orWhere('location', 'like', "%{$this->search}%"))
             ->withCount('locations')
