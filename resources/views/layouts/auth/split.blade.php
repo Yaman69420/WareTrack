@@ -95,39 +95,47 @@
                     </li>
                 </ul>
 
-                {{-- Bottom badge --}}
+                {{-- Bottom status dot --}}
                 <div class="wt-badge relative z-10 mt-auto">
-                    <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 text-xs text-zinc-500 backdrop-blur-sm">
+                    <span class="inline-flex items-center gap-1.5 text-xs text-zinc-600">
                         <span class="size-1.5 rounded-full bg-green-400"></span>
-                        Laravel 13 · Livewire 4 · Flux UI
+                        All systems operational
                     </span>
                 </div>
             </div>
 
             {{-- RIGHT PANEL: form --}}
-            <div class="wt-form-panel relative flex w-full items-center justify-center bg-white px-8 py-12 dark:bg-zinc-950 lg:p-12">
+            <div class="wt-form-panel relative flex w-full items-center justify-center overflow-hidden bg-[#080c14] px-8 py-12 lg:p-12">
 
-                {{-- Subtle background grid pattern --}}
-                <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+                {{-- Matching glow orbs --}}
+                <div class="pointer-events-none absolute right-0 top-1/3 size-80 rounded-full bg-blue-600/10 blur-3xl"></div>
+                <div class="pointer-events-none absolute bottom-0 left-1/4 size-56 rounded-full bg-indigo-600/10 blur-3xl"></div>
 
-                <div class="relative mx-auto flex w-full max-w-sm flex-col gap-8">
+                <div class="relative mx-auto flex w-full max-w-sm flex-col gap-6">
 
                     {{-- Mobile logo --}}
-                    <a href="{{ route('home') }}" wire:navigate
-                       class="flex items-center gap-3 font-medium lg:hidden">
+                    <a href="{{ route('home') }}" wire:navigate class="flex items-center gap-3 font-medium lg:hidden">
                         <span class="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 shadow-md">
                             <x-app-logo-icon class="size-5 fill-current text-white" />
                         </span>
-                        <span class="text-base font-semibold text-zinc-900 dark:text-zinc-100">WareTrack</span>
+                        <span class="text-base font-semibold text-white">WareTrack</span>
                     </a>
 
-                    <div class="rounded-2xl border border-zinc-200/80 bg-white/80 p-8 shadow-xl shadow-zinc-200/50 backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:shadow-none">
-                        {{ $slot }}
+                    {{-- Card --}}
+                    <div class="rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-black/60">
+                        {{-- Card brand header --}}
+                        <div class="flex flex-col items-center gap-3 border-b border-zinc-800 px-8 py-6">
+                            <div class="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-900/50">
+                                <x-app-logo-icon class="size-5 fill-current text-white" />
+                            </div>
+                            <p class="text-sm font-semibold text-white">WareTrack</p>
+                        </div>
+                        {{-- Form area --}}
+                        <div class="px-8 py-6">
+                            {{ $slot }}
+                        </div>
                     </div>
 
-                    <p class="text-center text-xs text-zinc-400">
-                        &copy; {{ date('Y') }} WareTrack &mdash; {{ __('Built with') }} Laravel 13 + Livewire 4
-                    </p>
                 </div>
             </div>
         </div>
