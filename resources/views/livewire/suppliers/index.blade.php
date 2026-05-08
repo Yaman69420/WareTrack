@@ -2,7 +2,10 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('Suppliers') }}</flux:heading>
+        <div>
+            <flux:heading size="xl">{{ __('Suppliers') }}</flux:heading>
+            <flux:subheading>{{ __('Manage your product suppliers and their contact information') }}</flux:subheading>
+        </div>
         @if(auth()->user()->isAdmin())
             <flux:button wire:click="openCreate" variant="primary" icon="plus">
                 {{ __('New Supplier') }}
@@ -35,11 +38,18 @@
             @forelse ($this->suppliers as $supplier)
                 <flux:table.row :key="$supplier->id">
                     <flux:table.cell variant="strong">
-                        {{ $supplier->name }}
+                        <div class="flex items-center gap-3">
+                            <flux:avatar size="sm" :name="$supplier->name" />
+                            <span>{{ $supplier->name }}</span>
+                        </div>
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        {{ $supplier->email ?? '—' }}
+                        @if($supplier->email)
+                            <a href="mailto:{{ $supplier->email }}" class="text-blue-600 hover:underline dark:text-blue-400">{{ $supplier->email }}</a>
+                        @else
+                            <span class="text-zinc-400">—</span>
+                        @endif
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -77,8 +87,11 @@
                 </flux:table.row>
             @empty
                 <flux:table.row>
-                    <flux:table.cell colspan="5" class="py-12 text-center">
-                        {{ $search ? __('No suppliers match your search.') : __('No suppliers yet.') }}
+                    <flux:table.cell colspan="5" class="py-16 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <flux:icon.building-storefront class="size-10 text-zinc-300" />
+                            <span class="text-zinc-500">{{ $search ? __('No suppliers match your search.') : __('No suppliers yet.') }}</span>
+                        </div>
                     </flux:table.cell>
                 </flux:table.row>
             @endforelse
