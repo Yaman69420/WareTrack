@@ -64,7 +64,7 @@ class WarehouseService
     public function deleteWarehouse(Warehouse $warehouse): void
     {
         $hasStock = $warehouse->locations()
-            ->whereHas('stocks', fn ($q) => $q->where('quantity', '>', 0))
+            ->whereHas('stock', fn ($q) => $q->where('quantity', '>', 0))
             ->exists();
 
         if ($hasStock) {
@@ -85,8 +85,8 @@ class WarehouseService
     public function totalStock(Warehouse $warehouse): int
     {
         return $warehouse->locations()
-            ->withSum('stocks', 'quantity')
+            ->withSum('stock', 'quantity')
             ->get()
-            ->sum('stocks_sum_quantity');
+            ->sum('stock_sum_quantity');
     }
 }
