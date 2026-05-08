@@ -114,7 +114,7 @@ The application is now available at **http://waretrack.test** (Herd) or your con
 
 ```
 app/
-├── Actions/          # Single-responsibility business actions
+├── Actions/Fortify/  # Auth actions (CreateNewUser, ResetUserPassword)
 ├── Enums/            # UserRole, StockMovementType, DeliveryStatus
 ├── Exceptions/       # InsufficientStockException
 ├── Http/Middleware/  # EnsureUserIsAdmin

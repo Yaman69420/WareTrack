@@ -28,17 +28,23 @@ class DeliverySeeder extends Seeder
         $locationA2 = Location::where('code', 'A2')->first();
         $locationB1 = Location::where('code', 'B1')->first();
         $locationAA = Location::where('code', 'AA')->first();
+        $locationC1 = Location::where('code', 'C1')->first();
+        $locationC2 = Location::where('code', 'C2')->first();
 
         $usbHub = Product::where('sku', 'EL-0001')->first();
         $hdmi = Product::where('sku', 'EL-0002')->first();
         $mouse = Product::where('sku', 'EL-0003')->first();
+        $keyboard = Product::where('sku', 'EL-0004')->first();
         $paper = Product::where('sku', 'OF-0001')->first();
         $pens = Product::where('sku', 'OF-0002')->first();
         $boxSmall = Product::where('sku', 'PK-0001')->first();
         $bubble = Product::where('sku', 'PK-0002')->first();
+        $boxLarge = Product::where('sku', 'PK-0003')->first();
+        $tape = Product::where('sku', 'PK-0004')->first();
         $screwdriver = Product::where('sku', 'TL-0001')->first();
         $gloves = Product::where('sku', 'SF-0001')->first();
         $helmet = Product::where('sku', 'SF-0002')->first();
+        $hivis = Product::where('sku', 'SF-0003')->first();
 
         // --- Delivery 1: Fully received (TechSupply — electronics) ---
         $delivery1 = Delivery::create([
@@ -148,6 +154,35 @@ class DeliverySeeder extends Seeder
             'quantity_ordered' => 15,
             'quantity_received' => 0,
         ]);
+
+        // --- Delivery 5: Received (PackMasters — packaging to Warehouse C) ---
+        $delivery5 = Delivery::create([
+            'supplier_id' => $packMasters->id,
+            'user_id' => $worker->id,
+            'status' => DeliveryStatus::Received,
+            'reference' => 'PO-2026-005',
+            'notes' => 'Cold storage packaging restock',
+            'received_at' => now()->subDay(),
+        ]);
+
+        $items5 = [
+            [$boxLarge, $locationC1, 80],
+            [$tape, $locationC1, 40],
+            [$keyboard, $locationC2, 12],
+            [$hivis, $locationC2, 30],
+        ];
+
+        foreach ($items5 as [$product, $location, $qty]) {
+            DeliveryItem::create([
+                'delivery_id' => $delivery5->id,
+                'product_id' => $product->id,
+                'location_id' => $location->id,
+                'quantity_ordered' => $qty,
+                'quantity_received' => $qty,
+            ]);
+
+            $stock->registerIncoming($product, $location, $qty, $worker, $delivery5->reference, 'Delivery '.$delivery5->reference);
+        }
 
         // --- Extra movements for Reports demo variety ---
 

@@ -37,5 +37,19 @@ class WarehouseSeeder extends Seeder
                 'name' => 'Section '.$code,
             ]);
         }
+
+        $warehouseC = Warehouse::create([
+            'name' => 'Warehouse C',
+            'location' => 'Antwerpen',
+            'description' => 'Cold storage facility',
+        ]);
+
+        foreach (['C1', 'C2', 'C3', 'C4'] as $code) {
+            Location::create([
+                'warehouse_id' => $warehouseC->id,
+                'code' => $code,
+                'name' => 'Zone '.$code,
+            ]);
+        }
     }
 }
