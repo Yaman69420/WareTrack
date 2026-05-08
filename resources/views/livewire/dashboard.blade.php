@@ -7,9 +7,10 @@
     </div>
 
     {{-- Stats Cards --}}
+    @php $isAdmin = auth()->user()->isAdmin(); @endphp
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <a href="{{ route('products.index') }}" wire:navigate>
-            <flux:card class="flex items-center gap-4 transition hover:shadow-md">
+        <a href="{{ $isAdmin ? route('products.index') : '#' }}" @if($isAdmin) wire:navigate @endif>
+            <flux:card class="flex items-center gap-4 transition {{ $isAdmin ? 'hover:shadow-md' : '' }}">
                 <div class="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                     <flux:icon.archive-box class="size-6 text-blue-600 dark:text-blue-400" />
                 </div>
@@ -20,8 +21,8 @@
             </flux:card>
         </a>
 
-        <a href="{{ route('categories.index') }}" wire:navigate>
-            <flux:card class="flex items-center gap-4 transition hover:shadow-md">
+        <a href="{{ $isAdmin ? route('categories.index') : '#' }}" @if($isAdmin) wire:navigate @endif>
+            <flux:card class="flex items-center gap-4 transition {{ $isAdmin ? 'hover:shadow-md' : '' }}">
                 <div class="rounded-lg bg-purple-100 p-3 dark:bg-purple-900/30">
                     <flux:icon.tag class="size-6 text-purple-600 dark:text-purple-400" />
                 </div>
@@ -32,8 +33,8 @@
             </flux:card>
         </a>
 
-        <a href="{{ route('warehouses.index') }}" wire:navigate>
-            <flux:card class="flex items-center gap-4 transition hover:shadow-md">
+        <a href="{{ $isAdmin ? route('warehouses.index') : '#' }}" @if($isAdmin) wire:navigate @endif>
+            <flux:card class="flex items-center gap-4 transition {{ $isAdmin ? 'hover:shadow-md' : '' }}">
                 <div class="rounded-lg bg-amber-100 p-3 dark:bg-amber-900/30">
                     <flux:icon.building-office class="size-6 text-amber-600 dark:text-amber-400" />
                 </div>
@@ -44,8 +45,8 @@
             </flux:card>
         </a>
 
-        <a href="{{ route('locations.index') }}" wire:navigate>
-            <flux:card class="flex items-center gap-4 transition hover:shadow-md">
+        <a href="{{ $isAdmin ? route('locations.index') : '#' }}" @if($isAdmin) wire:navigate @endif>
+            <flux:card class="flex items-center gap-4 transition {{ $isAdmin ? 'hover:shadow-md' : '' }}">
                 <div class="rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
                     <flux:icon.map-pin class="size-6 text-green-600 dark:text-green-400" />
                 </div>

@@ -84,7 +84,7 @@
                 <flux:label>
                     {{ $type === 'correction' ? __('New Stock Quantity') : __('Quantity') }}
                 </flux:label>
-                <flux:input wire:model="quantity" type="number" min="1" placeholder="1" />
+                <flux:input wire:model="quantity" type="number" min="{{ $type === 'correction' ? '0' : '1' }}" placeholder="{{ $type === 'correction' ? '0' : '1' }}" />
                 <flux:error name="quantity" />
             </flux:field>
 
