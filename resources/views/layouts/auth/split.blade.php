@@ -9,92 +9,125 @@
         <div class="relative grid h-dvh flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
 
             {{-- LEFT PANEL --}}
-            <div class="wt-panel relative hidden h-full flex-col overflow-hidden bg-zinc-900 p-10 text-white lg:flex">
+            <div class="wt-panel relative hidden h-full flex-col overflow-hidden bg-[#080c14] p-10 text-white lg:flex">
 
-                {{-- Animated grid background --}}
-                <canvas id="wt-grid" class="absolute inset-0 opacity-20"></canvas>
+                {{-- Blue glow orb --}}
+                <div class="absolute -left-20 top-0 size-72 rounded-full bg-blue-600/20 blur-3xl"></div>
+                <div class="absolute bottom-20 right-0 size-64 rounded-full bg-indigo-600/15 blur-3xl"></div>
+
+                {{-- Animated dot grid background --}}
+                <canvas id="wt-grid" class="absolute inset-0 opacity-30"></canvas>
 
                 {{-- Logo --}}
-                <a href="{{ route('home') }}" wire:navigate
-                   class="wt-logo relative z-10 flex items-center gap-3">
-                    <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-700">
-                        <x-app-logo-icon class="h-6 w-6 fill-current text-white" />
+                <a href="{{ route('home') }}" wire:navigate class="wt-logo relative z-10 flex items-center gap-3">
+                    <span class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-900/50">
+                        <x-app-logo-icon class="h-5 w-5 fill-current text-white" />
                     </span>
                     <span class="text-xl font-bold tracking-tight">WareTrack</span>
                 </a>
 
                 {{-- Hero text --}}
-                <div class="relative z-10 mt-16">
+                <div class="relative z-10 mt-14">
+                    <div class="mb-3 inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400">
+                        <span class="size-1.5 rounded-full bg-blue-400"></span>
+                        Warehouse Management System
+                    </div>
                     <p class="wt-tagline text-4xl font-bold leading-tight tracking-tight text-white">
-                        Warehouse management,<br>
-                        <span class="text-zinc-400">simplified.</span>
+                        Manage stock<br>
+                        <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">across any scale.</span>
                     </p>
-                    <p class="wt-sub mt-4 text-base text-zinc-400">
-                        Real-time stock tracking across multiple warehouses and locations — with full audit logging.
+                    <p class="wt-sub mt-4 text-sm leading-relaxed text-zinc-400">
+                        Real-time inventory tracking across multiple warehouses, locations and teams — with full audit trail.
                     </p>
                 </div>
 
+                {{-- Mini stats preview --}}
+                <div class="wt-stats relative z-10 mt-10 grid grid-cols-3 gap-3">
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
+                        <p class="text-xl font-bold text-white">3</p>
+                        <p class="mt-0.5 text-xs text-zinc-500">Warehouses</p>
+                    </div>
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
+                        <p class="text-xl font-bold text-white">20</p>
+                        <p class="mt-0.5 text-xs text-zinc-500">Products</p>
+                    </div>
+                    <div class="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm">
+                        <p class="text-xl font-bold text-white">100%</p>
+                        <p class="mt-0.5 text-xs text-zinc-500">Traceable</p>
+                    </div>
+                </div>
+
                 {{-- Feature highlights --}}
-                <ul class="relative z-10 mt-12 space-y-5">
+                <ul class="relative z-10 mt-8 space-y-4">
                     <li class="wt-feature flex items-start gap-3">
-                        <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-700">
-                            <svg class="h-3.5 w-3.5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-blue-500/20 ring-1 ring-blue-500/30">
+                            <svg class="h-3 w-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 11h6M9 15h4" />
                             </svg>
                         </span>
                         <div>
                             <p class="text-sm font-medium text-white">Multi-location stock management</p>
-                            <p class="text-xs text-zinc-400">Track inventory across warehouses and locations in real-time.</p>
+                            <p class="text-xs text-zinc-500">Track inventory across warehouses and locations in real-time.</p>
                         </div>
                     </li>
                     <li class="wt-feature flex items-start gap-3">
-                        <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-700">
-                            <svg class="h-3.5 w-3.5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 ring-1 ring-indigo-500/30">
+                            <svg class="h-3 w-3 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                         </span>
                         <div>
-                            <p class="text-sm font-medium text-white">Full delivery & supplier tracking</p>
-                            <p class="text-xs text-zinc-400">From supplier order to stock — every step logged.</p>
+                            <p class="text-sm font-medium text-white">Delivery & supplier tracking</p>
+                            <p class="text-xs text-zinc-500">From supplier order to stock — every step logged.</p>
                         </div>
                     </li>
                     <li class="wt-feature flex items-start gap-3">
-                        <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-700">
-                            <svg class="h-3.5 w-3.5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-500/30">
+                            <svg class="h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                         </span>
                         <div>
                             <p class="text-sm font-medium text-white">Low-stock alerts & reports</p>
-                            <p class="text-xs text-zinc-400">Instant overview of products below minimum stock level.</p>
+                            <p class="text-xs text-zinc-500">Instant overview of products below minimum stock level.</p>
                         </div>
                     </li>
                 </ul>
 
                 {{-- Bottom badge --}}
                 <div class="wt-badge relative z-10 mt-auto">
-                    <span class="inline-flex items-center gap-1.5 rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-400">
-                        <span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                        Built with Laravel 13 + Livewire 4
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 text-xs text-zinc-500 backdrop-blur-sm">
+                        <span class="size-1.5 rounded-full bg-green-400"></span>
+                        Laravel 13 · Livewire 4 · Flux UI
                     </span>
                 </div>
             </div>
 
             {{-- RIGHT PANEL: form --}}
-            <div class="wt-form-panel flex w-full items-center justify-center px-8 py-12 lg:p-12">
-                <div class="mx-auto flex w-full max-w-sm flex-col gap-6">
+            <div class="wt-form-panel relative flex w-full items-center justify-center bg-white px-8 py-12 dark:bg-zinc-950 lg:p-12">
+
+                {{-- Subtle background grid pattern --}}
+                <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+
+                <div class="relative mx-auto flex w-full max-w-sm flex-col gap-8">
 
                     {{-- Mobile logo --}}
                     <a href="{{ route('home') }}" wire:navigate
-                       class="flex flex-col items-center gap-2 font-medium lg:hidden">
-                        <span class="flex h-9 w-9 items-center justify-center rounded-md bg-zinc-800">
+                       class="flex items-center gap-3 font-medium lg:hidden">
+                        <span class="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 shadow-md">
                             <x-app-logo-icon class="size-5 fill-current text-white" />
                         </span>
-                        <span class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">WareTrack</span>
+                        <span class="text-base font-semibold text-zinc-900 dark:text-zinc-100">WareTrack</span>
                     </a>
 
-                    {{ $slot }}
+                    <div class="rounded-2xl border border-zinc-200/80 bg-white/80 p-8 shadow-xl shadow-zinc-200/50 backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:shadow-none">
+                        {{ $slot }}
+                    </div>
+
+                    <p class="text-center text-xs text-zinc-400">
+                        &copy; {{ date('Y') }} WareTrack &mdash; {{ __('Built with') }} Laravel 13 + Livewire 4
+                    </p>
                 </div>
             </div>
         </div>
@@ -189,11 +222,12 @@
                 if (typeof gsap !== 'undefined') {
                     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-                    tl.from('.wt-logo',    { y: -24, opacity: 0, duration: 0.6 })
-                      .from('.wt-tagline', { y: 20,  opacity: 0, duration: 0.6 }, '-=0.3')
-                      .from('.wt-sub',     { y: 16,  opacity: 0, duration: 0.5 }, '-=0.3')
-                      .from('.wt-feature', { x: -20, opacity: 0, duration: 0.45, stagger: 0.12 }, '-=0.2')
-                      .from('.wt-badge',   { opacity: 0, duration: 0.4 }, '-=0.1')
+                    tl.from('.wt-logo',       { y: -24, opacity: 0, duration: 0.6 })
+                      .from('.wt-tagline',    { y: 20,  opacity: 0, duration: 0.6 }, '-=0.3')
+                      .from('.wt-sub',        { y: 16,  opacity: 0, duration: 0.5 }, '-=0.3')
+                      .from('.wt-stats > *',  { y: 12,  opacity: 0, duration: 0.4, stagger: 0.08 }, '-=0.3')
+                      .from('.wt-feature',    { x: -20, opacity: 0, duration: 0.45, stagger: 0.12 }, '-=0.2')
+                      .from('.wt-badge',      { opacity: 0, duration: 0.4 }, '-=0.1')
                       .from('.wt-form-panel', { x: 30, opacity: 0, duration: 0.6 }, '-=0.8');
                 }
             });
