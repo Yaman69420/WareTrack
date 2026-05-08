@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/categories', App\Livewire\Categories\Index::class)->name('categories.index');
         Route::get('/products', App\Livewire\Products\Index::class)->name('products.index');
         Route::get('/warehouses', App\Livewire\Warehouses\Index::class)->name('warehouses.index');
+        Route::get('/warehouses/{warehouse}', App\Livewire\Warehouses\Show::class)->name('warehouses.show');
         Route::get('/locations', App\Livewire\Locations\Index::class)->name('locations.index');
 
         Route::get('/users', App\Livewire\Users\Index::class)->name('users.index');
