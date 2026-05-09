@@ -1,15 +1,24 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
 
     {{-- Hero header --}}
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 px-6 py-8 text-white shadow-lg dark:from-blue-700 dark:to-blue-900">
+    <div class="relative overflow-hidden rounded-2xl border border-white/[.07] px-6 py-8 text-white shadow-xl"
+         style="background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 45%,#0c1a3a 100%)">
+        {{-- Subtle grid overlay --}}
+        <div class="pointer-events-none absolute inset-0 opacity-[.04]"
+             style="background-image:linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px);background-size:32px 32px"></div>
+        {{-- Glow blobs --}}
+        <div class="absolute -right-12 -top-12 size-48 rounded-full opacity-20"
+             style="background:radial-gradient(circle,#818cf8,transparent 70%)"></div>
+        <div class="absolute -bottom-8 right-28 size-32 rounded-full opacity-15"
+             style="background:radial-gradient(circle,#38bdf8,transparent 70%)"></div>
         <div class="relative z-10">
-            <p class="text-sm font-medium text-blue-200">{{ now()->format('l, j F Y') }}</p>
-            <h1 class="mt-1 text-3xl font-bold">{{ __('Welcome back,') }} {{ auth()->user()->name }} 👋</h1>
-            <p class="mt-1 text-blue-200">{{ __('Here\'s what\'s happening in your warehouses today.') }}</p>
+            <p class="text-xs font-semibold uppercase tracking-widest text-indigo-300/70">{{ now()->format('l, j F Y') }}</p>
+            <h1 class="mt-1.5 text-3xl font-bold tracking-tight">
+                {{ __('Welcome back,') }}
+                <span class="bg-gradient-to-r from-blue-300 via-indigo-200 to-cyan-200 bg-clip-text text-transparent">{{ auth()->user()->name }}</span>
+            </h1>
+            <p class="mt-1.5 text-sm text-indigo-200/60">{{ __("Here's what's happening in your warehouses today.") }}</p>
         </div>
-        {{-- Decorative circles --}}
-        <div class="absolute -right-8 -top-8 size-40 rounded-full bg-white/5"></div>
-        <div class="absolute -bottom-10 right-20 size-28 rounded-full bg-white/5"></div>
     </div>
 
     {{-- Stats grid --}}
@@ -17,7 +26,7 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 
         {{-- Total stock (wide) --}}
-        <div class="col-span-2 flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="col-span-2 flex items-center gap-4 rounded-xl border border-white/[.08] bg-white p-5 dark:bg-white/[.04]">
             <div class="rounded-xl bg-emerald-50 p-3 dark:bg-emerald-900/30">
                 <flux:icon.cube class="size-7 text-emerald-600 dark:text-emerald-400" />
             </div>
@@ -28,7 +37,7 @@
         </div>
 
         {{-- Movements today (wide) --}}
-        <div class="col-span-2 flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="col-span-2 flex items-center gap-4 rounded-xl border border-white/[.08] bg-white p-5 dark:bg-white/[.04]">
             <div class="rounded-xl bg-blue-50 p-3 dark:bg-blue-900/30">
                 <flux:icon.arrow-path class="size-7 text-blue-600 dark:text-blue-400" />
             </div>
@@ -39,7 +48,7 @@
         </div>
 
         {{-- Low stock alert count (wide) --}}
-        <div class="col-span-2 flex items-center gap-4 rounded-xl border {{ $this->lowStockProducts->isNotEmpty() ? 'border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/10' : 'border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900' }} p-5">
+        <div class="col-span-2 flex items-center gap-4 rounded-xl border {{ $this->lowStockProducts->isNotEmpty() ? 'border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/10' : 'border-white/[.08] bg-white dark:bg-white/[.04]' }} p-5">
             <div class="rounded-xl {{ $this->lowStockProducts->isNotEmpty() ? 'bg-red-100 dark:bg-red-900/30' : 'bg-zinc-100 dark:bg-zinc-800' }} p-3">
                 <flux:icon.exclamation-triangle class="size-7 {{ $this->lowStockProducts->isNotEmpty() ? 'text-red-600 dark:text-red-400' : 'text-zinc-400' }}" />
             </div>
@@ -53,7 +62,7 @@
     {{-- Small counters --}}
     <div class="grid gap-4 sm:grid-cols-4">
         @if($isAdmin)
-        <a href="{{ route('products.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-blue-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-blue-700">
+        <a href="{{ route('products.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 transition hover:border-blue-300 hover:shadow-sm dark:bg-white/[.04] dark:hover:border-blue-700">
             <div class="rounded-lg bg-blue-50 p-2 dark:bg-blue-900/30">
                 <flux:icon.archive-box class="size-5 text-blue-600 dark:text-blue-400" />
             </div>
@@ -62,7 +71,7 @@
                 <p class="text-xs text-zinc-500">{{ __('Products') }}</p>
             </div>
         </a>
-        <a href="{{ route('categories.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-violet-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-violet-700">
+        <a href="{{ route('categories.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 transition hover:border-violet-300 hover:shadow-sm dark:bg-white/[.04] dark:hover:border-violet-700">
             <div class="rounded-lg bg-violet-50 p-2 dark:bg-violet-900/30">
                 <flux:icon.tag class="size-5 text-violet-600 dark:text-violet-400" />
             </div>
@@ -71,7 +80,7 @@
                 <p class="text-xs text-zinc-500">{{ __('Categories') }}</p>
             </div>
         </a>
-        <a href="{{ route('warehouses.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-amber-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-amber-700">
+        <a href="{{ route('warehouses.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 transition hover:border-amber-300 hover:shadow-sm dark:bg-white/[.04] dark:hover:border-amber-700">
             <div class="rounded-lg bg-amber-50 p-2 dark:bg-amber-900/30">
                 <flux:icon.building-office class="size-5 text-amber-600 dark:text-amber-400" />
             </div>
@@ -80,7 +89,7 @@
                 <p class="text-xs text-zinc-500">{{ __('Warehouses') }}</p>
             </div>
         </a>
-        <a href="{{ route('locations.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition hover:border-green-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-green-700">
+        <a href="{{ route('locations.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 transition hover:border-green-300 hover:shadow-sm dark:bg-white/[.04] dark:hover:border-green-700">
             <div class="rounded-lg bg-green-50 p-2 dark:bg-green-900/30">
                 <flux:icon.map-pin class="size-5 text-green-600 dark:text-green-400" />
             </div>
@@ -90,7 +99,7 @@
             </div>
         </a>
         @else
-        <div class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-blue-50 p-2 dark:bg-blue-900/30">
                 <flux:icon.archive-box class="size-5 text-blue-600 dark:text-blue-400" />
             </div>
@@ -99,7 +108,7 @@
                 <p class="text-xs text-zinc-500">{{ __('Products') }}</p>
             </div>
         </div>
-        <div class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-violet-50 p-2 dark:bg-violet-900/30">
                 <flux:icon.tag class="size-5 text-violet-600 dark:text-violet-400" />
             </div>
@@ -108,7 +117,7 @@
                 <p class="text-xs text-zinc-500">{{ __('Categories') }}</p>
             </div>
         </div>
-        <div class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-amber-50 p-2 dark:bg-amber-900/30">
                 <flux:icon.building-office class="size-5 text-amber-600 dark:text-amber-400" />
             </div>
@@ -117,7 +126,7 @@
                 <p class="text-xs text-zinc-500">{{ __('Warehouses') }}</p>
             </div>
         </div>
-        <div class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-green-50 p-2 dark:bg-green-900/30">
                 <flux:icon.map-pin class="size-5 text-green-600 dark:text-green-400" />
             </div>
@@ -133,7 +142,7 @@
     <div class="grid gap-6 lg:grid-cols-3">
 
         {{-- Movements last 7 days --}}
-        <div class="lg:col-span-2 flex flex-col rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="lg:col-span-2 flex flex-col rounded-xl border border-white/[.08] bg-white p-5 dark:bg-white/[.04]">
             <div class="mb-4 flex items-center gap-2">
                 <flux:icon.chart-bar class="size-5 text-zinc-400" />
                 <flux:heading>{{ __('Movements – Last 7 Days') }}</flux:heading>
@@ -144,7 +153,7 @@
         </div>
 
         {{-- Stock by warehouse --}}
-        <div class="flex flex-col rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex flex-col rounded-xl border border-white/[.08] bg-white p-5 dark:bg-white/[.04]">
             <div class="mb-4 flex items-center gap-2">
                 <flux:icon.building-office class="size-5 text-zinc-400" />
                 <flux:heading>{{ __('Stock by Warehouse') }}</flux:heading>
@@ -165,7 +174,7 @@
     <div class="grid gap-6 lg:grid-cols-2">
 
         {{-- Low Stock Alerts --}}
-        <div class="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex flex-col gap-4 rounded-xl border border-white/[.08] bg-white p-5 dark:bg-white/[.04]">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <flux:icon.exclamation-triangle class="size-5 text-red-500" />
@@ -208,7 +217,7 @@
         </div>
 
         {{-- Recent Activity --}}
-        <div class="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex flex-col gap-4 rounded-xl border border-white/[.08] bg-white p-5 dark:bg-white/[.04]">
             <div class="flex items-center gap-2">
                 <flux:icon.clock class="size-5 text-zinc-400" />
                 <flux:heading>{{ __('Recent Activity') }}</flux:heading>

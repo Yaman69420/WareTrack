@@ -7,7 +7,7 @@
     </div>
 
     {{-- Tabs --}}
-    <div class="flex gap-1 border-b border-zinc-200 dark:border-zinc-700">
+    <div class="flex gap-1 border-b border-white/[.08]">
         <button
             wire:click="setTab('low-stock')"
             class="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition {{ $tab === 'low-stock' ? 'border-b-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300' }}"

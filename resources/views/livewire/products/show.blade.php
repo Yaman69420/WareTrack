@@ -37,7 +37,7 @@
     <div class="grid gap-6 lg:grid-cols-3">
 
         {{-- Product card --}}
-        <div class="flex flex-col gap-5 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex flex-col gap-5 rounded-xl border border-white/[.08] bg-white p-6 dark:bg-white/[.04]">
             {{-- Image --}}
             @if($this->imageUrl())
                 <img
@@ -82,7 +82,7 @@
             {{-- Total stock + min stock --}}
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="flex items-center gap-4 rounded-xl border
-                    {{ $this->isBelowMinStock ? 'border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/10' : 'border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900' }}
+                    {{ $this->isBelowMinStock ? 'border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/10' : 'border-white/[.08] bg-white dark:bg-white/[.04]' }}
                     p-5">
                     <div class="rounded-xl {{ $this->isBelowMinStock ? 'bg-red-100 dark:bg-red-900/30' : 'bg-emerald-50 dark:bg-emerald-900/30' }} p-3">
                         <flux:icon.cube class="size-7 {{ $this->isBelowMinStock ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' }}" />
@@ -95,7 +95,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="flex items-center gap-4 rounded-xl border border-white/[.08] bg-white p-5 dark:bg-white/[.04]">
                     <div class="rounded-xl bg-blue-50 p-3 dark:bg-blue-900/30">
                         <flux:icon.map-pin class="size-7 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -109,7 +109,7 @@
             </div>
 
             {{-- Stock per location table --}}
-            <div class="flex-1 rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="flex-1 rounded-xl border border-white/[.08] bg-white dark:bg-white/[.04]">
                 <div class="flex items-center gap-2 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
                     <flux:icon.map-pin class="size-4 text-zinc-400" />
                     <flux:heading>{{ __('Stock per Location') }}</flux:heading>
@@ -156,7 +156,7 @@
     </div>
 
     {{-- Movement history --}}
-    <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+    <div class="rounded-xl border border-white/[.08] bg-white dark:bg-white/[.04]">
         <div class="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-800">
             <div class="flex items-center gap-2">
                 <flux:icon.clock class="size-4 text-zinc-400" />

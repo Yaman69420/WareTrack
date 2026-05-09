@@ -46,7 +46,7 @@
                 $totalReceived = $delivery->items->sum('quantity_received');
                 $pct = $totalOrdered > 0 ? round(($totalReceived / $totalOrdered) * 100) : 0;
             @endphp
-            <div class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-5 py-3 dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white px-5 py-3 dark:bg-white/[.04]">
                 <div>
                     <p class="text-right text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ $pct }}%</p>
                     <p class="text-xs text-zinc-500">{{ __('received') }}</p>
@@ -71,7 +71,7 @@
         @endif
 
         {{-- Items table --}}
-        <div class="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex flex-col gap-4 rounded-xl border border-white/[.08] bg-white p-6 dark:bg-white/[.04]">
             <flux:heading size="lg">{{ __('Delivery Items') }}</flux:heading>
 
             <flux:table>
