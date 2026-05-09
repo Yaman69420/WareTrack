@@ -129,6 +129,38 @@
         @endif
     </div>
 
+    {{-- Charts row --}}
+    <div class="grid gap-6 lg:grid-cols-3">
+
+        {{-- Movements last 7 days --}}
+        <div class="lg:col-span-2 flex flex-col rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="mb-4 flex items-center gap-2">
+                <flux:icon.chart-bar class="size-5 text-zinc-400" />
+                <flux:heading>{{ __('Movements – Last 7 Days') }}</flux:heading>
+            </div>
+            <div wire:ignore class="relative min-h-52 flex-1">
+                <canvas id="chart-movements"></canvas>
+            </div>
+        </div>
+
+        {{-- Stock by warehouse --}}
+        <div class="flex flex-col rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="mb-4 flex items-center gap-2">
+                <flux:icon.building-office class="size-5 text-zinc-400" />
+                <flux:heading>{{ __('Stock by Warehouse') }}</flux:heading>
+            </div>
+            <div wire:ignore class="relative min-h-52 flex-1">
+                @if(count($this->chartStockByWarehouse['labels']) > 0)
+                    <canvas id="chart-warehouse"></canvas>
+                @else
+                    <div class="flex h-full items-center justify-center text-sm text-zinc-400">
+                        {{ __('No stock data yet.') }}
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
     {{-- Bottom grid --}}
     <div class="grid gap-6 lg:grid-cols-2">
 
@@ -215,3 +247,76 @@
     </div>
 
 </div>
+
+@push('head-scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+@endpush
+
+@script
+<script>
+    Chart.defaults.color       = 'rgba(255,255,255,.45)';
+    Chart.defaults.borderColor = 'rgba(255,255,255,.07)';
+    Chart.defaults.font.family = 'inherit';
+
+    /* ── Movements bar chart ── */
+    const movementsEl = document.getElementById('chart-movements');
+    if (movementsEl) {
+        new Chart(movementsEl, {
+            type: 'bar',
+            data: @json($this->chartMovements),
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 10, padding: 18, font: { size: 11 } },
+                    },
+                    tooltip: { mode: 'index', intersect: false },
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: { font: { size: 11 } },
+                    },
+                    y: {
+                        border: { display: false },
+                        ticks: { precision: 0, font: { size: 11 } },
+                    },
+                },
+            },
+        });
+    }
+
+    /* ── Stock by warehouse doughnut ── */
+    const warehouseEl = document.getElementById('chart-warehouse');
+    if (warehouseEl) {
+        const wd = @json($this->chartStockByWarehouse);
+        new Chart(warehouseEl, {
+            type: 'doughnut',
+            data: {
+                labels: wd.labels,
+                datasets: [{
+                    data: wd.data,
+                    backgroundColor: wd.colors,
+                    borderWidth: 2,
+                    borderColor: 'rgb(24,24,27)',
+                    hoverOffset: 6,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 10, padding: 16, font: { size: 11 } },
+                    },
+                },
+                cutout: '65%',
+            },
+        });
+    }
+</script>
+@endscript

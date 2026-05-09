@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Layout('layouts.app')]
 class Index extends Component
@@ -92,6 +93,63 @@ class Index extends Component
     public function updatedFilterType(): void
     {
         unset($this->movements);
+    }
+
+    public function exportStockPerLocation(): StreamedResponse
+    {
+        $lines = app(ReportService::class)->getStockPerLocation($this->filterWarehouse ?: null);
+
+        return response()->streamDownload(function () use ($lines) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Warehouse', 'Location Code', 'Location Name', 'Product', 'SKU', 'Category', 'Quantity']);
+            foreach ($lines as $line) {
+                fputcsv($handle, [
+                    $line->location->warehouse->name,
+                    $line->location->code,
+                    $line->location->name ?? '',
+                    $line->product->name,
+                    $line->product->sku,
+                    $line->product->category?->name ?? '',
+                    $line->quantity,
+                ]);
+            }
+            fclose($handle);
+        }, 'stock-per-location-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    public function exportMovements(): StreamedResponse
+    {
+        $from = $this->filterFrom ? Carbon::parse($this->filterFrom) : now()->startOfMonth();
+        $to   = $this->filterTo  ? Carbon::parse($this->filterTo)   : now();
+
+        $movements = app(ReportService::class)->getMovementsForPeriod(
+            $from,
+            $to,
+            $this->filterType ?: null,
+        );
+
+        return response()->streamDownload(function () use ($movements) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Date', 'Type', 'Product', 'SKU', 'Location', 'Quantity', 'Reference', 'Notes', 'User']);
+            foreach ($movements as $m) {
+                $location = $m->type->value === 'transfer'
+                    ? ($m->fromLocation?->code ?? '?').' → '.($m->toLocation?->code ?? '?')
+                    : ($m->location?->code ?? '—');
+
+                fputcsv($handle, [
+                    $m->created_at->format('Y-m-d H:i:s'),
+                    $m->type->value,
+                    $m->product->name,
+                    $m->product->sku,
+                    $location,
+                    $m->quantity,
+                    $m->reference ?? '',
+                    $m->notes ?? '',
+                    $m->user?->name ?? '',
+                ]);
+            }
+            fclose($handle);
+        }, 'movements-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function render()
