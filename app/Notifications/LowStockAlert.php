@@ -19,16 +19,16 @@ class LowStockAlert extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $current  = $this->product->totalStock();
+        $current = $this->product->totalStock();
         $shortage = abs($current - $this->product->min_stock);
 
         return (new MailMessage)
             ->subject("⚠️ Low Stock Alert — {$this->product->name}")
             ->markdown('emails.low-stock', [
-                'product'    => $this->product,
+                'product' => $this->product,
                 'notifiable' => $notifiable,
-                'current'    => $current,
-                'shortage'   => $shortage,
+                'current' => $current,
+                'shortage' => $shortage,
             ]);
     }
 
@@ -38,10 +38,10 @@ class LowStockAlert extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'product_id'    => $this->product->id,
-            'product_name'  => $this->product->name,
+            'product_id' => $this->product->id,
+            'product_name' => $this->product->name,
             'current_stock' => $this->product->totalStock(),
-            'min_stock'     => $this->product->min_stock,
+            'min_stock' => $this->product->min_stock,
         ];
     }
 }

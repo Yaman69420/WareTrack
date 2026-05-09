@@ -49,17 +49,17 @@ class SendLowStockNotification
             } catch (\Throwable $e) {
                 Log::error('Failed to send low-stock notification', [
                     'product_id' => $product->id,
-                    'admin_id'   => $admin->id,
-                    'error'      => $e->getMessage(),
+                    'admin_id' => $admin->id,
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
         Log::info('Low-stock notification dispatched', [
-            'product_id'    => $product->id,
-            'product_name'  => $product->name,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
             'current_stock' => $product->totalStock(),
-            'min_stock'     => $product->min_stock,
+            'min_stock' => $product->min_stock,
             'admins_notified' => $admins->count(),
         ]);
     }

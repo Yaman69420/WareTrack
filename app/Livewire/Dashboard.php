@@ -68,9 +68,9 @@ class Dashboard extends Component
             ->groupBy('day');
 
         $typeConfig = [
-            'incoming'   => ['label' => 'Incoming',   'color' => 'rgba(34,197,94,.85)'],
-            'outgoing'   => ['label' => 'Outgoing',   'color' => 'rgba(239,68,68,.85)'],
-            'transfer'   => ['label' => 'Transfer',   'color' => 'rgba(59,130,246,.85)'],
+            'incoming' => ['label' => 'Incoming',   'color' => 'rgba(34,197,94,.85)'],
+            'outgoing' => ['label' => 'Outgoing',   'color' => 'rgba(239,68,68,.85)'],
+            'transfer' => ['label' => 'Transfer',   'color' => 'rgba(59,130,246,.85)'],
             'correction' => ['label' => 'Correction', 'color' => 'rgba(234,179,8,.85)'],
         ];
 
@@ -83,11 +83,11 @@ class Dashboard extends Component
             )->values()->toArray();
 
             $datasets[] = [
-                'label'           => $cfg['label'],
-                'data'            => $data,
+                'label' => $cfg['label'],
+                'data' => $data,
                 'backgroundColor' => $cfg['color'],
-                'borderRadius'    => 5,
-                'borderSkipped'   => false,
+                'borderRadius' => 5,
+                'borderSkipped' => false,
             ];
         }
 
@@ -121,7 +121,7 @@ class Dashboard extends Component
 
         return [
             'labels' => $rows->pluck('name')->toArray(),
-            'data'   => $rows->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
+            'data' => $rows->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
             'colors' => $rows->keys()->map(fn ($i) => $palette[$i % count($palette)])->toArray(),
         ];
     }

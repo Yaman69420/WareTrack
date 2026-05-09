@@ -120,7 +120,7 @@ class Index extends Component
     public function exportMovements(): StreamedResponse
     {
         $from = $this->filterFrom ? Carbon::parse($this->filterFrom) : now()->startOfMonth();
-        $to   = $this->filterTo  ? Carbon::parse($this->filterTo)   : now();
+        $to = $this->filterTo ? Carbon::parse($this->filterTo) : now();
 
         $movements = app(ReportService::class)->getMovementsForPeriod(
             $from,

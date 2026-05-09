@@ -1,11 +1,12 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Events\StockMovementRegistered;
 use App\Listeners\SendLowStockNotification;
 use App\Models\Category;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\Stock;
+use App\Models\StockMovement;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Notifications\LowStockAlert;
@@ -15,8 +16,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function () {
-    $this->service  = app(StockService::class);
-    $this->admin    = User::factory()->admin()->create();
+    $this->service = app(StockService::class);
+    $this->admin = User::factory()->admin()->create();
     $this->warehouse = Warehouse::factory()->create();
     $this->location = Location::factory()->create(['warehouse_id' => $this->warehouse->id]);
     $this->category = Category::factory()->create();
@@ -44,10 +45,10 @@ test('StockMovementRegistered is dispatched after outgoing stock', function () {
     $product = Product::factory()->create(['category_id' => $this->category->id, 'min_stock' => 0]);
 
     // Seed stock directly so outgoing doesn't throw InsufficientStockException
-    \App\Models\Stock::factory()->create([
-        'product_id'  => $product->id,
+    Stock::factory()->create([
+        'product_id' => $product->id,
         'location_id' => $this->location->id,
-        'quantity'    => 20,
+        'quantity' => 20,
     ]);
 
     $this->service->registerOutgoing($product, $this->location, 5, $this->admin);
@@ -59,12 +60,12 @@ test('StockMovementRegistered is dispatched after transfer', function () {
     Event::fake([StockMovementRegistered::class]);
 
     $locationB = Location::factory()->create(['warehouse_id' => $this->warehouse->id]);
-    $product   = Product::factory()->create(['category_id' => $this->category->id, 'min_stock' => 0]);
+    $product = Product::factory()->create(['category_id' => $this->category->id, 'min_stock' => 0]);
 
-    \App\Models\Stock::factory()->create([
-        'product_id'  => $product->id,
+    Stock::factory()->create([
+        'product_id' => $product->id,
         'location_id' => $this->location->id,
-        'quantity'    => 20,
+        'quantity' => 20,
     ]);
 
     $this->service->transfer($product, $this->location, $locationB, 5, $this->admin);
@@ -91,14 +92,14 @@ test('low-stock alert is sent to admins when stock drops below minimum', functio
 
     $product = Product::factory()->create([
         'category_id' => $this->category->id,
-        'min_stock'   => 10,
+        'min_stock' => 10,
     ]);
 
     // Outgoing will bring total to 5 — below min_stock of 10
-    \App\Models\Stock::factory()->create([
-        'product_id'  => $product->id,
+    Stock::factory()->create([
+        'product_id' => $product->id,
         'location_id' => $this->location->id,
-        'quantity'    => 15,
+        'quantity' => 15,
     ]);
 
     $this->service->registerOutgoing($product, $this->location, 10, $this->admin);
@@ -111,7 +112,7 @@ test('no low-stock alert is sent when stock is above minimum', function () {
 
     $product = Product::factory()->create([
         'category_id' => $this->category->id,
-        'min_stock'   => 5,
+        'min_stock' => 5,
     ]);
 
     $this->service->registerIncoming($product, $this->location, 20, $this->admin);
@@ -124,7 +125,7 @@ test('no low-stock alert when min_stock is zero', function () {
 
     $product = Product::factory()->create([
         'category_id' => $this->category->id,
-        'min_stock'   => 0,
+        'min_stock' => 0,
     ]);
 
     $this->service->registerIncoming($product, $this->location, 5, $this->admin);
@@ -142,13 +143,13 @@ test('low-stock alert is only sent once per 24 hours per product', function () {
 
     $product = Product::factory()->create([
         'category_id' => $this->category->id,
-        'min_stock'   => 10,
+        'min_stock' => 10,
     ]);
 
-    \App\Models\Stock::factory()->create([
-        'product_id'  => $product->id,
+    Stock::factory()->create([
+        'product_id' => $product->id,
         'location_id' => $this->location->id,
-        'quantity'    => 100,
+        'quantity' => 100,
     ]);
 
     // First outgoing — drops to 5 (below 10) → notification sent
@@ -166,13 +167,13 @@ test('low-stock alert fires again after cache expires', function () {
 
     $product = Product::factory()->create([
         'category_id' => $this->category->id,
-        'min_stock'   => 10,
+        'min_stock' => 10,
     ]);
 
-    \App\Models\Stock::factory()->create([
-        'product_id'  => $product->id,
+    Stock::factory()->create([
+        'product_id' => $product->id,
         'location_id' => $this->location->id,
-        'quantity'    => 50,
+        'quantity' => 50,
     ]);
 
     // Trigger notification
@@ -201,22 +202,22 @@ test('listener skips products with no min_stock configured', function () {
 
     $product = Product::factory()->create([
         'category_id' => $this->category->id,
-        'min_stock'   => 0,
+        'min_stock' => 0,
     ]);
 
-    \App\Models\Stock::factory()->create([
-        'product_id'  => $product->id,
+    Stock::factory()->create([
+        'product_id' => $product->id,
         'location_id' => $this->location->id,
-        'quantity'    => 0,
+        'quantity' => 0,
     ]);
 
-    $movement = \App\Models\StockMovement::factory()->create([
-        'product_id'  => $product->id,
+    $movement = StockMovement::factory()->create([
+        'product_id' => $product->id,
         'location_id' => $this->location->id,
-        'user_id'     => $this->admin->id,
+        'user_id' => $this->admin->id,
     ]);
 
-    $listener = new SendLowStockNotification();
+    $listener = new SendLowStockNotification;
     $listener->handle(new StockMovementRegistered($product, $movement));
 
     Notification::assertNothingSent();
