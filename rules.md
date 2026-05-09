@@ -44,18 +44,15 @@ Bouw een professioneel WMS met:
 
 ### Verplichte stack
 - Laravel 13
-- Livewire 4 (single-file components als standaard)
+- Livewire 4 (full-page components als standaard)
 - Flux UI free tier voor UI components
-- Tailwind CSS via Vite
+- Tailwind CSS 4 via Vite
 - MySQL of MariaDB
 - Pest voor alle tests
-- PHP 8.3+
-
-### Dev-only packages
-- `barryvdh/laravel-debugbar` — enkel in development, nooit in productie, staat in `require-dev`
+- PHP 8.4+
 
 ### Aanbevolen packages (Traject B)
-- `spatie/laravel-activitylog` — voor audit trail buiten stockbewegingen (productwijzigingen, leverancierswijzigingen, gebruikersacties)
+- `spatie/laravel-activitylog` — voor audit trail buiten stockbewegingen
 
 ### Verboden
 Gebruik nooit:
@@ -84,82 +81,84 @@ WareTrack bestaat uit deze domeinen:
 - **Warehouses** — magazijnen en locaties
 - **Stock** — stockniveaus, stockbewegingen, audit trail
 - **Suppliers** — leveranciers en leveringen
-- **Dashboard** — overzichten, statistieken, waarschuwingen
+- **Activity** — stockbewegingenhistoriek en filtering
 - **Reports** — rapportage en filtering
+- **Dashboard** — overzichten, statistieken, waarschuwingen
 
-### Mapstructuur
+### Mapstructuur (zoals gebouwd)
 
 ```
 app/
-├── Actions/
-│   ├── Products/
-│   │   ├── CreateProductAction.php
-│   │   ├── UpdateProductAction.php
-│   │   └── DeleteProductAction.php
-│   ├── Stock/
-│   │   ├── RegisterIncomingStockAction.php
-│   │   ├── RegisterOutgoingStockAction.php
-│   │   ├── TransferStockAction.php
-│   │   └── AdjustStockAction.php
-│   ├── Suppliers/
-│   │   ├── CreateDeliveryAction.php
-│   │   └── ProcessDeliveryAction.php
-│   └── Warehouses/
-│       ├── CreateWarehouseAction.php
-│       └── CreateLocationAction.php
 ├── Enums/
 │   ├── UserRole.php
 │   ├── StockMovementType.php
 │   └── DeliveryStatus.php
+├── Events/
+│   └── StockMovementRegistered.php
 ├── Exceptions/
 │   └── InsufficientStockException.php
 ├── Http/
-│   ├── Controllers/
-│   ├── Middleware/
-│   │   └── EnsureUserIsAdmin.php
-│   └── Requests/
+│   └── Middleware/
+│       └── EnsureUserIsAdmin.php
+├── Listeners/
+│   └── SendLowStockNotification.php
 ├── Livewire/
-│   ├── Auth/
-│   ├── Dashboard/
-│   │   └── DashboardPage.php
-│   ├── Forms/
-│   │   ├── ProductForm.php
-│   │   └── DeliveryForm.php
-│   ├── Products/
-│   │   ├── ProductsIndexPage.php
-│   │   ├── ProductCreatePage.php
-│   │   └── ProductEditPage.php
+│   ├── Activity/
+│   │   └── Index.php
 │   ├── Categories/
-│   │   ├── CategoriesIndexPage.php
-│   │   └── CategoryFormPage.php
-│   ├── Warehouses/
-│   │   ├── WarehousesIndexPage.php
-│   │   ├── WarehouseCreatePage.php
-│   │   └── WarehouseEditPage.php
-│   ├── Locations/
-│   │   ├── LocationsIndexPage.php
-│   │   └── LocationFormPage.php
-│   ├── Stock/
-│   │   ├── StockOverviewPage.php
-│   │   ├── StockMovementsPage.php
-│   │   └── StockMovementCreatePage.php
-│   ├── Suppliers/
-│   │   ├── SuppliersIndexPage.php
-│   │   └── SupplierFormPage.php
+│   │   └── Index.php
+│   ├── Dashboard.php
 │   ├── Deliveries/
-│   │   ├── DeliveriesIndexPage.php
-│   │   ├── DeliveryCreatePage.php
-│   │   └── DeliveryShowPage.php
-│   └── Reports/
-│       └── ReportsPage.php
+│   │   ├── Create.php
+│   │   ├── Index.php
+│   │   └── Show.php
+│   ├── Locations/
+│   │   └── Index.php
+│   ├── Products/
+│   │   ├── Index.php
+│   │   └── Show.php
+│   ├── Reports/
+│   │   └── Index.php
+│   ├── Stock/
+│   │   ├── BulkCorrection.php
+│   │   ├── CreateMovement.php
+│   │   ├── Index.php
+│   │   └── Movements.php
+│   ├── Suppliers/
+│   │   └── Index.php
+│   ├── Users/
+│   │   └── Index.php
+│   └── Warehouses/
+│       ├── Index.php
+│       └── Show.php
 ├── Models/
+│   ├── Category.php
+│   ├── Delivery.php
+│   ├── DeliveryItem.php
+│   ├── Location.php
+│   ├── Product.php
+│   ├── Stock.php
+│   ├── StockMovement.php
+│   ├── Supplier.php
+│   ├── User.php
+│   └── Warehouse.php
+├── Notifications/
+│   └── LowStockAlert.php
 ├── Policies/
-├── Services/
-│   ├── StockService.php
-│   ├── WarehouseService.php
-│   └── ReportService.php
-└── Support/
+│   ├── CategoryPolicy.php
+│   ├── DeliveryPolicy.php
+│   ├── LocationPolicy.php
+│   ├── ProductPolicy.php
+│   ├── StockMovementPolicy.php
+│   ├── SupplierPolicy.php
+│   └── WarehousePolicy.php
+└── Services/
+    ├── ReportService.php
+    ├── StockService.php
+    └── WarehouseService.php
 ```
+
+**Architectuurkeuze:** Livewire componenten roepen Services rechtstreeks aan. Er is geen aparte Actions-laag — voor WMS-domeinlogica is StockService de centrale orchestrator.
 
 ---
 
@@ -175,49 +174,39 @@ email_verified_at, remember_token, timestamps
 
 ### Category
 ```
-id, name, slug, description (nullable), is_active (default true),
-timestamps, soft deletes
+id, name, description (nullable), timestamps, soft deletes
 ```
-- Slug uniek, gegenereerd uit naam
-- Index op slug
 
 ### Product
 ```
 id, category_id (nullable FK), name, sku, description (nullable),
-min_stock_level (int, default 0), is_active (default true),
+image_path (nullable), min_stock (int, default 0),
 timestamps, soft deletes
 ```
 - SKU uniek, index op SKU
 - Soft deletes
 - `category_id` nullable (product kan zonder categorie bestaan)
-
-### ProductImage
-```
-id, product_id (FK cascade delete), path, is_primary (default false), timestamps
-```
-- Één product kan meerdere afbeeldingen hebben
-- `is_primary` geeft de hoofdafbeelding aan
+- `image_path` = relatief pad naar storage public disk
 
 ### Warehouse
 ```
-id, name, address (nullable), is_active (default true), timestamps, soft deletes
+id, name, address (nullable), timestamps
 ```
 
 ### Location
 ```
-id, warehouse_id (FK), name, code (nullable), description (nullable),
-is_active (default true), timestamps, soft deletes
+id, warehouse_id (FK), name, code, timestamps
 ```
-- Code optioneel maar nuttig (bijv. "A-01-03" voor rek A, rij 1, vak 3)
+- Code verplicht — structuuridentificatie (bijv. "A-01-03")
 - Index op warehouse_id
 
 ### Stock
 ```
-id, product_id (FK), location_id (FK), quantity (int, default 0),
+id, product_id (FK), location_id (FK), quantity (int unsigned, default 0),
 timestamps
 ```
 - Unieke combinatie van product_id + location_id
-- Nooit negatief — afdwingen op service-niveau én via check
+- Nooit negatief — afdwingen op service-niveau
 - Dit is de **huidige stock**, geen historiek
 
 ### StockMovement
@@ -227,32 +216,31 @@ to_location_id (FK nullable), user_id (FK), type (enum),
 quantity (int — signed), reference (nullable), notes (nullable), timestamps
 ```
 - `type` = `StockMovementType` enum: `incoming`, `outgoing`, `transfer`, `correction`
-- `quantity` is een **signed integer**: positief = stocktoename, negatief = stockafname
+- `quantity` is een **signed integer**: positief = toename, negatief = afname
   - `incoming`: `location_id` ingesteld, `quantity > 0`
   - `outgoing`: `location_id` ingesteld, `quantity < 0`
-  - `transfer`: `from_location_id` + `to_location_id` ingesteld, `location_id = null`, `quantity > 0` (de overgedragen hoeveelheid; vermindering op `from`, verhoging op `to`)
-  - `correction`: `location_id` ingesteld, `quantity` = `newQty - oldQty` (kan positief of negatief zijn)
+  - `transfer`: `from_location_id` + `to_location_id`, `location_id = null`, `quantity > 0`
+  - `correction`: `location_id` ingesteld, `quantity = newQty - oldQty`
 - Nooit wijzigbaar na aanmaak — audit trail is immutable
 - Index op product_id, user_id, type, created_at
 
 ### Supplier
 ```
 id, name, contact_person (nullable), email (nullable), phone (nullable),
-is_active (default true), timestamps, soft deletes
+timestamps, soft deletes
 ```
 
 ### Delivery
 ```
-id, supplier_id (FK), user_id (FK), reference_number (nullable),
-status (enum: pending|received|partial), notes (nullable),
-delivered_at (nullable date), timestamps, soft deletes
+id, supplier_id (FK), user_id (FK), reference (nullable),
+status (enum: pending|processing|received), notes (nullable),
+received_at (nullable timestamp), timestamps
 ```
-- `user_id` = de ingelogde gebruiker die de levering heeft geregistreerd (voor accountability)
 
 ### DeliveryItem
 ```
 id, delivery_id (FK cascade), product_id (FK), location_id (FK),
-quantity (int unsigned), unit_price (decimal 10,2 nullable), timestamps
+quantity (int unsigned), timestamps
 ```
 
 ---
@@ -284,8 +272,8 @@ enum StockMovementType: string
 enum DeliveryStatus: string
 {
     case Pending = 'pending';
+    case Processing = 'processing';
     case Received = 'received';
-    case Partial = 'partial';
 }
 ```
 
@@ -298,107 +286,117 @@ Alle enums in `app/Enums`. Gebruik casts in models.
 ### StockService
 De kern van het systeem. Bevat alle stockmutaties verpakt in DB transactions.
 
-Verplichte methodes:
+Methodes:
 - `registerIncoming(Product, Location, int $qty, User, ?string $reference, ?string $notes): StockMovement`
 - `registerOutgoing(Product, Location, int $qty, User, ?string $reference, ?string $notes): StockMovement`
 - `transfer(Product, Location $from, Location $to, int $qty, User, ?string $notes): StockMovement`
-- `adjust(Product, Location, int $newQty, User, ?string $notes): StockMovement` — stelt de absolute stockwaarde in; de service berekent `quantity = newQty - oldQty` en logt dat als een `correction` StockMovement (positief = toename, negatief = afname, beide geldige signed integers)
-- `getCurrentStock(Product, Location): int`
-- `getTotalStockForProduct(Product): int`
+- `adjust(Product, Location, int $newQty, User, ?string $notes): StockMovement`
 
-Regels voor StockService:
-- Elke mutatie gebeurt in een `DB::transaction()`
-- Gooit een exception als negatieve stock het resultaat zou zijn
-- Maakt altijd een `StockMovement` aan als audit trail
-- Gebruikt `lockForUpdate()` bij het ophalen van stockrecords binnen transactie om race conditions te vermijden
-- Nooit rechtstreeks `Stock::update()` aanroepen buiten deze service
+Elke methode:
+1. Wrapt de gehele operatie in `DB::transaction()`
+2. Gebruikt `lockForUpdate()` bij het ophalen van het Stock record
+3. Gooit `InsufficientStockException` als negatieve stock het resultaat zou zijn
+4. Maakt altijd een `StockMovement` aan als audit record
+5. Dispatcht `StockMovementRegistered` event na de transactie
 
 ### WarehouseService
-- `getLocationsForWarehouse(Warehouse): Collection`
 - `getStockSummaryForWarehouse(Warehouse): Collection`
 
 ### ReportService
-- `getLowStockProducts(): Collection`
-- `getMovementsForPeriod(Carbon $from, Carbon $to, array $filters): Collection`
 - `getStockPerLocation(?Warehouse $warehouse): Collection`
+- `getMovementsForPeriod(Carbon $from, Carbon $to, array $filters): Collection`
 
 ---
 
-## Actions
+## Events en Listeners
 
-Één action = één concrete business operatie. Eén publieke methode `handle()`. Geen view rendering.
+### StockMovementRegistered
+Gedispatcht door `StockService` na elke succesvolle stockmutatie.
 
-Actions orchestreren: ze valideren input, roepen de service aan, loggen indien nodig.
+```php
+class StockMovementRegistered
+{
+    public function __construct(
+        public readonly Product $product,
+        public readonly StockMovement $movement,
+    ) {}
+}
+```
 
-Voorbeelden:
-- `RegisterIncomingStockAction::handle(array $data, User $user): StockMovement`
-- `TransferStockAction::handle(array $data, User $user): StockMovement`
-- `ProcessDeliveryAction::handle(Delivery $delivery, User $user): void`
-- `CreateProductAction::handle(array $data): Product`
+### SendLowStockNotification
+Geregistreerd in `AppServiceProvider::boot()` via `Event::listen()`.
 
-Actions zitten in `app/Actions/` georganiseerd per domein.
+- Implementeert `ShouldQueue` + `InteractsWithQueue`
+- Queue: `notifications`, tries: 3
+- Logic: haalt product fresh op, controleert `min_stock`, throttle 24h via cache, notificeert alle admins
+- Notification class: `LowStockAlert` (Markdown mail)
 
 ---
 
 ## Livewire 4 regels
 
 ### Componentstrategie
-- Standaard: single-file Livewire componenten in Livewire 4 stijl
-- Pagina-componenten als full-page component
-- Componenten zijn mager: roepen Actions/Services aan, bevatten geen zware logica zelf
+- Standaard: full-page Livewire componenten
+- Componenten roepen Services rechtstreeks aan — geen aparte Actions-laag
+- Mager: geen zware businesslogica in de component zelf
 
 ### Componentregels
 Elke Livewire component:
 - Heeft één duidelijke verantwoordelijkheid
-- Valideert correct: gebruik `#[Validate]` voor eenvoudige formulieren (1–3 velden), gebruik een Form Object voor complexe formulieren (product aanmaken/bewerken, levering aanmaken)
-- Gebruikt `#[Computed]` voor afgeleide waarden
+- Gebruikt `#[Computed]` voor afgeleide waarden (queries, gefilterde data)
+- Gebruikt `#[Url]` voor filterstate die in de URL moet staan
 - Gebruikt `WithPagination` waar van toepassing — standaard 25 items per pagina
-- Gebruikt `WithFileUploads` voor afbeeldingen
-- Gooit geen exceptions die onafgehandeld naar de gebruiker gaan
+- Gebruikt `#[Layout('layouts.app')]` als decorateur
+- Valideert via `$this->validate([...])` in de save/submit methode
+- Gooit geen onafgehandelde exceptions naar de gebruiker
+
+### Cascade-patroon (warehouse → location)
+Bij formulieren met warehouse → location cascade:
+- Aparte `warehouseId` en `locationId` properties
+- `updatedWarehouseId()` reset `$this->locationId = null`
+- `locations()` computed: `Location::where('warehouse_id', $this->warehouseId)->get()`
+- Blade toont location-select pas als `$warehouseId` ingevuld is
 
 ### State-regels
 - UI-state hoort in Livewire
-- Domeinstate hoort in database via services
-- Livewire componenten roepen Actions aan, niet rechtstreeks de database
+- Domeinstate hoort in database via Services
+- Livewire componenten roepen `StockService` aan, nooit rechtstreeks `Stock::update()`
 
 ### Routingregels
-- `Route::get()` met Livewire full-page component
-- Named routes altijd in de vorm `domein.actie`:
-  - `dashboard` — hoofddashboard
-  - `products.index`, `products.create`, `products.edit`
-  - `categories.index`, `categories.create`, `categories.edit`
-  - `warehouses.index`, `warehouses.create`, `warehouses.edit`
-  - `locations.index`, `locations.create`, `locations.edit`
-  - `stock.overview`, `stock.movements`, `stock.movements.create`
-  - `suppliers.index`, `suppliers.create`, `suppliers.edit`
-  - `deliveries.index`, `deliveries.create`, `deliveries.show`
-  - `reports.index`
-- Route groepen:
-  ```php
-  // Alle app-routes zitten in de auth middleware groep
-  Route::middleware(['auth'])->group(function () {
-      // Toegankelijk voor admin én warehouse_worker
-      Route::get('/dashboard', ...)->name('dashboard');
-      Route::get('/stock/...', ...);
-      Route::get('/reports/...', ...);
-      Route::get('/suppliers', ...)->name('suppliers.index');
-      Route::get('/suppliers/{supplier}', ...)->name('suppliers.show');
-      Route::get('/deliveries', ...)->name('deliveries.index');
-      Route::get('/deliveries/{delivery}', ...)->name('deliveries.show');
+Named routes in de vorm `domein.actie`:
+- `dashboard`
+- `products.index`, `products.show`
+- `categories.index`
+- `warehouses.index`, `warehouses.show`
+- `locations.index`
+- `stock.index`, `stock.movements`, `stock.movements.create`, `stock.bulk-correction`
+- `suppliers.index`
+- `deliveries.index`, `deliveries.create`, `deliveries.show`
+- `reports.index`
+- `activity.index`
+- `users.index`
 
-      // Enkel toegankelijk voor admin
-      Route::middleware(['admin'])->group(function () {
-          Route::get('/products/...', ...);
-          Route::get('/warehouses/...', ...);
-          Route::get('/locations/...', ...);
-          Route::get('/suppliers/create', ...)->name('suppliers.create');
-          Route::get('/suppliers/{supplier}/edit', ...)->name('suppliers.edit');
-          Route::get('/deliveries/create', ...)->name('deliveries.create');
-          // ...
-      });
-  });
-  ```
-- Geen onduidelijke mengvormen
+Route groepen:
+```php
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Toegankelijk voor admin én warehouse_worker
+    Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/stock/...', ...);
+    Route::get('/suppliers', ...)->name('suppliers.index');
+    Route::get('/deliveries', ...);
+    Route::get('/reports', ...)->name('reports.index');
+    Route::get('/activity', ...)->name('activity.index');
+
+    // Enkel toegankelijk voor admin
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/products/...', ...);
+        Route::get('/categories', ...);
+        Route::get('/warehouses/...', ...);
+        Route::get('/locations', ...);
+        Route::get('/users', ...);
+    });
+});
+```
 
 ---
 
@@ -412,20 +410,16 @@ Doen alleen:
 - Middleware koppelen
 - Livewire component aanroepen
 
-#### Controllers
-Zo dun mogelijk. Valideren, Action aanroepen, response teruggeven.
-Voor WareTrack worden de meeste routes direct naar Livewire full-page componenten gestuurd. Controllers worden gebruikt voor niet-Livewire responses (bijv. file downloads).
-
 #### Livewire componenten
 Mogen:
 - User input verwerken
 - Valideren
 - UI-state beheren
-- Actions en Services aanroepen
+- Services aanroepen
 
 Mogen niet:
-- Stockmutaties zelf uitvoeren zonder via StockService te gaan
-- Complexe queryketens bevatten
+- Stockmutaties zelf uitvoeren zonder via `StockService` te gaan
+- Complexe queryketens bevatten in de `render()` methode
 - Business rules implementeren
 
 #### Models
@@ -444,44 +438,45 @@ Bevatten alleen:
 - `Stock.quantity`: `integer unsigned` — huidige stockniveau, nooit negatief
 - `StockMovement.quantity`: `integer` (signed) — positief = toename, negatief = afname
 - `DeliveryItem.quantity`: `integer unsigned` — altijd positief
-- Prijzen (bijv. `unit_price` op `DeliveryItem`): `decimal(10,2)` — nooit `float`
+- Prijzen: `decimal(10,2)` — nooit `float`
 
 ### Foreign keys
 - Altijd expliciet met `constrained()` en correcte delete-regels
-- Denk bewust na over `cascade`, `restrict`, `nullOnDelete`
-- StockMovement: product_id en user_id → `restrict` (nooit zomaar deleten)
+- StockMovement: product_id en user_id → `restrict`
 - DeliveryItem: `cascade` wanneer delivery verwijderd wordt
 
 ### Indexes
 Verplicht op:
-- `sku` (products)
-- `slug` (categories)
+- `sku` (products) — uniek
 - `product_id` + `location_id` combinatie (stock — uniek)
 - `product_id`, `user_id`, `type`, `created_at` (stock_movements)
 - Foreign keys
 
 ### Soft deletes
-Op: `products`, `categories`, `warehouses`, `locations`, `suppliers`, `deliveries`
-Niet op: `stock`, `stock_movements` (die zijn immutable audit data)
-
-**Belangrijk:** `delivery_items` heeft geen soft deletes maar wel `onDelete('cascade')` op de foreign key naar `deliveries`. Dat cascade werkt enkel bij een harde delete. Omdat `deliveries` soft deletes gebruikt, worden `delivery_items` nooit automatisch verwijderd in de praktijk — ze blijven zichtbaar via de soft-deleted delivery indien nodig. Dit is correct gedrag.
+Op: `products`, `categories`, `suppliers`, `deliveries`
+Niet op: `stock`, `stock_movements` (immutable audit data), `warehouses`, `locations`
 
 ### Seeders
 Na `php artisan migrate:fresh --seed` moet het systeem demo-klaar zijn:
-- 1 admin user + 2 warehouse workers
-- Minstens 3 warehouses met locaties
-- Minstens 20 producten met stock
+- 1 admin + 1 warehouse worker (vaste demo-accounts)
+- Minstens 2 warehouses met meerdere locaties
+- Minstens 15 producten met categorieën
+- Stockniveaus per locatie, inclusief een paar producten onder min_stock
 - Stockbewegingen historiek
-- Minstens 3 leveranciers met leveringen
+- Minstens 2 leveranciers met leveringen
+
+Demo-accounts:
+- Admin: `admin@waretrack.test` / `password`
+- Worker: `worker@waretrack.test` / `password`
 
 ---
 
 ## Policies en Middleware
 
 ### Middleware
-`EnsureUserIsAdmin`:
+`EnsureUserIsAdmin` (alias: `admin`):
 - Blokkeert niet-admins van admin-only routes
-- Registreren als alias in `bootstrap/app.php`
+- Geregistreerd in `bootstrap/app.php`
 
 ### Policies
 
@@ -489,11 +484,7 @@ Na `php artisan migrate:fresh --seed` moet het systeem demo-klaar zijn:
 - `viewAny`, `view`: iedereen die ingelogd is
 - `create`, `update`, `delete`: enkel admin
 
-`CategoryPolicy`:
-- `viewAny`, `view`: iedereen die ingelogd is
-- `create`, `update`, `delete`: enkel admin
-
-`WarehousePolicy` / `LocationPolicy`:
+`CategoryPolicy`, `WarehousePolicy`, `LocationPolicy`:
 - Zelfde structuur als ProductPolicy
 
 `StockMovementPolicy`:
@@ -501,8 +492,8 @@ Na `php artisan migrate:fresh --seed` moet het systeem demo-klaar zijn:
 - `create`: admin én warehouse_worker
 - `update`, `delete`: niemand — stockbewegingen zijn immutable
 
-`SupplierPolicy` / `DeliveryPolicy`:
-- `viewAny`, `view`: admin én warehouse_worker (warehouse workers moeten leveringen kunnen raadplegen)
+`SupplierPolicy`, `DeliveryPolicy`:
+- `viewAny`, `view`: admin én warehouse_worker
 - `create`, `update`, `delete`: enkel admin
 
 ---
@@ -511,56 +502,38 @@ Na `php artisan migrate:fresh --seed` moet het systeem demo-klaar zijn:
 
 Dit zijn de meest kritische regels van het systeem:
 
-1. **Nooit stock aanpassen buiten `StockService`** — geen directe `Stock::update()` of `Stock::create()` in Livewire, Actions of Controllers
+1. **Nooit stock aanpassen buiten `StockService`** — geen directe `Stock::update()` of `Stock::create()` in Livewire of Controllers
 2. **Elke stockmutatie zit in een `DB::transaction()`**
 3. **Gebruik `lockForUpdate()`** bij het ophalen van stockrecords binnen een transactie
-4. **Gooi een noemende exception** als een operatie negatieve stock zou veroorzaken: `InsufficientStockException`
+4. **Gooi `InsufficientStockException`** als een operatie negatieve stock zou veroorzaken
 5. **Elke mutatie creëert een `StockMovement`** — deze is na aanmaak nooit wijzigbaar of verwijderbaar
-6. **Stock kan nooit negatief zijn** — afdwingen op service-niveau, niet enkel op UI-niveau
+6. **Dispatch `StockMovementRegistered`** na elke succesvolle mutatie (voor low-stock notificaties)
 
 ---
 
-## Logging
+## Queues en notificaties
 
-Gebruik Laravel's Log facade voor kritieke operaties:
-
-```php
-Log::info('Stock movement registered', [
-    'user_id' => $user->id,
-    'product_id' => $product->id,
-    'type' => $movement->type,
-    'quantity' => $movement->quantity,
-]);
-```
-
-Log verplicht bij:
-- Elke stockmutatie
-- Elke levering die verwerkt wordt
-- Elke poging tot negatieve stock (als warning)
-- Login van admin gebruikers
+- Queue connection: `database`
+- Queue: `notifications` voor `SendLowStockNotification`
+- Worker starten: `php artisan queue:work --queue=notifications,default`
+- Mail: `MAIL_MAILER=log` in development (emails verschijnen in `storage/logs/laravel.log`)
+- Throttle: één notificatie per product per 24 uur (via Laravel Cache)
 
 ---
 
 ## Testing-regels
 
-Gebruik Pest. Geen PHPUnit-stijl tenzij Pest het niet ondersteunt (wat zelden is).
+Gebruik Pest. Geen PHPUnit-stijl.
 
-### Minimaal te voorzien
-
-**Feature tests:**
-- Auth: login, logout, rolgebaseerde toegang (admin vs worker vs guest)
-- Product CRUD: aanmaken, wijzigen, verwijderen, soft delete
-- Image upload: geldig bestand, ongeldig bestand
-- Stock incoming: correcte stockverhoging, beweging aangemaakt
-- Stock outgoing: correcte stockverlaging, beweging aangemaakt, negatieve stock geblokkeerd
-- Transfer: correcte verlaging op from, verhoging op to, beweging aangemaakt
+### Aanwezige test suites
+- Auth: login, logout, rolgebaseerde toegang
+- Product CRUD: aanmaken, wijzigen, soft delete, image upload
+- Stock: incoming, outgoing, transfer, correction, negatieve stock geblokkeerd
+- Low-stock notificaties: event dispatch, queue push, notification logic
 - Delivery: verwerking verhoogt stock correct
-- Minimum stock: warning correct wanneer stock onder minimum
-
-**Unit tests:**
-- `StockService`: transactie-integriteit, negatieve stock exception
-- Minstens één model scope
-- Minstens één enum methode
+- Activity log: filtering, audit trail
+- Reports: CSV export, filtering
+- Warehouse: heatmap data, location CRUD
 
 ### Testregels
 - Gebruik factories voor alle testdata
@@ -568,42 +541,45 @@ Gebruik Pest. Geen PHPUnit-stijl tenzij Pest het niet ondersteunt (wat zelden is
 - Geen hardcoded IDs
 - Beschrijvende test namen in snake_case
 - Test zowel happy path als edge cases
+- Voor gequeued listeners: gebruik `Queue::fake()` + `Queue::assertPushedOn()`
+- Voor listener-logica: roep `handle()` rechtstreeks aan in de test
 
 ---
 
 ## Frontend-regels
 
 ### Flux UI
-- Gebruik Flux UI components als standaard voor alle UI elementen (tabellen, formulieren, modals, buttons, badges, etc.)
+- Gebruik Flux UI components als standaard voor alle UI elementen
 - Flux UI free tier — gebruik geen betaalde componenten
 - Pas Tailwind utility classes toe voor custom spacing/layout
-- Consistent design systeem doorheen hele app
 
 ### Image storage
 - Gebruik de `public` disk (`storage/app/public`)
-- Voer `php artisan storage:link` uit bij installatie
-- Sla paden relatief op in de database (bijv. `products/afbeelding.jpg`)
+- `php artisan storage:link` bij installatie
+- Sla paden relatief op (`products/bestand.jpg`)
 - Valideer bij upload: mimes `jpg,jpeg,png,webp`, max `2048` KB
-- Verwijder oude bestanden van disk wanneer een afbeelding vervangen of verwijderd wordt
 
-### Login / landingspagina
-- Slanke custom pagina bovenop de starter kit auth
-- Kleine GSAP animatie voor professionele eerste indruk
-- Tailwind-based, consistent met de rest van de app
+### Dark theme
+- De app gebruikt een donker thema (dark mode standaard)
+- Gebruik `dark:` Tailwind variants consistent
+- Heatmap-visualisatie: inline styles voor dynamische rgba-kleuren (Tailwind purgt dynamische klassen)
 
 ### Responsive
-- Desktop-first (WMS wordt intern gebruikt, maar mobiel moet werken)
+- Desktop-first (WMS intern gebruik)
 - Minimum: desktop en tablet correct
-- Gebruik Flux UI's ingebouwde responsive utilities
 
 ### Views
 - Blade blijft presentatielaag
 - Geen datamanipulatie in Blade
-- Gebruik Flux UI components en Blade partials
+- Gebruik Flux UI components en `#[Computed]` properties uit Livewire
 
 ---
 
 ## Codekwaliteitsregels
+
+### Code stijl
+- Laravel Pint als formatter (`./vendor/bin/pint`)
+- Voer Pint uit voor elke commit: `./vendor/bin/pint --test` mag geen violations tonen
 
 ### Naming
 - Duidelijke Engelse namen voor classes, methods en properties
@@ -611,18 +587,8 @@ Gebruik Pest. Geen PHPUnit-stijl tenzij Pest het niet ondersteunt (wat zelden is
   - `Warehouse` (niet `Storage` of `Depot`)
   - `Location` (niet `Shelf` of `Spot`)
   - `StockMovement` (niet `StockLog` of `Mutation`)
-  - `Delivery` (niet `Shipment` of `Receipt` — tenzij inkomend specifiek)
-- Geen afkortingen tenzij standaard (bijv. `SKU`, `qty`)
-
-### Methods
-- Klein en doelgericht
-- Return types altijd vermeld
-- Lange methodes opsplitsen
-
-### Classes
-- Geen god classes
-- Maximaal coherente verantwoordelijkheid per class
-- Componenten van meer dan 200 regels: analyseer of opsplitsing nodig is
+  - `Delivery` (niet `Shipment`)
+- Geen afkortingen tenzij standaard (`SKU`, `qty`)
 
 ### Queries
 - Eager load relaties bewust (`with()`)
@@ -640,17 +606,17 @@ main    → production-ready, altijd stabiel
 dev     → integratiebranch
 feature/xxx → per feature
 fix/xxx → bugfixes
+docs/xxx → documentatie
 ```
 
 ### Commits (Conventional Commits)
 ```
-feat(products): add image upload with validation
-feat(stock): implement DB transactions in StockService
+feat(stock): implement bulk correction with live diff
+feat(warehouse): add heatmap view with stock density coloring
 fix(dashboard): correct low stock threshold calculation
 refactor(services): extract reporting logic into ReportService
 test(stock): add feature tests for negative stock prevention
 docs(readme): add installation and seeding instructions
-chore(deps): install and configure Flux UI
 ```
 
 ### Regels
@@ -658,6 +624,7 @@ chore(deps): install and configure Flux UI
 - Feature branches worden gemerged naar `dev` via pull request
 - `.env` nooit committen — wel `.env.example` met lege sensitive values
 - `vendor/` en `node_modules/` nooit in repo
+- Geen `Co-Authored-By:` lines in commits — enkel de developer als auteur
 
 ---
 
@@ -670,6 +637,7 @@ Een feature is pas klaar als:
 - Stockmutaties via `StockService` gaan met transacties
 - Er geen evidente N+1 of securityfouten zijn
 - Pest tests aanwezig zijn voor de feature
+- `./vendor/bin/pint --test` geeft geen violations
 - Flux UI correct gebruikt wordt
 - De code leesbaar is voor een andere developer
 
