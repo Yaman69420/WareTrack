@@ -1,4 +1,4 @@
-<div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
+<div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
 
     {{-- Hero header --}}
     <div class="relative overflow-hidden rounded-2xl border border-white/[.07] px-6 py-8 text-white shadow-xl"
