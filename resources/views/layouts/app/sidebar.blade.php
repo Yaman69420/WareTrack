@@ -40,6 +40,9 @@
                         <x-nav-item href="{{ route('reports.index') }}" :active="request()->routeIs('reports.*')" icon="chart-bar">
                             {{ __('Reports') }}
                         </x-nav-item>
+                        <x-nav-item href="{{ route('activity.index') }}" :active="request()->routeIs('activity.*')" icon="clipboard-document-list">
+                            {{ __('Activity') }}
+                        </x-nav-item>
                         <x-nav-item href="{{ route('deliveries.index') }}" :active="request()->routeIs('deliveries.*')" icon="truck">
                             {{ __('Deliveries') }}
                         </x-nav-item>

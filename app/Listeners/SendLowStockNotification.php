@@ -6,11 +6,25 @@ use App\Enums\UserRole;
 use App\Events\StockMovementRegistered;
 use App\Models\User;
 use App\Notifications\LowStockAlert;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class SendLowStockNotification
+class SendLowStockNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
+    /**
+     * The queue the listener should be pushed to.
+     */
+    public string $queue = 'notifications';
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
     /**
      * Handle the event.
      *
