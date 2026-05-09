@@ -272,7 +272,7 @@ enum StockMovementType: string
 enum DeliveryStatus: string
 {
     case Pending = 'pending';
-    case Processing = 'processing';
+    case Partial = 'partial';
     case Received = 'received';
 }
 ```
