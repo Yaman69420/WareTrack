@@ -62,6 +62,88 @@
 
     <div class="flex max-w-4xl flex-col gap-6">
 
+        {{-- ===== STATUS TIMELINE ===== --}}
+        @php
+            $isPartialOrReceived = in_array($delivery->status->value, ['partial', 'received']);
+            $isReceived          = $delivery->status === \App\Enums\DeliveryStatus::Received;
+
+            $steps = [
+                [
+                    'label'     => __('Delivery Created'),
+                    'desc'      => __('Registered by') . ' ' . $delivery->user->name,
+                    'timestamp' => $delivery->created_at,
+                    'done'      => true,
+                    'icon'      => 'inbox-arrow-down',
+                    'color'     => 'bg-blue-500',
+                    'ring'      => 'ring-blue-500/30',
+                ],
+                [
+                    'label'     => __('Processing'),
+                    'desc'      => $isPartialOrReceived
+                                    ? ($delivery->items->sum('quantity_received') . '/' . $delivery->items->sum('quantity_ordered') . ' ' . __('units received'))
+                                    : __('Awaiting first receipt'),
+                    'timestamp' => $isPartialOrReceived ? $delivery->updated_at : null,
+                    'done'      => $isPartialOrReceived,
+                    'icon'      => 'arrow-path',
+                    'color'     => $isPartialOrReceived ? 'bg-amber-500' : 'bg-zinc-700',
+                    'ring'      => $isPartialOrReceived ? 'ring-amber-500/30' : 'ring-zinc-700/30',
+                ],
+                [
+                    'label'     => __('Fully Received'),
+                    'desc'      => $isReceived
+                                    ? ($delivery->received_at?->format('d/m/Y H:i') ?? $delivery->updated_at->format('d/m/Y H:i'))
+                                    : __('Pending'),
+                    'timestamp' => $isReceived ? ($delivery->received_at ?? $delivery->updated_at) : null,
+                    'done'      => $isReceived,
+                    'icon'      => 'check-circle',
+                    'color'     => $isReceived ? 'bg-emerald-500' : 'bg-zinc-700',
+                    'ring'      => $isReceived ? 'ring-emerald-500/30' : 'ring-zinc-700/30',
+                ],
+            ];
+        @endphp
+
+        <div class="rounded-xl border border-white/[.08] bg-white px-6 py-5 dark:bg-white/[.04]">
+            <flux:heading size="sm" class="mb-4 text-zinc-500">{{ __('Status Timeline') }}</flux:heading>
+
+            <ol class="relative flex flex-col gap-0">
+                @foreach ($steps as $i => $step)
+                    @php $isLast = $i === count($steps) - 1; @endphp
+
+                    <li class="relative flex gap-4 {{ $isLast ? '' : 'pb-6' }}">
+
+                        {{-- Connector line --}}
+                        @if (! $isLast)
+                            <div class="absolute left-[15px] top-8 h-full w-px {{ $step['done'] ? 'bg-white/[.12]' : 'border-l border-dashed border-white/[.08]' }}"></div>
+                        @endif
+
+                        {{-- Dot --}}
+                        <div class="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full {{ $step['color'] }} ring-4 {{ $step['ring'] }}">
+                            @if (! $step['done'] && ! $isLast)
+                                <span class="size-2 rounded-full bg-zinc-500"></span>
+                            @else
+                                <flux:icon.{{ $step['icon'] }} class="size-4 text-white" />
+                            @endif
+                        </div>
+
+                        {{-- Content --}}
+                        <div class="flex flex-1 items-start justify-between pt-1">
+                            <div>
+                                <p class="text-sm font-semibold {{ $step['done'] ? 'text-zinc-100' : 'text-zinc-500' }}">
+                                    {{ $step['label'] }}
+                                </p>
+                                <p class="text-xs text-zinc-500">{{ $step['desc'] }}</p>
+                            </div>
+                            @if ($step['timestamp'])
+                                <span class="ml-4 shrink-0 text-xs text-zinc-600" title="{{ $step['timestamp']->format('d/m/Y H:i:s') }}">
+                                    {{ $step['timestamp']->diffForHumans() }}
+                                </span>
+                            @endif
+                        </div>
+                    </li>
+                @endforeach
+            </ol>
+        </div>
+
         {{-- Notes --}}
         @if($delivery->notes)
             <div class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-900/10">
