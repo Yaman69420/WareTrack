@@ -6,9 +6,14 @@
             <flux:heading size="xl">{{ __('Stock Overview') }}</flux:heading>
             <flux:subheading>{{ __('Current stock levels per product and location') }}</flux:subheading>
         </div>
-        <flux:button :href="route('stock.movements.create')" wire:navigate variant="primary" icon="plus">
-            {{ __('Register Movement') }}
-        </flux:button>
+        <div class="flex items-center gap-2">
+            <flux:button :href="route('stock.bulk-correction')" wire:navigate variant="ghost" icon="pencil-square">
+                {{ __('Bulk Correction') }}
+            </flux:button>
+            <flux:button :href="route('stock.movements.create')" wire:navigate variant="primary" icon="plus">
+                {{ __('Register Movement') }}
+            </flux:button>
+        </div>
     </div>
 
     {{-- Filters --}}

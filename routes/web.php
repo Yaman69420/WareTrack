@@ -3,6 +3,7 @@
 use App\Livewire\Dashboard;
 use App\Livewire\Deliveries\Create;
 use App\Livewire\Deliveries\Show;
+use App\Livewire\Stock\BulkCorrection;
 use App\Livewire\Stock\CreateMovement;
 use App\Livewire\Stock\Movements;
 use App\Livewire\Suppliers\Index;
@@ -30,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/stock', App\Livewire\Stock\Index::class)->name('stock.index');
     Route::get('/stock/movements', Movements::class)->name('stock.movements');
     Route::get('/stock/movements/create', CreateMovement::class)->name('stock.movements.create');
+    Route::get('/stock/bulk-correction', BulkCorrection::class)->name('stock.bulk-correction');
 
     // Admin only
     Route::middleware(['admin'])->group(function () {
