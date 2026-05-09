@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Events\StockMovementRegistered;
+use App\Listeners\SendLowStockNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        Event::listen(StockMovementRegistered::class, SendLowStockNotification::class);
     }
 
     /**
