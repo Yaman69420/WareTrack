@@ -8,8 +8,8 @@
             .wt-seam {
                 position: absolute;
                 inset: 0 0 0 auto;
-                width: 260px;
-                background: linear-gradient(90deg, transparent 0%, #050710 100%);
+                width: 320px;
+                background: linear-gradient(90deg, transparent 0%, #050710 75%);
                 z-index: 8;
                 pointer-events: none;
             }
@@ -17,17 +17,16 @@
             .wt-seam::after {
                 content: '';
                 position: absolute;
-                right: 0; top: 6%; bottom: 6%;
+                right: 0; top: 5%; bottom: 5%;
                 width: 1px;
                 background: linear-gradient(
                     to bottom,
                     transparent 0%,
-                    rgba(255,255,255,.05) 20%,
-                    rgba(129,140,248,.45) 50%,
-                    rgba(255,255,255,.05) 80%,
+                    rgba(129,140,248,.15) 15%,
+                    rgba(129,140,248,.55) 50%,
+                    rgba(129,140,248,.15) 85%,
                     transparent 100%
                 );
-                opacity: .4;
             }
         </style>
     </head>
@@ -78,19 +77,24 @@
                             Track inventory, manage deliveries and reduce waste — all from a single dashboard.
                         </p>
 
-                        {{-- Stats --}}
+                        {{-- Stats: real counts from DB --}}
+                        @php
+                            $warehouseCount = \App\Models\Warehouse::count();
+                            $productCount   = \App\Models\Product::count();
+                            $locationCount  = \App\Models\Location::count();
+                        @endphp
                         <div class="wt-stats mt-9 flex gap-8">
                             <div>
-                                <p class="text-2xl font-bold tracking-tight text-white">98.4%</p>
-                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">Accuracy</p>
+                                <p class="text-2xl font-bold tracking-tight text-white">{{ $warehouseCount }}</p>
+                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">{{ Str::plural('Warehouse', $warehouseCount) }}</p>
                             </div>
                             <div>
-                                <p class="text-2xl font-bold tracking-tight text-white">3.2k</p>
-                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">Products</p>
+                                <p class="text-2xl font-bold tracking-tight text-white">{{ $productCount }}</p>
+                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">{{ Str::plural('Product', $productCount) }}</p>
                             </div>
                             <div>
-                                <p class="text-2xl font-bold tracking-tight text-white">12</p>
-                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">Locations</p>
+                                <p class="text-2xl font-bold tracking-tight text-white">{{ $locationCount }}</p>
+                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">{{ Str::plural('Location', $locationCount) }}</p>
                             </div>
                         </div>
 
@@ -112,8 +116,11 @@
                  ══════════════════════════════════════ --}}
             <div class="wt-form-panel relative flex w-full items-center justify-center overflow-hidden px-8 py-12 lg:p-12" style="background:#050710">
 
-                {{-- Matching ambient glow from the left --}}
-                <div class="pointer-events-none absolute inset-0" style="background:radial-gradient(ellipse 70% 90% at 8% 55%, rgba(99,102,241,.09) 0%, transparent 70%)"></div>
+                {{-- Ambient glow that bleeds in from the left-panel aurora --}}
+                <div class="pointer-events-none absolute inset-0" style="background:
+                    radial-gradient(ellipse 90% 100% at 0% 50%, rgba(99,102,241,.18) 0%, transparent 60%),
+                    radial-gradient(ellipse 50% 60% at 0% 50%, rgba(56,189,248,.10) 0%, transparent 55%)
+                "></div>
 
                 <div class="relative mx-auto flex w-full max-w-sm flex-col gap-6">
 
@@ -182,13 +189,13 @@
             const mouse = { x: W / 2, y: H / 2 };
             document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-            /* Aurora bands — [centerY%, amplitude%, freqMultiplier, speed, hue1, hue2, alpha] */
+            /* Aurora bands — hues stay in 175–268 (cyan → blue → indigo, NO pink) */
             const bands = [
-                { y:.55, amp:.10, freq:.7,  spd:.18, h1:220, h2:260, a:.55 },
-                { y:.42, amp:.08, freq:.55, spd:.13, h1:260, h2:290, a:.45 },
-                { y:.65, amp:.12, freq:.9,  spd:.22, h1:195, h2:230, a:.40 },
-                { y:.35, amp:.07, freq:.45, spd:.10, h1:280, h2:310, a:.30 },
-                { y:.72, amp:.09, freq:1.1, spd:.28, h1:170, h2:210, a:.25 },
+                { y:.55, amp:.10, freq:.7,  spd:.18, h1:215, h2:248, a:.58 },
+                { y:.42, amp:.08, freq:.55, spd:.13, h1:248, h2:262, a:.48 },
+                { y:.65, amp:.12, freq:.9,  spd:.22, h1:192, h2:218, a:.42 },
+                { y:.35, amp:.07, freq:.45, spd:.10, h1:258, h2:268, a:.32 },
+                { y:.72, amp:.09, freq:1.1, spd:.28, h1:178, h2:208, a:.26 },
             ];
 
             function pseudoRand(n) {
