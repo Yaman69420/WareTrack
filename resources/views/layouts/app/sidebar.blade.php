@@ -3,7 +3,12 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-zinc-100 dark:bg-zinc-900">
+    <body class="min-h-screen antialiased" style="background:#04060f">
+
+        {{-- Ambient glow from sidebar direction (matches login right-panel) --}}
+        <div class="pointer-events-none fixed inset-0 z-0"
+             style="background:radial-gradient(ellipse 35% 70% at 12% 50%, rgba(59,130,246,.055) 0%, transparent 60%)">
+        </div>
 
         {{-- ===== SIDEBAR ===== --}}
         <flux:sidebar sticky collapsible="mobile" class="w-60 border-e border-zinc-800/60 bg-zinc-950 dark:border-zinc-800/60 dark:bg-zinc-950">
@@ -24,7 +29,7 @@
 
                 {{-- General --}}
                 <div>
-                    <p class="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">{{ __('General') }}</p>
+                    <p class="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{{ __('General') }}</p>
                     <div class="flex flex-col gap-0.5">
                         <x-nav-item href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" icon="home">
                             {{ __('Dashboard') }}
@@ -47,7 +52,7 @@
                 {{-- Admin --}}
                 @if(auth()->user()?->isAdmin())
                     <div>
-                        <p class="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">{{ __('Admin') }}</p>
+                        <p class="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">{{ __('Admin') }}</p>
                         <div class="flex flex-col gap-0.5">
                             <x-nav-item href="{{ route('categories.index') }}" :active="request()->routeIs('categories.*')" icon="tag">
                                 {{ __('Categories') }}
@@ -132,7 +137,7 @@
         </flux:sidebar>
 
         {{-- ===== MOBILE HEADER ===== --}}
-        <flux:header class="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 lg:hidden">
+        <flux:header class="border-b border-white/[.08] lg:hidden" style="background:#04060f">
             <flux:sidebar.toggle class="text-zinc-500 lg:hidden" icon="bars-2" inset="left" />
             <div class="flex items-center gap-2">
                 <div class="flex size-6 items-center justify-center rounded bg-gradient-to-br from-blue-500 to-blue-700">

@@ -31,7 +31,7 @@
 
     {{-- Stats bar --}}
     <div class="grid grid-cols-3 gap-4">
-        <div class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-violet-50 p-2 dark:bg-violet-900/30">
                 <flux:icon.map-pin class="size-5 text-violet-600 dark:text-violet-400" />
             </div>
@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-emerald-50 p-2 dark:bg-emerald-900/30">
                 <flux:icon.cube class="size-5 text-emerald-600 dark:text-emerald-400" />
             </div>
@@ -51,7 +51,7 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-amber-50 p-2 dark:bg-amber-900/30">
                 <flux:icon.tag class="size-5 text-amber-600 dark:text-amber-400" />
             </div>
@@ -64,7 +64,7 @@
 
     {{-- Locations --}}
     @if ($this->locations->isEmpty())
-        <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-700">
+        <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/[.10] py-20 text-center">
             <div class="mb-3 rounded-full bg-zinc-100 p-4 dark:bg-zinc-800">
                 <flux:icon.map-pin class="size-8 text-zinc-400" />
             </div>
@@ -75,7 +75,7 @@
     @else
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach ($this->locations as $location)
-                <div class="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="flex flex-col gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
 
                     {{-- Code + actions --}}
                     <div class="flex items-start justify-between">

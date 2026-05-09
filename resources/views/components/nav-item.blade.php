@@ -8,10 +8,11 @@
     href="{{ $href }}"
     wire:navigate
     @class([
-        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-100',
-        'bg-blue-600 text-white shadow-sm shadow-blue-900/40' => $active,
-        'text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100' => ! $active,
+        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-100',
+        'text-white shadow-sm shadow-indigo-900/50' => $active,
+        'text-zinc-400 hover:bg-white/[.06] hover:text-zinc-100' => ! $active,
     ])
+    @style(['background:linear-gradient(90deg,#4f46e5,#2563eb)' => $active])
 >
     @if($icon)
         <flux:icon

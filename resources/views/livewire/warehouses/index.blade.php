@@ -22,7 +22,7 @@
 
     {{-- Card Grid --}}
     @if ($this->warehouses->isEmpty())
-        <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-700">
+        <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/[.10] py-20 text-center">
             <div class="mb-3 rounded-full bg-zinc-100 p-4 dark:bg-zinc-800">
                 <flux:icon.building-office class="size-8 text-zinc-400" />
             </div>
@@ -35,7 +35,7 @@
     @else
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($this->warehouses as $warehouse)
-                <div class="group relative flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 transition duration-200 hover:border-blue-300 hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-blue-700">
+                <div class="group relative flex flex-col gap-4 rounded-xl border border-white/[.08] bg-white p-5 transition duration-200 hover:border-blue-300 hover:shadow-lg dark:bg-white/[.04] dark:hover:border-blue-700">
 
                     {{-- Top row --}}
                     <div class="flex items-start justify-between">

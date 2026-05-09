@@ -9,7 +9,7 @@
     <div class="flex max-w-2xl flex-col gap-6">
 
         {{-- Delivery info --}}
-        <div class="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex flex-col gap-4 rounded-xl border border-white/[.08] bg-white p-6 dark:bg-white/[.04]">
             <flux:heading size="lg">{{ __('Delivery Details') }}</flux:heading>
 
             <div class="grid grid-cols-2 gap-4">
@@ -38,7 +38,7 @@
         </div>
 
         {{-- Items --}}
-        <div class="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="flex flex-col gap-4 rounded-xl border border-white/[.08] bg-white p-6 dark:bg-white/[.04]">
             <div class="flex items-center justify-between">
                 <flux:heading size="lg">{{ __('Items') }}</flux:heading>
                 <flux:button wire:click="addItem" variant="ghost" size="sm" icon="plus">
