@@ -1,7 +1,7 @@
-<div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
+<div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
 
     {{-- Header --}}
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-y-3">
         <flux:heading size="xl">{{ __('Users') }}</flux:heading>
         <flux:button wire:click="openCreate" variant="primary" icon="plus">
             {{ __('New User') }}

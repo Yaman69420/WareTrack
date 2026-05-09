@@ -1,7 +1,7 @@
-<div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
+<div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
 
     {{-- Header --}}
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-y-3">
         <div>
             <flux:heading size="xl">{{ __('Activity Log') }}</flux:heading>
             <flux:subheading>{{ __('Full audit trail of all stock movements across all users and locations') }}</flux:subheading>
@@ -30,7 +30,7 @@
 
     {{-- Filters --}}
     <div class="flex flex-wrap items-end gap-3">
-        <div class="w-64">
+        <div class="w-full sm:w-64">
             <flux:input
                 wire:model.live.debounce.300ms="search"
                 icon="magnifying-glass"
