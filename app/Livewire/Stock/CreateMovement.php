@@ -6,6 +6,8 @@ use App\Enums\StockMovementType;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\Stock;
+use App\Models\Warehouse;
 use App\Services\StockService;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
@@ -19,9 +21,17 @@ class CreateMovement extends Component
 
     public ?int $productId = null;
 
+    // Warehouse step (non-transfer)
+    public ?int $warehouseId = null;
+
     public ?int $locationId = null;
 
+    // Warehouse step (transfer)
+    public ?int $fromWarehouseId = null;
+
     public ?int $fromLocationId = null;
+
+    public ?int $toWarehouseId = null;
 
     public ?int $toLocationId = null;
 
@@ -31,22 +41,88 @@ class CreateMovement extends Component
 
     public string $notes = '';
 
+    // Reset location when warehouse changes
+    public function updatedWarehouseId(): void
+    {
+        $this->locationId = null;
+    }
+
+    public function updatedFromWarehouseId(): void
+    {
+        $this->fromLocationId = null;
+    }
+
+    public function updatedToWarehouseId(): void
+    {
+        $this->toLocationId = null;
+    }
+
+    // Reset warehouse + location when type changes
+    public function updatedType(): void
+    {
+        $this->warehouseId = null;
+        $this->locationId = null;
+        $this->fromWarehouseId = null;
+        $this->fromLocationId = null;
+        $this->toWarehouseId = null;
+        $this->toLocationId = null;
+    }
+
     #[Computed]
     public function products()
     {
-        return Product::orderBy('name')->get();
+        return Product::orderBy('name')->get(['id', 'name', 'sku']);
+    }
+
+    #[Computed]
+    public function warehouses()
+    {
+        return Warehouse::orderBy('name')->get(['id', 'name']);
     }
 
     #[Computed]
     public function locations()
     {
-        return Location::with('warehouse')->orderBy('code')->get();
+        return $this->warehouseId
+            ? Location::where('warehouse_id', $this->warehouseId)->orderBy('code')->get()
+            : collect();
+    }
+
+    #[Computed]
+    public function fromLocations()
+    {
+        return $this->fromWarehouseId
+            ? Location::where('warehouse_id', $this->fromWarehouseId)->orderBy('code')->get()
+            : collect();
+    }
+
+    #[Computed]
+    public function toLocations()
+    {
+        return $this->toWarehouseId
+            ? Location::where('warehouse_id', $this->toWarehouseId)->orderBy('code')->get()
+            : collect();
     }
 
     #[Computed]
     public function types(): array
     {
         return StockMovementType::cases();
+    }
+
+    /**
+     * Current stock for the selected product + location (shown as a hint).
+     */
+    #[Computed]
+    public function currentStock(): ?int
+    {
+        if (! $this->productId || ! $this->locationId) {
+            return null;
+        }
+
+        return Stock::where('product_id', $this->productId)
+            ->where('location_id', $this->locationId)
+            ->value('quantity') ?? 0;
     }
 
     public function save(StockService $stockService): void
