@@ -4,106 +4,99 @@
         @include('partials.head')
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
         <style>
-            /* ── Aurora seam: fades canvas into right-panel bg ── */
+            /* Fade right edge of canvas into right-panel background */
             .wt-seam {
                 position: absolute;
                 inset: 0 0 0 auto;
-                width: 320px;
-                background: linear-gradient(90deg, transparent 0%, #050710 75%);
+                width: 280px;
+                background: linear-gradient(90deg, transparent 0%, #04060f 100%);
                 z-index: 8;
                 pointer-events: none;
             }
-            /* Hairline accent glow at the split edge */
+            /* Hairline divider glow */
             .wt-seam::after {
                 content: '';
                 position: absolute;
-                right: 0; top: 5%; bottom: 5%;
+                right: 0; top: 8%; bottom: 8%;
                 width: 1px;
                 background: linear-gradient(
                     to bottom,
-                    transparent 0%,
-                    rgba(129,140,248,.15) 15%,
-                    rgba(129,140,248,.55) 50%,
-                    rgba(129,140,248,.15) 85%,
-                    transparent 100%
+                    transparent,
+                    rgba(99,102,241,.4) 30%,
+                    rgba(147,197,253,.5) 50%,
+                    rgba(99,102,241,.4) 70%,
+                    transparent
                 );
             }
         </style>
     </head>
-    <body class="min-h-screen antialiased" style="background:#050710">
+    <body class="min-h-screen antialiased" style="background:#04060f">
 
-        <div class="relative grid h-dvh flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <div class="relative grid h-dvh lg:max-w-none lg:grid-cols-2">
 
             {{-- ══════════════════════════════════════
-                 LEFT PANEL — Aurora animation
+                 LEFT PANEL
                  ══════════════════════════════════════ --}}
-            <div class="wt-panel relative hidden h-full flex-col overflow-hidden lg:flex" style="background:#020613">
+            <div class="relative hidden h-full overflow-hidden lg:block" style="background:#020511">
 
-                {{-- Aurora canvas fills the entire panel --}}
-                <canvas id="wt-aurora" class="absolute inset-0 w-full h-full"></canvas>
-
-                {{-- Gradient seam transition --}}
+                <canvas id="wt-aurora" class="absolute inset-0 h-full w-full"></canvas>
                 <div class="wt-seam"></div>
 
-                {{-- All UI sits above the canvas --}}
-                <div class="relative z-10 flex h-full flex-col p-10 text-white">
+                {{-- UI layer --}}
+                <div class="relative z-10 flex h-full flex-col px-12 py-10 text-white">
 
-                    {{-- Logo --}}
-                    <a href="{{ route('home') }}" wire:navigate class="wt-logo flex items-center gap-3">
-                        <span class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-900/50">
-                            <x-app-logo-icon class="h-5 w-5 fill-current text-white" />
+                    {{-- Logo top-left --}}
+                    <a href="{{ route('home') }}" wire:navigate class="wt-logo flex w-fit items-center gap-3">
+                        <span class="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-900/40">
+                            <x-app-logo-icon class="h-4 w-4 fill-current text-white" />
                         </span>
-                        <span class="text-xl font-bold tracking-tight">WareTrack</span>
+                        <span class="text-lg font-bold tracking-tight">WareTrack</span>
                     </a>
 
-                    {{-- Spacer --}}
-                    <div class="mt-auto">
+                    {{-- Center content --}}
+                    <div class="my-auto pb-8">
 
-                        {{-- Badge --}}
-                        <div class="wt-tagline mb-5 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-300">
-                            <span class="size-1.5 animate-pulse rounded-full bg-indigo-400"></span>
-                            Live system
+                        <div class="wt-pill mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/25 bg-blue-500/10 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-widest text-blue-300">
+                            <span class="size-1.5 animate-pulse rounded-full bg-blue-400"></span>
+                            Warehouse Management System
                         </div>
 
-                        {{-- Headline --}}
-                        <p class="wt-tagline text-[clamp(30px,3.4vw,46px)] font-extrabold leading-[1.1] tracking-tight text-white">
+                        <h1 class="wt-headline text-[clamp(28px,3vw,44px)] font-extrabold leading-[1.1] tracking-tight">
                             Control every<br>
-                            <span class="bg-gradient-to-r from-indigo-400 to-cyan-300 bg-clip-text text-transparent">warehouse</span><br>
+                            <span class="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">warehouse</span><br>
                             in real time.
+                        </h1>
+
+                        <p class="wt-sub mt-5 max-w-[300px] text-sm leading-relaxed text-white/40">
+                            Real-time inventory across multiple locations, full audit trail, low-stock alerts — all in one place.
                         </p>
 
-                        {{-- Subline --}}
-                        <p class="wt-sub mt-4 max-w-xs text-[14.5px] leading-7 text-white/45">
-                            Track inventory, manage deliveries and reduce waste — all from a single dashboard.
-                        </p>
-
-                        {{-- Stats: real counts from DB --}}
+                        {{-- Real DB counts --}}
                         @php
                             $warehouseCount = \App\Models\Warehouse::count();
                             $productCount   = \App\Models\Product::count();
                             $locationCount  = \App\Models\Location::count();
                         @endphp
-                        <div class="wt-stats mt-9 flex gap-8">
+                        <div class="wt-stats mt-10 flex gap-10">
                             <div>
-                                <p class="text-2xl font-bold tracking-tight text-white">{{ $warehouseCount }}</p>
-                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">{{ Str::plural('Warehouse', $warehouseCount) }}</p>
+                                <div class="text-2xl font-bold tracking-tight">{{ $warehouseCount }}</div>
+                                <div class="mt-1 text-[10px] font-semibold uppercase tracking-widest text-white/30">{{ Str::plural('Warehouse', $warehouseCount) }}</div>
                             </div>
                             <div>
-                                <p class="text-2xl font-bold tracking-tight text-white">{{ $productCount }}</p>
-                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">{{ Str::plural('Product', $productCount) }}</p>
+                                <div class="text-2xl font-bold tracking-tight">{{ $productCount }}</div>
+                                <div class="mt-1 text-[10px] font-semibold uppercase tracking-widest text-white/30">{{ Str::plural('Product', $productCount) }}</div>
                             </div>
                             <div>
-                                <p class="text-2xl font-bold tracking-tight text-white">{{ $locationCount }}</p>
-                                <p class="mt-1 text-[10.5px] font-medium uppercase tracking-widest text-white/35">{{ Str::plural('Location', $locationCount) }}</p>
+                                <div class="text-2xl font-bold tracking-tight">{{ $locationCount }}</div>
+                                <div class="mt-1 text-[10px] font-semibold uppercase tracking-widest text-white/30">{{ Str::plural('Location', $locationCount) }}</div>
                             </div>
                         </div>
-
                     </div>
 
-                    {{-- Bottom status --}}
-                    <div class="wt-badge mt-8">
-                        <span class="inline-flex items-center gap-1.5 text-xs text-white/30">
-                            <span class="size-1.5 rounded-full bg-emerald-400"></span>
+                    {{-- Status bottom --}}
+                    <div class="wt-status">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-white/25">
+                            <span class="size-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"></span>
                             All systems operational
                         </span>
                     </div>
@@ -112,40 +105,40 @@
             </div>
 
             {{-- ══════════════════════════════════════
-                 RIGHT PANEL — Form card
+                 RIGHT PANEL
                  ══════════════════════════════════════ --}}
-            <div class="wt-form-panel relative flex w-full items-center justify-center overflow-hidden px-8 py-12 lg:p-12" style="background:#050710">
+            <div class="wt-form-panel relative flex h-full w-full items-center justify-center overflow-hidden px-8 py-10 lg:px-12" style="background:#04060f">
 
-                {{-- Ambient glow that bleeds in from the left-panel aurora --}}
+                {{-- Aurora bleed-in glow from left --}}
                 <div class="pointer-events-none absolute inset-0" style="background:
-                    radial-gradient(ellipse 90% 100% at 0% 50%, rgba(99,102,241,.18) 0%, transparent 60%),
-                    radial-gradient(ellipse 50% 60% at 0% 50%, rgba(56,189,248,.10) 0%, transparent 55%)
+                    radial-gradient(ellipse 100% 80% at -5% 50%, rgba(59,130,246,.14) 0%, transparent 55%),
+                    radial-gradient(ellipse 60%  60% at -5% 50%, rgba(99,102,241,.10) 0%, transparent 45%)
                 "></div>
 
-                <div class="relative mx-auto flex w-full max-w-sm flex-col gap-6">
+                <div class="relative w-full max-w-[360px]">
 
-                    {{-- Mobile logo --}}
-                    <a href="{{ route('home') }}" wire:navigate class="flex items-center gap-3 font-medium lg:hidden">
-                        <span class="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 shadow-md">
-                            <x-app-logo-icon class="size-5 fill-current text-white" />
+                    {{-- Mobile logo only --}}
+                    <a href="{{ route('home') }}" wire:navigate class="mb-6 flex items-center gap-3 lg:hidden">
+                        <span class="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md">
+                            <x-app-logo-icon class="size-4 fill-current text-white" />
                         </span>
-                        <span class="text-base font-semibold text-white">WareTrack</span>
+                        <span class="text-base font-bold tracking-tight text-white">WareTrack</span>
                     </a>
 
                     {{-- Glass card --}}
-                    <div class="rounded-2xl border border-indigo-500/20 backdrop-blur-[32px]"
-                         style="background:rgba(255,255,255,.045);box-shadow:0 32px 72px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.07)">
+                    <div class="wt-card overflow-hidden rounded-2xl border border-white/[.07]"
+                         style="background:rgba(255,255,255,.04);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset">
 
                         {{-- Card header --}}
-                        <div class="flex flex-col items-center gap-3 border-b border-white/[.07] px-8 py-6">
-                            <div class="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 shadow-lg shadow-indigo-900/50">
+                        <div class="flex flex-col items-center gap-2.5 border-b border-white/[.06] px-8 py-5">
+                            <span class="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-900/40">
                                 <x-app-logo-icon class="size-5 fill-current text-white" />
-                            </div>
-                            <p class="text-sm font-semibold text-white">WareTrack</p>
+                            </span>
+                            <span class="text-sm font-semibold text-white">WareTrack</span>
                         </div>
 
-                        {{-- Form slot --}}
-                        <div class="px-8 py-6">
+                        {{-- Form --}}
+                        <div class="px-8 py-7">
                             {{ $slot }}
                         </div>
                     </div>
@@ -156,124 +149,106 @@
         </div>
 
         @persist('toast')
-            <flux:toast.group>
-                <flux:toast />
-            </flux:toast.group>
+            <flux:toast.group><flux:toast /></flux:toast.group>
         @endpersist
-
         @fluxScripts
 
         <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            /* ════════════════════════════════════════
-               AURORA canvas animation
-               ════════════════════════════════════════ */
-            const canvas = document.getElementById('wt-aurora');
-            if (!canvas) return;
+            /* ── Aurora ──────────────────────────────── */
+            const cv = document.getElementById('wt-aurora');
+            if (!cv) return;
+            const ctx = cv.getContext('2d');
+            let W, H, t = 0, raf;
 
-            const ctx = canvas.getContext('2d');
-            let W, H, t = 0, animFrame;
-
-            function resize() {
-                W = canvas.width  = canvas.offsetWidth;
-                H = canvas.height = canvas.offsetHeight;
-            }
+            function resize() { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; }
             resize();
-            window.addEventListener('resize', () => {
-                cancelAnimationFrame(animFrame);
-                resize();
-                draw();
-            });
+            window.addEventListener('resize', () => { cancelAnimationFrame(raf); resize(); });
 
-            const mouse = { x: W / 2, y: H / 2 };
+            const mouse = { x: -1, y: -1 };
             document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-            /* Aurora bands — hues stay in 175–268 (cyan → blue → indigo, NO pink) */
+            /*
+              Aurora ribbons — drawn as STROKES (not filled polygons).
+              Hues are strictly blue/cyan range: 185–240.
+              Each band is:
+                1. A thick blurred stroke (glow body) with screen blend
+                2. A thin crisp stroke (bright edge)
+            */
             const bands = [
-                { y:.55, amp:.10, freq:.7,  spd:.18, h1:215, h2:248, a:.58 },
-                { y:.42, amp:.08, freq:.55, spd:.13, h1:248, h2:262, a:.48 },
-                { y:.65, amp:.12, freq:.9,  spd:.22, h1:192, h2:218, a:.42 },
-                { y:.35, amp:.07, freq:.45, spd:.10, h1:258, h2:268, a:.32 },
-                { y:.72, amp:.09, freq:1.1, spd:.28, h1:178, h2:208, a:.26 },
+                { y:.50, amp:.09, freq:.65, spd:.16, h1:210, h2:230, w:55, a:.55 },
+                { y:.40, amp:.07, freq:.50, spd:.12, h1:225, h2:240, w:40, a:.45 },
+                { y:.62, amp:.11, freq:.85, spd:.20, h1:195, h2:215, w:65, a:.42 },
+                { y:.33, amp:.06, freq:.40, spd:.09, h1:235, h2:242, w:35, a:.30 },
+                { y:.70, amp:.08, freq:1.0, spd:.24, h1:188, h2:208, w:45, a:.25 },
             ];
 
-            function pseudoRand(n) {
-                const x = Math.sin(n) * 43758.5453123;
-                return x - Math.floor(x);
+            function wavePts(b, i) {
+                const pts = [];
+                const mx = mouse.x > 0 ? mouse.x : W * .4;
+                for (let s = 0; s <= 100; s++) {
+                    const px = s / 100 * W;
+                    const nx = s / 100;
+                    const pull = Math.exp(-((px - mx) / W) * ((px - mx) / W) * 25)
+                                 * .035 * Math.sin(t * 2.5 + i);
+                    const py = H * (b.y
+                        + Math.sin(nx * Math.PI * 2.8 * b.freq + t * b.spd) * b.amp
+                        + Math.sin(nx * Math.PI * 4.5 * b.freq * .7 + t * b.spd * 1.3) * b.amp * .35
+                        + pull);
+                    pts.push([px, py]);
+                }
+                return pts;
+            }
+
+            function drawBand(pts, b) {
+                ctx.beginPath();
+                pts.forEach(([px, py], j) => j === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py));
+
+                const g = ctx.createLinearGradient(0, 0, W, 0);
+                g.addColorStop(0,    `hsla(${b.h1},85%,65%,0)`);
+                g.addColorStop(.15,  `hsla(${b.h1},85%,65%,${b.a})`);
+                g.addColorStop(.5,   `hsla(${(b.h1+b.h2)/2},85%,65%,${b.a})`);
+                g.addColorStop(.85,  `hsla(${b.h2},85%,65%,${b.a})`);
+                g.addColorStop(1,    `hsla(${b.h2},85%,65%,0)`);
+
+                ctx.strokeStyle = g;
+                ctx.lineWidth   = b.w + Math.sin(t * .6 + b.y * 10) * 8;
+                ctx.stroke();
             }
 
             function draw() {
-                animFrame = requestAnimationFrame(draw);
-                t += 0.005;
+                raf = requestAnimationFrame(draw);
+                t += .005;
                 ctx.clearRect(0, 0, W, H);
 
-                /* Deep sky gradient */
+                /* Dark sky */
                 const sky = ctx.createLinearGradient(0, 0, 0, H);
-                sky.addColorStop(0, '#020613');
-                sky.addColorStop(1, '#050c24');
+                sky.addColorStop(0, '#010411');
+                sky.addColorStop(1, '#030818');
                 ctx.fillStyle = sky;
                 ctx.fillRect(0, 0, W, H);
 
-                /* Mouse horizontal position within the panel */
-                const mx = Math.min(mouse.x, W);
-
-                /* Blurred aurora fills */
+                /* ── Glow bodies (thick blurred strokes, screen blend) ── */
                 ctx.save();
-                ctx.filter = 'blur(34px)';
-                bands.forEach((b, i) => {
-                    const pts = [];
-                    for (let s = 0; s <= 120; s++) {
-                        const px = s / 120 * W;
-                        const nx = s / 120;
-                        /* Subtle cursor ripple */
-                        const pull = Math.exp(-((px - mx) / W) * ((px - mx) / W) * 20)
-                                     * 0.04 * Math.sin(t * 3 + i);
-                        const py = H * (
-                            b.y
-                            + Math.sin(nx * Math.PI * 3 * b.freq + t * b.spd) * b.amp
-                            + Math.sin(nx * Math.PI * 5 * b.freq * 0.7 + t * b.spd * 1.4) * b.amp * 0.4
-                            + pull
-                        );
-                        pts.push([px, py]);
-                    }
-
-                    const g = ctx.createLinearGradient(0, 0, W, 0);
-                    g.addColorStop(0,    `hsla(${b.h1}, 90%, 65%, 0)`);
-                    g.addColorStop(0.25, `hsla(${b.h1}, 90%, 65%, ${b.a})`);
-                    g.addColorStop(0.5,  `hsla(${(b.h1 + b.h2) / 2}, 90%, 65%, ${b.a * 1.2})`);
-                    g.addColorStop(0.75, `hsla(${b.h2}, 90%, 65%, ${b.a})`);
-                    g.addColorStop(1,    `hsla(${b.h2}, 90%, 65%, 0)`);
-
-                    ctx.beginPath();
-                    ctx.moveTo(0, H);
-                    pts.forEach(([px, py]) => ctx.lineTo(px, py));
-                    ctx.lineTo(W, H);
-                    ctx.closePath();
-                    ctx.fillStyle = g;
-                    ctx.fill();
-                });
+                ctx.globalCompositeOperation = 'screen';
+                ctx.filter = 'blur(18px)';
+                bands.forEach((b, i) => drawBand(wavePts(b, i), b));
                 ctx.restore();
 
-                /* Crisp ribbon highlights */
+                /* ── Crisp bright ribbon edges ── */
                 ctx.save();
-                ctx.filter = 'blur(4px)';
-                bands.slice(0, 3).forEach(b => {
+                ctx.globalCompositeOperation = 'screen';
+                ctx.filter = 'blur(2.5px)';
+                bands.slice(0, 4).forEach((b, i) => {
+                    const pts = wavePts(b, i);
                     ctx.beginPath();
-                    for (let s = 0; s <= 200; s++) {
-                        const px = s / 200 * W;
-                        const nx = s / 200;
-                        const py = H * (
-                            b.y
-                            + Math.sin(nx * Math.PI * 3 * b.freq + t * b.spd) * b.amp
-                            + Math.sin(nx * Math.PI * 5 * b.freq * 0.7 + t * b.spd * 1.4) * b.amp * 0.4
-                        );
-                        s === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-                    }
+                    pts.forEach(([px, py], j) => j === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py));
+
                     const rg = ctx.createLinearGradient(0, 0, W, 0);
                     rg.addColorStop(0,   'transparent');
-                    rg.addColorStop(0.3, `hsla(${b.h1}, 100%, 88%, .65)`);
-                    rg.addColorStop(0.7, `hsla(${b.h2}, 100%, 88%, .65)`);
+                    rg.addColorStop(.2,  `hsla(${b.h1},100%,90%,.7)`);
+                    rg.addColorStop(.8,  `hsla(${b.h2},100%,90%,.7)`);
                     rg.addColorStop(1,   'transparent');
                     ctx.strokeStyle = rg;
                     ctx.lineWidth = 1.5;
@@ -281,35 +256,34 @@
                 });
                 ctx.restore();
 
-                /* Stars */
+                /* ── Stars ── */
                 ctx.save();
-                for (let i = 0; i < 180; i++) {
-                    const sx = pseudoRand(i * 7  + 42) * W;
-                    const sy = pseudoRand(i * 13 + 42) * H * 0.55;
-                    const ss = pseudoRand(i * 3  + 42) * 1.2 + 0.3;
-                    ctx.globalAlpha = (0.4 + 0.6 * Math.sin(t * (1 + pseudoRand(i * 2)) * 2 + i)) * 0.7;
-                    ctx.fillStyle = '#fff';
+                ctx.globalCompositeOperation = 'source-over';
+                for (let i = 0; i < 200; i++) {
+                    const sx = (Math.sin(i * 7.3)  * .5 + .5) * W;
+                    const sy = (Math.sin(i * 13.7) * .5 + .5) * H * .65;
+                    const sr = (Math.sin(i * 3.1)  * .5 + .5) * 1.1 + .2;
+                    const twinkle = .35 + .65 * Math.sin(t * (1 + (Math.sin(i*2.1)*.5+.5)) * 1.8 + i);
+                    ctx.globalAlpha = twinkle * .65;
+                    ctx.fillStyle   = '#fff';
                     ctx.beginPath();
-                    ctx.arc(sx, sy, ss, 0, Math.PI * 2);
+                    ctx.arc(sx, sy, sr, 0, Math.PI * 2);
                     ctx.fill();
                 }
                 ctx.restore();
             }
-
             draw();
 
-            /* ════════════════════════════════════════
-               GSAP entrance animations
-               ════════════════════════════════════════ */
+            /* ── GSAP entrance ────────────────────────── */
             if (typeof gsap !== 'undefined') {
-                const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-                tl.from('.wt-logo',        { y: -20, opacity: 0, duration: 0.6 })
-                  .from('.wt-tagline',     { y:  22, opacity: 0, duration: 0.65, stagger: 0.08 }, '-=0.3')
-                  .from('.wt-sub',         { y:  16, opacity: 0, duration: 0.5 }, '-=0.25')
-                  .from('.wt-stats > *',   { y:  12, opacity: 0, duration: 0.4, stagger: 0.09 }, '-=0.25')
-                  .from('.wt-badge',       { opacity: 0, duration: 0.4 }, '-=0.1')
-                  .from('.wt-form-panel',  { x: 28, opacity: 0, duration: 0.65 }, '-=0.75');
+                gsap.timeline({ defaults: { ease: 'power3.out' } })
+                    .from('.wt-logo',        { y: -18, opacity: 0, duration: .55 })
+                    .from('.wt-pill',        { y:  16, opacity: 0, duration: .55 }, '-=.25')
+                    .from('.wt-headline',    { y:  20, opacity: 0, duration: .6  }, '-=.3')
+                    .from('.wt-sub',         { y:  14, opacity: 0, duration: .5  }, '-=.3')
+                    .from('.wt-stats > *',   { y:  10, opacity: 0, duration: .4, stagger: .09 }, '-=.25')
+                    .from('.wt-status',      { opacity: 0, duration: .4 }, '-=.1')
+                    .from('.wt-card',        { y:  20, opacity: 0, duration: .6  }, '-=.8');
             }
         });
         </script>
