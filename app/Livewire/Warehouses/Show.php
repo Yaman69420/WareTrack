@@ -15,6 +15,9 @@ class Show extends Component
 {
     public Warehouse $warehouse;
 
+    // View mode: 'grid' or 'heatmap'
+    public string $viewMode = 'grid';
+
     // Add location modal
     public bool $showModal = false;
 
@@ -39,6 +42,15 @@ class Show extends Component
             ->addSelect(['locations.*', $totalStockSub, $productCountSub])
             ->orderBy('code')
             ->get();
+    }
+
+    /**
+     * Max stock across all locations in this warehouse (used to normalise heatmap).
+     */
+    #[Computed]
+    public function maxLocationStock(): int
+    {
+        return (int) $this->locations->max('total_stock') ?: 1;
     }
 
     #[Computed]
@@ -100,7 +112,7 @@ class Show extends Component
 
         $this->showModal = false;
         $this->reset(['code', 'locationName', 'editingLocationId']);
-        unset($this->locations, $this->stats);
+        unset($this->locations, $this->stats, $this->maxLocationStock);
     }
 
     public function deleteLocation(Location $location): void
@@ -108,7 +120,7 @@ class Show extends Component
         $location->delete();
         activity()->causedBy(auth()->user())->performedOn($location)->log('deleted');
         Flux::toast(__('Location deleted.'), variant: 'success');
-        unset($this->locations, $this->stats);
+        unset($this->locations, $this->stats, $this->maxLocationStock);
     }
 
     public function render()
