@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\StockMovementType;
+use App\Events\StockMovementRegistered;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Location;
 use App\Models\Product;
@@ -53,6 +54,8 @@ class StockService
                 'location_id' => $location->id,
                 'quantity' => $quantity,
             ]);
+
+            StockMovementRegistered::dispatch($product, $movement);
 
             return $movement;
         });
@@ -113,6 +116,8 @@ class StockService
                 'location_id' => $location->id,
                 'quantity' => $quantity,
             ]);
+
+            StockMovementRegistered::dispatch($product, $movement);
 
             return $movement;
         });
@@ -186,6 +191,8 @@ class StockService
                 'quantity' => $quantity,
             ]);
 
+            StockMovementRegistered::dispatch($product, $movement);
+
             return $movement;
         });
     }
@@ -230,6 +237,8 @@ class StockService
                 'new_quantity' => $newQuantity,
                 'diff' => $diff,
             ]);
+
+            StockMovementRegistered::dispatch($product, $movement);
 
             return $movement;
         });
