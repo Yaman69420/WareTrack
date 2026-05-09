@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/deliveries/{delivery}', Show::class)->name('deliveries.show');
 
     Route::get('/reports', App\Livewire\Reports\Index::class)->name('reports.index');
+    Route::get('/activity', App\Livewire\Activity\Index::class)->name('activity.index');
 
     Route::get('/stock', App\Livewire\Stock\Index::class)->name('stock.index');
     Route::get('/stock/movements', Movements::class)->name('stock.movements');
