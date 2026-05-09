@@ -453,8 +453,8 @@ Verplicht op:
 - Foreign keys
 
 ### Soft deletes
-Op: `products`, `categories`, `suppliers`, `deliveries`
-Niet op: `stock`, `stock_movements` (immutable audit data), `warehouses`, `locations`
+Op: `products`, `categories`, `warehouses`, `locations`, `suppliers`, `deliveries`
+Niet op: `stock`, `stock_movements` (immutable audit data), `delivery_items`
 
 ### Seeders
 Na `php artisan migrate:fresh --seed` moet het systeem demo-klaar zijn:
