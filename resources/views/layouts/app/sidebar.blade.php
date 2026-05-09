@@ -77,18 +77,6 @@
 
             <flux:spacer />
 
-            {{-- Bottom links --}}
-            <div class="border-t border-zinc-800/60 px-3 py-3">
-                <a
-                    href="https://github.com/Yaman69420/WareTrack"
-                    target="_blank"
-                    class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-500 transition hover:bg-zinc-800/60 hover:text-zinc-300"
-                >
-                    <flux:icon.code-bracket class="size-4 shrink-0" />
-                    {{ __('Repository') }}
-                </a>
-            </div>
-
             {{-- User footer --}}
             <div class="border-t border-zinc-800/60 p-3">
                 <flux:dropdown position="top" align="start" class="w-full">

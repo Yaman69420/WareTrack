@@ -79,7 +79,7 @@
                     </flux:table.row>
                 @else
                     @foreach ($product->stock as $i => $stockLine)
-                        <flux:table.row :key="'s-'.$stockLine->id" class="{{ $rowClass }}">
+                        <flux:table.row :key="'s-'.$stockLine->id" class="{{ $rowClass }} {{ $i > 0 ? 'opacity-80' : '' }}">
                             {{-- Image only on first row --}}
                             <flux:table.cell>
                                 @if ($i === 0)
@@ -99,6 +99,8 @@
                                     @if ($product->stock->count() > 1)
                                         <span class="ml-1 text-xs font-normal text-zinc-400">({{ $product->stock->count() }} {{ __('locations') }})</span>
                                     @endif
+                                @else
+                                    <span class="text-zinc-600">└</span>
                                 @endif
                             </flux:table.cell>
 
@@ -115,7 +117,7 @@
                             </flux:table.cell>
 
                             <flux:table.cell>
-                                <div class="flex items-center gap-1.5 text-sm">
+                                <div class="flex items-center gap-1.5 text-sm {{ $i > 0 ? 'pl-4' : '' }}">
                                     <flux:icon.building-office class="size-3.5 text-zinc-400" />
                                     <span class="text-zinc-500">{{ $stockLine->location->warehouse->name }}</span>
                                     <span class="text-zinc-300 dark:text-zinc-600">·</span>

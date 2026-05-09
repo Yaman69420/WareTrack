@@ -77,6 +77,17 @@ select:focus[data-flux-control] {
     background: transparent !important;
 }
 
+/* First/last column — more breathing room so text doesn't hug the edge */
+.dark [data-flux-table] th:first-child,
+.dark [data-flux-table] td:first-child {
+    padding-left: 1.25rem !important;
+}
+
+.dark [data-flux-table] th:last-child,
+.dark [data-flux-table] td:last-child {
+    padding-right: 1.25rem !important;
+}
+
 /* Table row dividers — subtle white lines instead of zinc */
 .dark [data-flux-table] tbody tr {
     border-color: rgba(255, 255, 255, .06) !important;
