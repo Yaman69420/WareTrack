@@ -85,6 +85,15 @@
                 </flux:select>
             </div>
             <span class="text-sm text-zinc-400">{{ $this->stockPerLocation->count() }} {{ __('lines') }}</span>
+            <flux:button
+                wire:click="exportStockPerLocation"
+                icon="arrow-down-tray"
+                variant="ghost"
+                size="sm"
+                class="ml-auto"
+            >
+                {{ __('Export CSV') }}
+            </flux:button>
         </div>
 
         @if($this->stockPerLocation->isEmpty())
@@ -149,6 +158,15 @@
                 </flux:select>
             </flux:field>
             <p class="mb-2 text-sm text-zinc-400">{{ $this->movements->count() }} {{ __('movements') }}</p>
+            <flux:button
+                wire:click="exportMovements"
+                icon="arrow-down-tray"
+                variant="ghost"
+                size="sm"
+                class="mb-2 ml-auto"
+            >
+                {{ __('Export CSV') }}
+            </flux:button>
         </div>
 
         @if($this->movements->isEmpty())

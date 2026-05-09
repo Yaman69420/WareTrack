@@ -59,7 +59,10 @@
                         @endif
                     </flux:table.cell>
                     <flux:table.cell variant="strong">
-                        {{ $product->name }}
+                        <a href="{{ route('products.show', $product) }}" wire:navigate
+                           class="hover:text-blue-400 transition-colors">
+                            {{ $product->name }}
+                        </a>
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -82,6 +85,13 @@
                         <flux:dropdown>
                             <flux:button icon="ellipsis-horizontal" variant="ghost" size="sm" />
                             <flux:menu>
+                                <flux:menu.item
+                                    icon="eye"
+                                    :href="route('products.show', $product)"
+                                    wire:navigate
+                                >
+                                    {{ __('View') }}
+                                </flux:menu.item>
                                 <flux:menu.item
                                     icon="pencil"
                                     wire:click="openEdit({{ $product->id }})"
