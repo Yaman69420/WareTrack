@@ -49,7 +49,7 @@ WareTrack is een volledig uitgewerkt Warehouse Management System (WMS) gebouwd m
 | Authenticatie | Laravel Fortify |
 | Testing | Pest 4 (191 tests, 388 assertions) |
 | Queues | Laravel Queue — database driver |
-| Audit log | spatie/laravel-activitylog |
+| Audit log | Eigen `stock_movements` tabel (user, type, qty, locatie, timestamp) |
 | Code stijl | Laravel Pint |
 
 ---
