@@ -44,6 +44,8 @@ class Show extends Component
         ]);
 
         try {
+            $cappedItems = [];
+
             foreach ($this->delivery->items as $item) {
                 $qty = (int) ($this->receivedQuantities[$item->id] ?? 0);
 
@@ -52,7 +54,11 @@ class Show extends Component
                 }
 
                 $maxReceivable = $item->quantity_ordered - $item->quantity_received;
-                $qty = min($qty, $maxReceivable);
+
+                if ($qty > $maxReceivable) {
+                    $cappedItems[] = $item->product->name;
+                    $qty = $maxReceivable;
+                }
 
                 $stockService->registerIncoming(
                     $item->product,
@@ -80,6 +86,13 @@ class Show extends Component
             $this->delivery->refresh()->load(['supplier', 'user', 'items.product', 'items.location.warehouse']);
 
             activity()->causedBy(auth()->user())->performedOn($this->delivery)->log('processed');
+
+            if (! empty($cappedItems)) {
+                Flux::toast(
+                    __('Quantity capped to maximum receivable for: ') . implode(', ', $cappedItems),
+                    variant: 'warning'
+                );
+            }
 
             Flux::toast(
                 $allReceived ? __('Delivery fully received.') : __('Delivery partially received.'),

@@ -80,6 +80,17 @@ class Index extends Component
 
     public function delete(Category $category): void
     {
+        $productCount = $category->products()->count();
+
+        if ($productCount > 0) {
+            Flux::toast(
+                __("Cannot delete: :count product(s) are still linked to this category.", ['count' => $productCount]),
+                variant: 'danger'
+            );
+
+            return;
+        }
+
         $category->delete();
         activity()->causedBy(auth()->user())->performedOn($category)->log('deleted');
         Flux::toast(__('Category deleted.'), variant: 'success');

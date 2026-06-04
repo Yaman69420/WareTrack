@@ -107,6 +107,17 @@ class Index extends Component
 
     public function delete(Location $location): void
     {
+        $activeStock = $location->stock()->where('quantity', '>', 0)->count();
+
+        if ($activeStock > 0) {
+            Flux::toast(
+                __("Cannot delete: :count product(s) still have stock at this location.", ['count' => $activeStock]),
+                variant: 'danger'
+            );
+
+            return;
+        }
+
         $location->delete();
         activity()->causedBy(auth()->user())->performedOn($location)->log('deleted');
         Flux::toast(__('Location deleted.'), variant: 'success');
