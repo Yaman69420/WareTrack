@@ -144,6 +144,23 @@
                 </flux:field>
             </div>
 
+            {{-- Products --}}
+            <div>
+                <flux:label class="mb-2 block">{{ __('Products supplied') }} <span class="text-zinc-400 text-xs font-normal">({{ __('optional') }})</span></flux:label>
+                <div class="max-h-48 overflow-y-auto rounded-lg border border-white/[.08] bg-white/[.02] p-3 flex flex-col gap-1.5">
+                    @foreach ($this->allProducts as $product)
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <flux:checkbox
+                                wire:model.live="selectedProductIds"
+                                value="{{ $product->id }}"
+                            />
+                            <span class="text-sm text-zinc-300">{{ $product->name }}</span>
+                            <span class="font-mono text-xs text-zinc-500">{{ $product->sku }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
             <div class="flex justify-end gap-3">
                 <flux:button wire:click="$set('showModal', false)" variant="ghost">
                     {{ __('Cancel') }}

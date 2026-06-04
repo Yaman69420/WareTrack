@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Suppliers;
 
+use App\Models\Product;
 use App\Models\Supplier;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
@@ -31,9 +32,17 @@ class Index extends Component
 
     public string $notes = '';
 
+    public array $selectedProductIds = [];
+
     public function updatedSearch(): void
     {
         $this->resetPage();
+    }
+
+    #[Computed]
+    public function allProducts()
+    {
+        return Product::orderBy('name')->get(['id', 'name', 'sku']);
     }
 
     #[Computed]
@@ -48,7 +57,7 @@ class Index extends Component
 
     public function openCreate(): void
     {
-        $this->reset(['name', 'email', 'phone', 'address', 'notes', 'editingId']);
+        $this->reset(['name', 'email', 'phone', 'address', 'notes', 'editingId', 'selectedProductIds']);
         $this->resetValidation();
         $this->showModal = true;
     }
@@ -61,6 +70,7 @@ class Index extends Component
         $this->phone = $supplier->phone ?? '';
         $this->address = $supplier->address ?? '';
         $this->notes = $supplier->notes ?? '';
+        $this->selectedProductIds = $supplier->products()->pluck('products.id')->map(fn ($id) => (string) $id)->toArray();
         $this->resetValidation();
         $this->showModal = true;
     }
@@ -86,16 +96,18 @@ class Index extends Component
         if ($this->editingId) {
             $supplier = Supplier::findOrFail($this->editingId);
             $supplier->update($data);
+            $supplier->products()->sync($this->selectedProductIds);
             activity()->causedBy(auth()->user())->performedOn($supplier)->log('updated');
             Flux::toast(__('Supplier updated.'), variant: 'success');
         } else {
             $supplier = Supplier::create($data);
+            $supplier->products()->sync($this->selectedProductIds);
             activity()->causedBy(auth()->user())->performedOn($supplier)->log('created');
             Flux::toast(__('Supplier created.'), variant: 'success');
         }
 
         $this->showModal = false;
-        $this->reset(['name', 'email', 'phone', 'address', 'notes', 'editingId']);
+        $this->reset(['name', 'email', 'phone', 'address', 'notes', 'editingId', 'selectedProductIds']);
         unset($this->suppliers);
     }
 

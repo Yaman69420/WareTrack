@@ -22,6 +22,13 @@ class Create extends Component
 
     public array $items = [];
 
+    public function updatedSupplierId(): void
+    {
+        // Reset items when supplier changes so stale product selections are cleared
+        $this->items = [];
+        $this->addItem();
+    }
+
     public function mount(): void
     {
         $this->addItem();
@@ -36,7 +43,15 @@ class Create extends Component
     #[Computed]
     public function products()
     {
-        return Product::orderBy('name')->get();
+        if ($this->supplierId) {
+            $supplier = \App\Models\Supplier::find($this->supplierId);
+            $products = $supplier?->products()->orderBy('name')->get() ?? collect();
+
+            // Fall back to all products if supplier has none linked yet
+            return $products->isNotEmpty() ? $products : Product::orderBy('name')->get();
+        }
+
+        return collect();
     }
 
     #[Computed]

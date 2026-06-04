@@ -46,7 +46,12 @@
                 </flux:button>
             </div>
 
-            @if(empty($items))
+            @if(! $supplierId)
+                <div class="flex items-center gap-2 rounded-lg border border-white/[.06] bg-white/[.02] px-4 py-3 text-sm text-zinc-500">
+                    <flux:icon.arrow-up class="size-4 shrink-0" />
+                    {{ __('Select a supplier first to see their products.') }}
+                </div>
+            @elseif(empty($items))
                 <flux:text class="text-zinc-400 text-sm">{{ __('Add at least one item.') }}</flux:text>
             @endif
 

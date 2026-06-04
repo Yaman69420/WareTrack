@@ -54,6 +54,11 @@ class Product extends Model
         return $this->hasMany(DeliveryItem::class);
     }
 
+    public function suppliers(): BelongsToMany
+    {
+        return $this->belongsToMany(Supplier::class, 'supplier_product');
+    }
+
     public function totalStock(): int
     {
         return $this->stock->sum('quantity');
