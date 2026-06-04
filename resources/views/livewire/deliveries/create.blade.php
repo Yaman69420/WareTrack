@@ -15,7 +15,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <flux:field class="col-span-2">
                     <flux:label>{{ __('Supplier') }}</flux:label>
-                    <flux:select wire:model="supplierId" placeholder="{{ __('Select supplier...') }}">
+                    <flux:select wire:model.live="supplierId" placeholder="{{ __('Select supplier...') }}">
                         @foreach ($this->suppliers as $supplier)
                             <flux:select.option value="{{ $supplier->id }}">{{ $supplier->name }}</flux:select.option>
                         @endforeach
@@ -58,7 +58,7 @@
                         @if($index === 0)
                             <flux:label>{{ __('Product') }}</flux:label>
                         @endif
-                        <flux:select wire:model="items.{{ $index }}.product_id" placeholder="{{ __('Select product...') }}">
+                        <flux:select wire:model.live="items.{{ $index }}.product_id" placeholder="{{ __('Select product...') }}">
                             @foreach ($this->products as $product)
                                 <flux:select.option value="{{ $product->id }}">{{ $product->name }} ({{ $product->sku }})</flux:select.option>
                             @endforeach
@@ -70,7 +70,7 @@
                         @if($index === 0)
                             <flux:label>{{ __('Location') }}</flux:label>
                         @endif
-                        <flux:select wire:model="items.{{ $index }}.location_id" placeholder="{{ __('Select location...') }}">
+                        <flux:select wire:model.live="items.{{ $index }}.location_id" placeholder="{{ __('Select location...') }}">
                             @foreach ($this->locations as $location)
                                 <flux:select.option value="{{ $location->id }}">{{ $location->warehouse->name }} — {{ $location->code }}</flux:select.option>
                             @endforeach
