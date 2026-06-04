@@ -31,7 +31,7 @@ class Create extends Component
 
     public function mount(): void
     {
-        $this->addItem();
+        // Items are added once the supplier is selected (see updatedSupplierId)
     }
 
     #[Computed]

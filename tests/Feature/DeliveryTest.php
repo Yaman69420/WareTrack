@@ -81,6 +81,10 @@ test('can add and remove items dynamically', function () {
     $component = Livewire::actingAs($this->admin)
         ->test(Create::class);
 
+    // Items start empty — supplier must be selected first
+    expect(count($component->get('items')))->toBe(0);
+
+    $component->call('addItem');
     expect(count($component->get('items')))->toBe(1);
 
     $component->call('addItem');
