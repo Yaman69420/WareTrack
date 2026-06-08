@@ -84,7 +84,7 @@ class Index extends Component
 
         if ($productCount > 0) {
             Flux::toast(
-                __("Cannot delete: :count product(s) are still linked to this category.", ['count' => $productCount]),
+                __('Cannot delete: :count product(s) are still linked to this category.', ['count' => $productCount]),
                 variant: 'danger'
             );
 

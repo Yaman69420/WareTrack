@@ -44,7 +44,7 @@ class Create extends Component
     public function products()
     {
         if ($this->supplierId) {
-            $supplier = \App\Models\Supplier::find($this->supplierId);
+            $supplier = Supplier::find($this->supplierId);
             $products = $supplier?->products()->orderBy('name')->get() ?? collect();
 
             // Fall back to all products if supplier has none linked yet

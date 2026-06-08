@@ -10,8 +10,8 @@ class SupplierProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $techSupply  = Supplier::where('name', 'TechSupply BV')->first();
-        $officePro   = Supplier::where('name', 'OfficePro NV')->first();
+        $techSupply = Supplier::where('name', 'TechSupply BV')->first();
+        $officePro = Supplier::where('name', 'OfficePro NV')->first();
         $packMasters = Supplier::where('name', 'PackMasters')->first();
         $safetyFirst = Supplier::where('name', 'SafetyFirst NV')->first();
 

@@ -89,7 +89,7 @@ class Show extends Component
 
             if (! empty($cappedItems)) {
                 Flux::toast(
-                    __('Quantity capped to maximum receivable for: ') . implode(', ', $cappedItems),
+                    __('Quantity capped to maximum receivable for: ').implode(', ', $cappedItems),
                     variant: 'warning'
                 );
             }

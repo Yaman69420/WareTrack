@@ -130,7 +130,7 @@ class CreateMovement extends Component
         $this->validate([
             'type' => 'required|in:incoming,outgoing,transfer,correction',
             'productId' => 'required|exists:products,id',
-            'quantity' => 'required|integer|' . ($this->type === 'correction' ? 'min:0' : 'min:1'),
+            'quantity' => 'required|integer|'.($this->type === 'correction' ? 'min:0' : 'min:1'),
             'locationId' => 'required_unless:type,transfer|nullable|exists:locations,id',
             'fromLocationId' => 'required_if:type,transfer|nullable|exists:locations,id',
             'toLocationId' => 'required_if:type,transfer|nullable|exists:locations,id|different:fromLocationId',

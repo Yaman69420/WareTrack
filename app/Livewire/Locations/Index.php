@@ -111,7 +111,7 @@ class Index extends Component
 
         if ($activeStock > 0) {
             Flux::toast(
-                __("Cannot delete: :count product(s) still have stock at this location.", ['count' => $activeStock]),
+                __('Cannot delete: :count product(s) still have stock at this location.', ['count' => $activeStock]),
                 variant: 'danger'
             );
 
