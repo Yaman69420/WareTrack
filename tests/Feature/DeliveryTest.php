@@ -55,6 +55,27 @@ test('admin can create a delivery with items', function () {
     expect($delivery->items()->first()->quantity_ordered)->toBe(10);
 });
 
+test('warehouse worker cannot access the delivery create page', function () {
+    $this->actingAs($this->worker)
+        ->get(route('deliveries.create'))
+        ->assertForbidden();
+});
+
+test('admin can access the delivery create page', function () {
+    $this->actingAs($this->admin)
+        ->get(route('deliveries.create'))
+        ->assertOk();
+});
+
+test('warehouse worker cannot create a delivery', function () {
+    // mount() authorizes against DeliveryPolicy::create, so the component itself 403s
+    Livewire::actingAs($this->worker)
+        ->test(Create::class)
+        ->assertForbidden();
+
+    expect(Delivery::count())->toBe(0);
+});
+
 test('delivery requires a supplier', function () {
     Livewire::actingAs($this->admin)
         ->test(Create::class)
@@ -111,6 +132,31 @@ test('processing a delivery increases stock', function () {
     $item = $delivery->items()->first();
 
     Livewire::actingAs($this->admin)
+        ->test(Show::class, ['delivery' => $delivery])
+        ->set("receivedQuantities.{$item->id}", 10)
+        ->call('process');
+
+    expect(Stock::where('product_id', $this->product->id)->where('location_id', $this->location->id)->value('quantity'))->toBe(10);
+    expect($delivery->fresh()->status)->toBe(DeliveryStatus::Received);
+});
+
+test('warehouse worker can process a delivery', function () {
+    $delivery = Delivery::factory()->create([
+        'supplier_id' => $this->supplier->id,
+        'user_id' => $this->admin->id,
+        'status' => DeliveryStatus::Pending,
+    ]);
+
+    $delivery->items()->create([
+        'product_id' => $this->product->id,
+        'location_id' => $this->location->id,
+        'quantity_ordered' => 10,
+        'quantity_received' => 0,
+    ]);
+
+    $item = $delivery->items()->first();
+
+    Livewire::actingAs($this->worker)
         ->test(Show::class, ['delivery' => $delivery])
         ->set("receivedQuantities.{$item->id}", 10)
         ->call('process');

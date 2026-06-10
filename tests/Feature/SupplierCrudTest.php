@@ -100,6 +100,41 @@ test('admin can delete a supplier', function () {
     expect(Supplier::withTrashed()->find($supplier->id))->not->toBeNull();
 });
 
+test('warehouse worker cannot create a supplier', function () {
+    Livewire::actingAs($this->worker)
+        ->test(Index::class)
+        ->call('openCreate')
+        ->set('name', 'Forbidden Corp')
+        ->call('save')
+        ->assertForbidden();
+
+    expect(Supplier::count())->toBe(0);
+});
+
+test('warehouse worker cannot update a supplier', function () {
+    $supplier = Supplier::factory()->create(['name' => 'Old Name']);
+
+    Livewire::actingAs($this->worker)
+        ->test(Index::class)
+        ->call('openEdit', $supplier)
+        ->set('name', 'New Name')
+        ->call('save')
+        ->assertForbidden();
+
+    expect($supplier->fresh()->name)->toBe('Old Name');
+});
+
+test('warehouse worker cannot delete a supplier', function () {
+    $supplier = Supplier::factory()->create();
+
+    Livewire::actingAs($this->worker)
+        ->test(Index::class)
+        ->call('delete', $supplier)
+        ->assertForbidden();
+
+    expect(Supplier::find($supplier->id))->not->toBeNull();
+});
+
 test('suppliers can be searched by name', function () {
     Supplier::factory()->create(['name' => 'Acme Corp']);
     Supplier::factory()->create(['name' => 'Beta Supplies']);

@@ -22,7 +22,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/suppliers', Index::class)->name('suppliers.index');
 
     Route::get('/deliveries', App\Livewire\Deliveries\Index::class)->name('deliveries.index');
-    Route::get('/deliveries/create', Create::class)->name('deliveries.create');
+    // Admin-only, but registered here so it matches before the {delivery} wildcard below
+    Route::get('/deliveries/create', Create::class)->middleware('admin')->name('deliveries.create');
     Route::get('/deliveries/{delivery}', Show::class)->name('deliveries.show');
 
     Route::get('/reports', App\Livewire\Reports\Index::class)->name('reports.index');

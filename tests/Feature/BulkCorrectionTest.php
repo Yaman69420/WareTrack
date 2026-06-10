@@ -97,6 +97,22 @@ test('save applies corrections for changed lines only', function () {
     expect($movement->notes)->toBe('Physical count');
 });
 
+test('warehouse worker can save bulk corrections', function () {
+    // Guards the StockMovementPolicy::create authorize — corrections are open to both roles
+    $worker = User::factory()->create();
+    $stock = Stock::create(['product_id' => $this->product->id, 'location_id' => $this->location->id, 'quantity' => 15]);
+
+    Livewire::actingAs($worker)
+        ->test(BulkCorrection::class)
+        ->set('warehouseId', $this->warehouse->id)
+        ->set("quantities.{$stock->id}", '12')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($stock->fresh()->quantity)->toBe(12);
+    expect(StockMovement::where('type', StockMovementType::Correction)->count())->toBe(1);
+});
+
 test('save without changes creates no movements', function () {
     $stock = Stock::create(['product_id' => $this->product->id, 'location_id' => $this->location->id, 'quantity' => 15]);
 

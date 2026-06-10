@@ -77,6 +77,13 @@ class Index extends Component
 
     public function save(): void
     {
+        // Route is shared with workers — the policy is the real gate, not the hidden UI buttons
+        if ($this->editingId) {
+            $this->authorize('update', Supplier::findOrFail($this->editingId));
+        } else {
+            $this->authorize('create', Supplier::class);
+        }
+
         $this->validate([
             'name' => 'required|string|max:150',
             'email' => 'nullable|email|max:150',
@@ -113,6 +120,8 @@ class Index extends Component
 
     public function delete(Supplier $supplier): void
     {
+        $this->authorize('delete', $supplier);
+
         $supplier->delete();
         activity()->causedBy(auth()->user())->performedOn($supplier)->log('deleted');
         Flux::toast(__('Supplier deleted.'), variant: 'success');

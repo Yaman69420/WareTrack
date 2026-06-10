@@ -7,6 +7,7 @@ use App\Exceptions\InsufficientStockException;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
+use App\Models\StockMovement;
 use App\Models\Warehouse;
 use App\Services\StockService;
 use Flux\Flux;
@@ -127,6 +128,9 @@ class CreateMovement extends Component
 
     public function save(StockService $stockService): void
     {
+        // Allowed for both roles, but the decision lives in the policy, not here
+        $this->authorize('create', StockMovement::class);
+
         $this->validate([
             'type' => 'required|in:incoming,outgoing,transfer,correction',
             'productId' => 'required|exists:products,id',

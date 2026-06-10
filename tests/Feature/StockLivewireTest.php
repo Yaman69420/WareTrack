@@ -186,6 +186,20 @@ test('incoming movement saves and redirects', function () {
     expect(Stock::where('product_id', $this->product->id)->where('location_id', $this->location->id)->value('quantity'))->toBe(10);
 });
 
+test('worker can register a stock movement', function () {
+    // Guards the StockMovementPolicy::create authorize — movements are worker territory
+    Livewire::actingAs($this->worker)
+        ->test(CreateMovement::class)
+        ->set('type', 'incoming')
+        ->set('productId', $this->product->id)
+        ->set('locationId', $this->location->id)
+        ->set('quantity', 5)
+        ->call('save')
+        ->assertRedirect(route('stock.movements'));
+
+    expect(Stock::where('product_id', $this->product->id)->where('location_id', $this->location->id)->value('quantity'))->toBe(5);
+});
+
 test('outgoing movement fails with insufficient stock error', function () {
     Stock::create(['product_id' => $this->product->id, 'location_id' => $this->location->id, 'quantity' => 2]);
 

@@ -31,6 +31,9 @@ class Create extends Component
 
     public function mount(): void
     {
+        // Creating deliveries is admin-only (DeliveryPolicy); workers only process them
+        $this->authorize('create', Delivery::class);
+
         // Items are added once the supplier is selected (see updatedSupplierId)
     }
 
@@ -76,6 +79,9 @@ class Create extends Component
 
     public function save(): void
     {
+        // Re-check on the action itself: Livewire action requests bypass route middleware
+        $this->authorize('create', Delivery::class);
+
         $this->validate([
             'supplierId' => 'required|exists:suppliers,id',
             'reference' => 'nullable|string|max:100',

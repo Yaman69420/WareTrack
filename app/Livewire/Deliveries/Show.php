@@ -33,6 +33,8 @@ class Show extends Component
 
     public function process(StockService $stockService): void
     {
+        $this->authorize('process', $this->delivery);
+
         if ($this->delivery->status === DeliveryStatus::Received) {
             Flux::toast(__('This delivery has already been fully received.'), variant: 'warning');
 

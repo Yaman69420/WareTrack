@@ -3,6 +3,7 @@
 namespace App\Livewire\Stock;
 
 use App\Models\Stock;
+use App\Models\StockMovement;
 use App\Models\Warehouse;
 use App\Services\StockService;
 use Flux\Flux;
@@ -81,6 +82,9 @@ class BulkCorrection extends Component
 
     public function save(StockService $stockService): void
     {
+        // Corrections are stock movements — same policy decision as CreateMovement
+        $this->authorize('create', StockMovement::class);
+
         $this->validate([
             'warehouseId' => 'required|exists:warehouses,id',
             'notes' => 'nullable|string|max:500',

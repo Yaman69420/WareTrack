@@ -22,6 +22,15 @@ class DeliveryPolicy
         return $user->isAdmin();
     }
 
+    /**
+     * Receiving goods is day-to-day warehouse work — both roles may process,
+     * unlike create/update/delete which are admin-only masterdata actions.
+     */
+    public function process(User $user, Delivery $delivery): bool
+    {
+        return true;
+    }
+
     public function update(User $user, Delivery $delivery): bool
     {
         return $user->isAdmin();
