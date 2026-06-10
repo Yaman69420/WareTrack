@@ -24,3 +24,6 @@ yarn-error.log
 /.vscode
 /.zed
 .DS_Store
+
+# Studie- en werkdocumenten (lokaal, niet voor de jury-repo)
+/docs
