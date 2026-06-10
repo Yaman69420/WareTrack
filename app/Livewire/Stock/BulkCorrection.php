@@ -20,9 +20,13 @@ class BulkCorrection extends Component
 
     public string $notes = '';
 
+    /**
+     * Pre-fill the quantities array with current stock values when a warehouse is selected.
+     */
     public function updatedWarehouseId(): void
     {
-        $this->quantities = [];
+        unset($this->stockLines, $this->changedLines);
+        $this->prefillQuantities();
     }
 
     #[Computed]
@@ -45,14 +49,6 @@ class BulkCorrection extends Component
                 ['location.code', 'asc'],
                 ['product.name', 'asc'],
             ]);
-    }
-
-    /**
-     * Pre-fill the quantities array with current stock values when a warehouse is selected.
-     */
-    public function updatedWarehouseIdPrefill(): void
-    {
-        $this->prefillQuantities();
     }
 
     public function prefillQuantities(): void
