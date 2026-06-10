@@ -45,14 +45,13 @@ class SendLowStockNotification implements ShouldQueue
             return;
         }
 
-        // Throttle: send at most once per 24 h per product
+        // Throttle: send at most once per 24 h per product.
+        // Cache::add is atomic, so parallel workers can't both pass the check.
         $cacheKey = "low_stock_alert:{$product->id}";
 
-        if (Cache::has($cacheKey)) {
+        if (! Cache::add($cacheKey, true, now()->addHours(24))) {
             return;
         }
-
-        Cache::put($cacheKey, true, now()->addHours(24));
 
         // Notify every admin
         $admins = User::where('role', UserRole::Admin)->get();
