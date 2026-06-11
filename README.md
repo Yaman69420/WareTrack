@@ -8,7 +8,7 @@
 ![Livewire](https://img.shields.io/badge/Livewire-4-4E56A6?style=for-the-badge&logo=livewire&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-217%20passing-22c55e?style=for-the-badge&logo=checkmarx&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-220%20passing-22c55e?style=for-the-badge&logo=checkmarx&logoColor=white)
 
 *Eindwerk 2025–2026 — Traject B*
 
@@ -47,7 +47,7 @@ WareTrack is een volledig uitgewerkt Warehouse Management System (WMS) gebouwd m
 | Styling | Tailwind CSS 4, GSAP (login animatie) |
 | Database | MySQL 8.0 |
 | Authenticatie | Laravel Fortify |
-| Testing | Pest 4 (217 tests, 450 assertions) |
+| Testing | Pest 4 (220 tests, 455 assertions) |
 | Queues | Laravel Queue — database driver |
 | Audit log | Tweeledig: eigen `stock_movements` tabel voor stockmutaties (user, type, qty, locatie, timestamp) + `spatie/laravel-activitylog` voor masterdata-wijzigingen (dashboard "recente activiteit") |
 | Code stijl | Laravel Pint |
@@ -161,7 +161,7 @@ De seeder laadt automatisch demo-data: 3 magazijnen, 12 locaties, producten, cat
 ./vendor/bin/pint --test
 ```
 
-Huidig resultaat: **217 tests, 450 assertions — all passing**.
+Huidig resultaat: **220 tests, 455 assertions — all passing**.
 
 ---
 
