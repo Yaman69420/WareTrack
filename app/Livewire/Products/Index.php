@@ -85,8 +85,12 @@ class Index extends Component
             // Eager loading van de categorie: zonder with() zou elke rij in de
             // tabel een extra query veroorzaken (N+1-probleem).
             ->with('category')
-            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
-                ->orWhere('sku', 'like', "%{$this->search}%"))
+            // De OR-zoekvoorwaarden in een geneste groep: zonder die groep zou
+            // 'name LIKE ... OR sku LIKE ... AND category_id = ...' door de
+            // AND/OR-precedentie de categoriefilter omzeilen bij een naam-match.
+            ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
+                ->where('name', 'like', "%{$this->search}%")
+                ->orWhere('sku', 'like', "%{$this->search}%")))
             ->when($this->filterCategory, fn ($q) => $q->where('category_id', $this->filterCategory))
             ->latest()
             ->paginate(10);
