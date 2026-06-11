@@ -224,10 +224,15 @@ test('search combined with category filter does not leak other categories', func
     // grouped OR the name-match would bypass the category filter.
     Product::factory()->create(['name' => 'Wireless Keyboard', 'sku' => 'WK-200', 'category_id' => $other->id]);
 
-    Livewire::actingAs($this->admin)
+    $component = Livewire::actingAs($this->admin)
         ->test(Index::class)
         ->set('search', 'Wireless')
-        ->set('filterCategory', $this->category->id)
-        ->assertSee('Wireless Mouse')
-        ->assertDontSee('Wireless Keyboard');
+        ->set('filterCategory', $this->category->id);
+
+    // Assert op het queryresultaat zelf i.p.v. op de volledige pagina-HTML:
+    // dat test exact de filterlogica en is ongevoelig voor markup-ruis.
+    $names = $component->instance()->products->pluck('name');
+
+    expect($names)->toContain('Wireless Mouse')
+        ->not->toContain('Wireless Keyboard');
 });
