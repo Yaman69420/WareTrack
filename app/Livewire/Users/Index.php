@@ -41,8 +41,11 @@ class Index extends Component
     public function users()
     {
         return User::query()
-            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
-                ->orWhere('email', 'like', "%{$this->search}%"))
+            // OR-zoekvoorwaarden gegroepeerd zodat een latere AND-filter niet
+            // door de OR omzeild kan worden (AND/OR-precedentie).
+            ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
+                ->where('name', 'like', "%{$this->search}%")
+                ->orWhere('email', 'like', "%{$this->search}%")))
             ->orderBy('name')
             ->paginate(15);
     }

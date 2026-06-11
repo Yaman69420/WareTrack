@@ -57,8 +57,11 @@ class Index extends Component
             // Eager loading van de hele keten t.e.m. warehouse: de tabel toont per
             // stocklijn de magazijnnaam, zonder dit wordt dat een N+1 per rij.
             ->with(['category', 'stock.location.warehouse'])
-            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
-                ->orWhere('sku', 'like', "%{$this->search}%"))
+            // Geneste groep rond de OR-zoekvoorwaarden, anders omzeilt een
+            // naam-match de magazijnfilter hieronder (AND/OR-precedentie).
+            ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
+                ->where('name', 'like', "%{$this->search}%")
+                ->orWhere('sku', 'like', "%{$this->search}%")))
             ->when($this->filterWarehouse, function ($q) {
                 $q->whereHas('stock.location', fn ($lq) => $lq->where('warehouse_id', $this->filterWarehouse));
             })

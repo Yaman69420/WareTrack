@@ -2,6 +2,7 @@
 
 use App\Livewire\Locations\Index;
 use App\Models\Location;
+use App\Models\Stock;
 use App\Models\User;
 use App\Models\Warehouse;
 use Livewire\Livewire;
@@ -87,6 +88,41 @@ test('admin can delete a location', function () {
     expect(Location::withTrashed()->find($location->id))->not->toBeNull();
 });
 
+test('location with active stock cannot be deleted', function () {
+    $location = Location::factory()->create(['warehouse_id' => $this->warehouse->id]);
+    // Twee stock-records (elk via de factory aan een eigen product gekoppeld)
+    // zodat het aantal in de toast-boodschap verifieerbaar is.
+    Stock::factory()->count(2)->create(['location_id' => $location->id, 'quantity' => 5]);
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('delete', $location)
+        // Flux::toast() dispatcht een 'toast-show' Livewire-event: de variant
+        // zit in 'dataset', de boodschap (met het productaantal) in 'slots'.
+        ->assertDispatched('toast-show', function (string $name, array $params) {
+            return ($params['dataset']['variant'] ?? null) === 'danger'
+                && str_contains($params['slots']['text'] ?? '', '2');
+        });
+
+    expect(Location::find($location->id))->not->toBeNull();
+    expect($location->fresh()->trashed())->toBeFalse();
+});
+
+test('location with only zero-quantity stock can be deleted', function () {
+    $location = Location::factory()->create(['warehouse_id' => $this->warehouse->id]);
+    Stock::factory()->create(['location_id' => $location->id, 'quantity' => 0]);
+
+    // De guard telt enkel rijen met quantity > 0: een leeg stock-record
+    // (alles ooit weggeboekt) mag het verwijderen niet blokkeren.
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('delete', $location)
+        ->assertDispatched('toast-show', fn (string $name, array $params) => ($params['dataset']['variant'] ?? null) === 'success');
+
+    expect(Location::find($location->id))->toBeNull();
+    expect(Location::withTrashed()->find($location->id))->not->toBeNull();
+});
+
 test('locations can be filtered by warehouse', function () {
     $other = Warehouse::factory()->create();
     Location::factory()->create(['warehouse_id' => $this->warehouse->id, 'code' => 'AA-01']);
@@ -97,4 +133,19 @@ test('locations can be filtered by warehouse', function () {
         ->set('filterWarehouse', $this->warehouse->id)
         ->assertSee('AA-01')
         ->assertDontSee('BB-01');
+});
+
+test('search combined with warehouse filter does not leak other warehouses', function () {
+    $other = Warehouse::factory()->create();
+    Location::factory()->create(['warehouse_id' => $this->warehouse->id, 'code' => 'RACK-01']);
+    // Code matches the search but belongs to another warehouse — without a
+    // grouped OR the code-match would bypass the warehouse filter.
+    Location::factory()->create(['warehouse_id' => $other->id, 'code' => 'RACK-02']);
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->set('search', 'RACK')
+        ->set('filterWarehouse', $this->warehouse->id)
+        ->assertSee('RACK-01')
+        ->assertDontSee('RACK-02');
 });

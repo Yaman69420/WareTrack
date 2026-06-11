@@ -65,8 +65,11 @@ class Index extends Component
     {
         return Location::query()
             ->with('warehouse')
-            ->when($this->search, fn ($q) => $q->where('code', 'like', "%{$this->search}%")
-                ->orWhere('name', 'like', "%{$this->search}%"))
+            // Geneste groep rond de OR-zoekvoorwaarden, anders omzeilt een
+            // code-match de magazijnfilter (AND/OR-precedentie).
+            ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
+                ->where('code', 'like', "%{$this->search}%")
+                ->orWhere('name', 'like', "%{$this->search}%")))
             ->when($this->filterWarehouse, fn ($q) => $q->where('warehouse_id', $this->filterWarehouse))
             ->withCount('products')
             ->latest()

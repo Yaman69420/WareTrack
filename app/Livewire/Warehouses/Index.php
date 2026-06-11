@@ -58,8 +58,11 @@ class Index extends Component
 
         return Warehouse::query()
             ->addSelect(['warehouses.*', $totalStockSub])
-            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
-                ->orWhere('location', 'like', "%{$this->search}%"))
+            // OR-zoekvoorwaarden gegroepeerd zodat een latere AND-filter niet
+            // door de OR omzeild kan worden (AND/OR-precedentie).
+            ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
+                ->where('name', 'like', "%{$this->search}%")
+                ->orWhere('location', 'like', "%{$this->search}%")))
             ->withCount('locations')
             ->latest()
             ->paginate(10);

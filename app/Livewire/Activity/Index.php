@@ -68,10 +68,14 @@ class Index extends Component
         // Vijf relaties eager geladen: zonder with() zou elke rij in de tabel vijf
         // extra queries doen (N+1). De zoekterm matcht op productnaam, SKU én referentie.
         return StockMovement::with(['product', 'user', 'location', 'fromLocation', 'toLocation'])
+            // De hele zoekconditie (product-match OR referentie-match) in een
+            // geneste groep: zonder die groep zou de OR de type-/gebruiker-/
+            // datumfilters hieronder omzeilen (AND/OR-precedentie).
             ->when($this->search, function ($q) {
-                $q->whereHas('product', fn ($p) => $p->where('name', 'like', "%{$this->search}%")
-                    ->orWhere('sku', 'like', "%{$this->search}%"))
-                    ->orWhere('reference', 'like', "%{$this->search}%");
+                $q->where(fn ($q) => $q
+                    ->whereHas('product', fn ($p) => $p->where('name', 'like', "%{$this->search}%")
+                        ->orWhere('sku', 'like', "%{$this->search}%"))
+                    ->orWhere('reference', 'like', "%{$this->search}%"));
             })
             ->when($this->type, fn ($q) => $q->where('type', $this->type))
             ->when($this->user, fn ($q) => $q->where('user_id', $this->user))

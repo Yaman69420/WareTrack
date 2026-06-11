@@ -216,3 +216,18 @@ test('products can be filtered by category', function () {
         ->assertSee('Product A')
         ->assertDontSee('Product B');
 });
+
+test('search combined with category filter does not leak other categories', function () {
+    $other = Category::factory()->create();
+    Product::factory()->create(['name' => 'Wireless Mouse', 'sku' => 'WM-100', 'category_id' => $this->category->id]);
+    // Name matches the search but belongs to another category — without a
+    // grouped OR the name-match would bypass the category filter.
+    Product::factory()->create(['name' => 'Wireless Keyboard', 'sku' => 'WK-200', 'category_id' => $other->id]);
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->set('search', 'Wireless')
+        ->set('filterCategory', $this->category->id)
+        ->assertSee('Wireless Mouse')
+        ->assertDontSee('Wireless Keyboard');
+});

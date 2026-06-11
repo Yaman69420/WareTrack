@@ -2,6 +2,7 @@
 
 use App\Livewire\Categories\Index;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -79,6 +80,40 @@ test('admin can delete a category', function () {
     Livewire::actingAs($this->admin)
         ->test(Index::class)
         ->call('delete', $category);
+
+    expect(Category::find($category->id))->toBeNull();
+    expect(Category::withTrashed()->find($category->id))->not->toBeNull();
+});
+
+test('category with linked products cannot be deleted', function () {
+    $category = Category::factory()->create();
+    Product::factory()->count(2)->create(['category_id' => $category->id]);
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('delete', $category)
+        // Flux::toast() dispatcht een 'toast-show' Livewire-event: de variant
+        // zit in 'dataset', de boodschap (met het productaantal) in 'slots'.
+        ->assertDispatched('toast-show', function (string $name, array $params) {
+            return ($params['dataset']['variant'] ?? null) === 'danger'
+                && str_contains($params['slots']['text'] ?? '', '2');
+        });
+
+    expect(Category::find($category->id))->not->toBeNull();
+    expect($category->fresh()->trashed())->toBeFalse();
+});
+
+test('category with only soft-deleted products can be deleted', function () {
+    $category = Category::factory()->create();
+    Product::factory()->create(['category_id' => $category->id])->delete();
+
+    // De guard telt via de products()-relatie, die soft-deleted producten
+    // standaard uitsluit — een categorie met enkel verwijderde producten
+    // blokkeert dus niet.
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('delete', $category)
+        ->assertDispatched('toast-show', fn (string $name, array $params) => ($params['dataset']['variant'] ?? null) === 'success');
 
     expect(Category::find($category->id))->toBeNull();
     expect(Category::withTrashed()->find($category->id))->not->toBeNull();

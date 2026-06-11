@@ -76,6 +76,23 @@ test('stock index filters by warehouse', function () {
         ->assertDontSee($productB->name);
 });
 
+test('stock index search respects the warehouse filter', function () {
+    $productA = Product::factory()->create(['category_id' => $this->category->id, 'name' => 'Widget Alpha']);
+    Stock::create(['product_id' => $productA->id, 'location_id' => $this->location->id, 'quantity' => 5]);
+
+    // Name matches the search but only has stock in warehouse B — without a
+    // grouped OR the name-match would bypass the warehouse filter.
+    $productB = Product::factory()->create(['category_id' => $this->category->id, 'name' => 'Widget Beta']);
+    Stock::create(['product_id' => $productB->id, 'location_id' => $this->locationB->id, 'quantity' => 3]);
+
+    Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->set('search', 'Widget')
+        ->set('filterWarehouse', $this->warehouse->id)
+        ->assertSee('Widget Alpha')
+        ->assertDontSee('Widget Beta');
+});
+
 // =========================================================
 // Stock/Movements
 // =========================================================
