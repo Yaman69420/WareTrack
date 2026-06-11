@@ -9,6 +9,19 @@ use App\Livewire\Stock\Movements;
 use App\Livewire\Suppliers\Index;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Routestructuur in drie ringen
+|--------------------------------------------------------------------------
+| 1. Publiek: enkel de root, die doorstuurt naar dashboard of login.
+| 2. auth + verified: de gedeelde werkruimte voor beide rollen.
+| 3. admin (genest): masterdata en gebruikersbeheer, enkel voor admins.
+|
+| Er zijn geen controllers: elke route wijst rechtstreeks naar een full-page
+| Livewire-component, die zelf valideert/autoriseert en naar services delegeert.
+*/
+
+// Geen landingspagina — dit is een interne app: ingelogd → dashboard, anders → login.
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('dashboard')
@@ -18,23 +31,29 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', Dashboard::class)->name('dashboard');
 
-    // Accessible by admin and warehouse_worker
+    // Gedeeld: workers mogen leveranciers bekijken (muterende acties zijn in de
+    // component zelf afgeschermd via SupplierPolicy).
     Route::get('/suppliers', Index::class)->name('suppliers.index');
 
     Route::get('/deliveries', App\Livewire\Deliveries\Index::class)->name('deliveries.index');
-    // Admin-only, but registered here so it matches before the {delivery} wildcard below
+    // Admin-only, maar bewust hiér geregistreerd met inline middleware: Laravel matcht
+    // routes in registratievolgorde, dus /deliveries/create moet vóór de
+    // {delivery}-wildcard staan — anders vangt die het woord "create" als ID (404 i.p.v. 403).
     Route::get('/deliveries/create', Create::class)->middleware('admin')->name('deliveries.create');
+    // Route-modelbinding: {delivery} wordt automatisch een Delivery-instantie (of 404).
     Route::get('/deliveries/{delivery}', Show::class)->name('deliveries.show');
 
     Route::get('/reports', App\Livewire\Reports\Index::class)->name('reports.index');
     Route::get('/activity', App\Livewire\Activity\Index::class)->name('activity.index');
 
+    // Stockbewegingen registreren is het dagelijkse werk van een warehouse worker —
+    // daarom gedeeld, met de policy-check (StockMovementPolicy) in de componenten.
     Route::get('/stock', App\Livewire\Stock\Index::class)->name('stock.index');
     Route::get('/stock/movements', Movements::class)->name('stock.movements');
     Route::get('/stock/movements/create', CreateMovement::class)->name('stock.movements.create');
     Route::get('/stock/bulk-correction', BulkCorrection::class)->name('stock.bulk-correction');
 
-    // Admin only
+    // Masterdata en gebruikersbeheer: EnsureUserIsAdmin geeft workers een 403.
     Route::middleware(['admin'])->group(function () {
         Route::get('/categories', App\Livewire\Categories\Index::class)->name('categories.index');
         Route::get('/products', App\Livewire\Products\Index::class)->name('products.index');

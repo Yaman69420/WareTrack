@@ -11,18 +11,40 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+/**
+ * Bulkcorrectie: alle stocklijnen van één magazijn in één tabel hertellen.
+ *
+ * Typisch scenario is een inventaris/telling: de magazijnier overschrijft per
+ * locatie het getelde aantal en het component bepaalt zelf de delta met de
+ * huidige voorraad. Alleen gewijzigde lijnen worden opgeslagen, elk als een
+ * gewone correctie via StockService — bulk is hier puur een UX-laag, geen
+ * apart mutatiepad.
+ */
 #[Layout('layouts.app')]
 class BulkCorrection extends Component
 {
     public ?int $warehouseId = null;
 
-    /** @var array<int, string> locationId → new quantity (string so empty field = '') */
+    /**
+     * Nieuwe aantallen per stocklijn, gekeyed op stock-id.
+     *
+     * Bewust strings: een leeggemaakt invoerveld komt binnen als '' en moet
+     * te onderscheiden blijven van een bewuste 0. De cast naar int gebeurt
+     * pas bij de delta-berekening en het opslaan.
+     *
+     * @var array<int, string>
+     */
     public array $quantities = [];
 
     public string $notes = '';
 
     /**
-     * Pre-fill the quantities array with current stock values when a warehouse is selected.
+     * Bij een nieuwe warehouse-keuze: tabel verversen en invoer vooraf invullen.
+     *
+     * De unset() gooit de gecachte computed properties weg — anders zou
+     * prefillQuantities() nog de stocklijnen van het vórige magazijn zien.
+     * Vooraf invullen met de huidige aantallen maakt de delta-weergave
+     * mogelijk: alles start op "geen wijziging".
      */
     public function updatedWarehouseId(): void
     {
@@ -36,6 +58,11 @@ class BulkCorrection extends Component
         return Warehouse::orderBy('name')->get(['id', 'name']);
     }
 
+    /**
+     * Alle stocklijnen van het gekozen magazijn, gesorteerd op locatiecode en
+     * dan productnaam — de volgorde waarin een teller fysiek door het magazijn
+     * loopt. Eager loading van product/categorie/locatie vermijdt N+1 in de tabel.
+     */
     #[Computed]
     public function stockLines()
     {
@@ -61,14 +88,19 @@ class BulkCorrection extends Component
 
     public function mount(): void
     {
-        // Pre-fill once if warehouseId already set (e.g. from URL)
+        // Eénmalig vooraf invullen als warehouseId al gezet is (bv. via de URL):
+        // updatedWarehouseId() vuurt niet bij mount, dus zonder dit blijft de tabel leeg.
         if ($this->warehouseId) {
             $this->prefillQuantities();
         }
     }
 
     /**
-     * Returns only lines whose quantity was actually changed.
+     * Enkel de lijnen waarvan het aantal effectief gewijzigd is.
+     *
+     * Dit voedt de live delta in de view (teller + markering per rij) én
+     * bepaalt bij save() wat er opgeslagen wordt. Lege velden ('') tellen
+     * niet als wijziging: niet ingevuld is iets anders dan "zet op 0".
      */
     #[Computed]
     public function changedLines()
@@ -80,9 +112,17 @@ class BulkCorrection extends Component
         });
     }
 
+    /**
+     * Slaat elke gewijzigde lijn op als een afzonderlijke correctie.
+     *
+     * Bewust géén overkoepelende transactie rond de lus: elke adjust() is op
+     * zich atomair (transactie + lock in StockService) en een audit-record
+     * per locatie is precies wat een telling moet opleveren.
+     */
     public function save(StockService $stockService): void
     {
-        // Corrections are stock movements — same policy decision as CreateMovement
+        // Een correctie is gewoon een stockbeweging — dezelfde policy-check als
+        // CreateMovement, zodat bulk geen achterpoort wordt.
         $this->authorize('create', StockMovement::class);
 
         $this->validate([
@@ -94,6 +134,8 @@ class BulkCorrection extends Component
 
         $changed = $this->changedLines;
 
+        // Guard clause: niets gewijzigd betekent niets opslaan — voorkomt lege
+        // audit-records en maakt de gebruiker duidelijk waarom er niets gebeurde.
         if ($changed->isEmpty()) {
             Flux::toast(__('No changes to save.'), variant: 'warning');
 
@@ -124,6 +166,8 @@ class BulkCorrection extends Component
         );
 
         $this->notes = '';
+        // Computed-cache weggooien en opnieuw vooraf invullen: de tabel toont meteen
+        // de nieuwe aantallen en alle delta's staan terug op nul.
         unset($this->stockLines, $this->changedLines);
         $this->prefillQuantities();
     }

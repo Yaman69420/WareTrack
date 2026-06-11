@@ -6,10 +6,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Actuele voorraadstand: één rij per unieke combinatie product + locatie.
+ *
+ * Dit model is puur de huidige toestand; het 'waarom' van elke wijziging zit
+ * in StockMovement. Mutaties lopen altijd via StockService (met lock en
+ * transactie), nooit rechtstreeks vanuit een component. Geen soft deletes:
+ * een rij zonder voorraad heeft geen historische waarde, de historiek zit
+ * volledig in de bewegingen.
+ */
 class Stock extends Model
 {
     use HasFactory;
 
+    // Afwijkend van de conventie: Laravel zou de meervoudsvorm 'stocks' verwachten,
+    // maar 'stock' is als onttelbaar Engels woord correct enkelvoud in het schema.
     protected $table = 'stock';
 
     protected $fillable = ['product_id', 'location_id', 'quantity'];

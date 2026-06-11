@@ -6,6 +6,13 @@ use App\Models\Product;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
+/**
+ * Mailnotificatie aan admins voor een product onder zijn minimumvoorraad.
+ *
+ * Bewust géén ShouldQueue op deze klasse: ze wordt al verstuurd vanuit de queued
+ * listener SendLowStockNotification — een tweede queue-laag zou alleen extra
+ * vertraging en complexiteit toevoegen.
+ */
 class LowStockAlert extends Notification
 {
     public function __construct(
@@ -20,6 +27,8 @@ class LowStockAlert extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $current = $this->product->totalStock();
+        // current ligt per definitie onder min_stock, dus het verschil is negatief;
+        // abs() toont het tekort in de mail als positief getal.
         $shortage = abs($current - $this->product->min_stock);
 
         return (new MailMessage)
@@ -33,7 +42,8 @@ class LowStockAlert extends Notification
     }
 
     /**
-     * Expose notification data for the database channel (future use).
+     * Payload voor het database-kanaal (nu nog niet actief in via()): maakt het
+     * mogelijk om later in-app meldingen te tonen zonder deze klasse te herwerken.
      */
     public function toArray(object $notifiable): array
     {

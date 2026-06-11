@@ -11,6 +11,13 @@ use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * Beheerscherm voor magazijnen: zoeken, CRUD via een modal en per magazijn
+ * het aantal locaties plus de totale voorraad in het overzicht.
+ *
+ * De voorraadtotalen worden met een SQL-subquery berekend zodat de lijst
+ * met één query gevuld blijft, ook bij veel magazijnen en locaties.
+ */
 #[Layout('layouts.app')]
 class Index extends Component
 {
@@ -31,6 +38,10 @@ class Index extends Component
     #[Rule('nullable|string|max:500')]
     public string $description = '';
 
+    /**
+     * Terug naar pagina 1 bij een nieuwe zoekterm, anders kan de gebruiker op
+     * een lege pagina van het gefilterde resultaat belanden.
+     */
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -39,6 +50,10 @@ class Index extends Component
     #[Computed]
     public function warehouses()
     {
+        // Subquery i.p.v. een query per rij: de DB telt de voorraad per magazijn
+        // in één keer. COALESCE geeft 0 voor magazijnen zonder stock-rijen, en de
+        // deleted_at-check sluit soft-deleted locaties expliciet uit (een raw
+        // join past de SoftDeletes-scope van Eloquent immers niet zelf toe).
         $totalStockSub = DB::raw('(SELECT COALESCE(SUM(s.quantity), 0) FROM stock s INNER JOIN locations l ON s.location_id = l.id WHERE l.warehouse_id = warehouses.id AND l.deleted_at IS NULL) as total_stock');
 
         return Warehouse::query()
@@ -67,6 +82,9 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Eén save-methode voor create én update; $editingId bepaalt de modus.
+     */
     public function save(): void
     {
         $this->validate();
@@ -92,9 +110,14 @@ class Index extends Component
 
         $this->showModal = false;
         $this->reset(['name', 'location', 'description', 'editingId']);
+        // Computed-cache legen zodat de lijst de wijziging meteen toont.
         unset($this->warehouses);
     }
 
+    /**
+     * Soft delete: het magazijn verdwijnt uit de lijsten, maar de historiek
+     * van bewegingen en audit-records blijft raadpleegbaar.
+     */
     public function delete(Warehouse $warehouse): void
     {
         $warehouse->delete();

@@ -9,10 +9,20 @@ use App\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Service voor het beheer van magazijnen en hun locaties (de structuur, niet de stock).
+ *
+ * Stockmutaties zitten bewust apart in StockService; deze klasse bewaakt de regels rond
+ * de magazijnstructuur zelf, zoals het verbod om een magazijn met resterende voorraad
+ * te verwijderen.
+ */
 class WarehouseService
 {
     /**
-     * Create a new warehouse with optional initial locations.
+     * Maakt een magazijn aan, optioneel meteen met zijn eerste locaties.
+     *
+     * In één transactie: een magazijn mag nooit half (zonder zijn locaties) in de
+     * database belanden als er bij het aanmaken iets misloopt.
      *
      * @param  array<int, array{code: string, name: string|null}>  $locations
      */
@@ -39,7 +49,7 @@ class WarehouseService
     }
 
     /**
-     * Add a location to an existing warehouse.
+     * Voegt één locatie toe aan een bestaand magazijn.
      */
     public function addLocation(Warehouse $warehouse, string $code, ?string $name = null): Location
     {
@@ -58,11 +68,15 @@ class WarehouseService
     }
 
     /**
-     * Soft-delete a warehouse (cascades to locations via model events).
-     * Only allowed when all locations have zero stock.
+     * Soft-delete van een magazijn, inclusief al zijn locaties.
+     *
+     * Bedrijfsregel: verwijderen kan alleen als geen enkele locatie nog voorraad heeft.
+     * Anders zou stock "verdwijnen" zonder corrigerende movement in de audit trail.
      */
     public function deleteWarehouse(Warehouse $warehouse): void
     {
+        // Eén exists-query over alle locaties volstaat; we hoeven niet te weten wélke
+        // locatie nog stock heeft, enkel óf er nog ergens stock ligt.
         $hasStock = $warehouse->locations()
             ->whereHas('stock', fn ($q) => $q->where('quantity', '>', 0))
             ->exists();
@@ -72,6 +86,8 @@ class WarehouseService
         }
 
         DB::transaction(function () use ($warehouse) {
+            // Locaties één voor één via het model verwijderen, niet met een bulk-query:
+            // alleen dan vuren de model-events en gebeurt de soft-delete per locatie correct.
             $warehouse->locations()->each(fn (Location $l) => $l->delete());
             $warehouse->delete();
         });
@@ -80,7 +96,10 @@ class WarehouseService
     }
 
     /**
-     * Return total stock quantity across all locations in a warehouse.
+     * Totale voorraad over alle locaties van het magazijn.
+     *
+     * withSum laat de databank per locatie optellen in plaats van alle stock-rijen
+     * naar PHP te halen en daar te sommeren.
      */
     public function totalStock(Warehouse $warehouse): int
     {

@@ -5,6 +5,13 @@ namespace App\Policies;
 use App\Models\Delivery;
 use App\Models\User;
 
+/**
+ * Autorisatieregels voor leveringen.
+ *
+ * Splitst beheer van uitvoering: leveringen aanmaken, wijzigen of verwijderen
+ * is admin-only (planning en masterdata), maar het effectief ontvangen van de
+ * goederen (process) is dagelijks magazijnwerk en staat open voor beide rollen.
+ */
 class DeliveryPolicy
 {
     public function viewAny(User $user): bool
@@ -23,8 +30,9 @@ class DeliveryPolicy
     }
 
     /**
-     * Receiving goods is day-to-day warehouse work — both roles may process,
-     * unlike create/update/delete which are admin-only masterdata actions.
+     * Goederen ontvangen is dagelijks magazijnwerk: beide rollen mogen een
+     * levering verwerken, anders staat de werkvloer stil tot een admin tijd
+     * heeft. Dit is een custom ability naast de standaard CRUD-methodes.
      */
     public function process(User $user, Delivery $delivery): bool
     {

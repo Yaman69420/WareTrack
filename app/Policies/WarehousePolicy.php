@@ -5,6 +5,13 @@ namespace App\Policies;
 use App\Models\User;
 use App\Models\Warehouse;
 
+/**
+ * Autorisatieregels voor magazijnen (masterdata).
+ *
+ * Magazijnen raadplegen mag iedereen; de structuur wijzigen is admin-only.
+ * Een magazijn hernoemen of verwijderen raakt alle onderliggende locaties
+ * en hun stock, dus dat hoort niet bij de rechten van de werkvloer.
+ */
 class WarehousePolicy
 {
     public function viewAny(User $user): bool

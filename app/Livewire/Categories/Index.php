@@ -10,6 +10,13 @@ use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * Beheerscherm voor productcategorieën: zoeken plus CRUD via een modal.
+ *
+ * Bevat de delete-bescherming die voorkomt dat een categorie verdwijnt
+ * terwijl er nog producten aan gekoppeld zijn — de integriteit wordt hier
+ * in de applicatielaag bewaakt, met een duidelijke melding voor de gebruiker.
+ */
 #[Layout('layouts.app')]
 class Index extends Component
 {
@@ -27,6 +34,10 @@ class Index extends Component
     #[Rule('nullable|string|max:500')]
     public string $description = '';
 
+    /**
+     * Terug naar pagina 1 bij een nieuwe zoekterm, anders kan de gebruiker op
+     * een lege pagina van het gefilterde resultaat belanden.
+     */
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -37,6 +48,8 @@ class Index extends Component
     {
         return Category::query()
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
+            // withCount levert het productaantal als subquery: één query voor
+            // de hele pagina in plaats van een count per rij.
             ->withCount('products')
             ->latest()
             ->paginate(10);
@@ -58,6 +71,10 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Eén save-methode voor create én update; $editingId bepaalt de modus.
+     * De validatieregels staan als #[Rule]-attributen op de properties zelf.
+     */
     public function save(): void
     {
         $this->validate();
@@ -75,14 +92,22 @@ class Index extends Component
 
         $this->showModal = false;
         $this->reset(['name', 'description', 'editingId']);
+        // Computed-cache legen zodat de lijst de wijziging meteen toont.
         unset($this->categories);
     }
 
+    /**
+     * Verwijdert een categorie, maar enkel als er geen producten meer aan
+     * hangen. De guard zit hier (en niet enkel in de databank) zodat de
+     * gebruiker een verstaanbare melding krijgt in plaats van een SQL-fout.
+     */
     public function delete(Category $category): void
     {
         $productCount = $category->products()->count();
 
         if ($productCount > 0) {
+            // Danger-toast mét het aantal: de gebruiker weet meteen waarom het
+            // niet mag en hoeveel producten eerst verplaatst moeten worden.
             Flux::toast(
                 __('Cannot delete: :count product(s) are still linked to this category.', ['count' => $productCount]),
                 variant: 'danger'

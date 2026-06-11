@@ -10,6 +10,14 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * Activity Log: het filterbare venster op de stock_movements audit trail.
+ *
+ * Deze component schrijft zelf niets — elke rij ontstaat in StockService, binnen
+ * dezelfde transactie als de stockmutatie. De #[Url]-attributen spiegelen elke
+ * filter naar de querystring: een gefilterde weergave is zo een deelbare URL
+ * en overleeft een refresh.
+ */
 class Index extends Component
 {
     use WithPagination;
@@ -57,6 +65,8 @@ class Index extends Component
     #[Computed]
     public function movements()
     {
+        // Vijf relaties eager geladen: zonder with() zou elke rij in de tabel vijf
+        // extra queries doen (N+1). De zoekterm matcht op productnaam, SKU én referentie.
         return StockMovement::with(['product', 'user', 'location', 'fromLocation', 'toLocation'])
             ->when($this->search, function ($q) {
                 $q->whereHas('product', fn ($p) => $p->where('name', 'like', "%{$this->search}%")

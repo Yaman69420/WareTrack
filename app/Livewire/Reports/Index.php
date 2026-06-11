@@ -11,6 +11,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Rapportage met drie tabs (low stock, stock per locatie, bewegingen per periode)
+ * en CSV-export. Alle data komt uit de read-only ReportService — deze component
+ * bevat enkel UI-state (tab, filters) en de vertaling naar een download.
+ */
 #[Layout('layouts.app')]
 class Index extends Component
 {
@@ -72,6 +77,9 @@ class Index extends Component
     public function setTab(string $tab): void
     {
         $this->tab = $tab;
+        // #[Computed]-properties worden per request gecachet; unset() gooit die cache
+        // weg zodat de nieuwe tab met verse data rendert. Zelfde patroon hieronder
+        // wanneer een filter wijzigt.
         unset($this->lowStockProducts, $this->stockPerLocation, $this->movements);
     }
 
@@ -99,6 +107,9 @@ class Index extends Component
     {
         $lines = app(ReportService::class)->getStockPerLocation($this->filterWarehouse ?: null);
 
+        // streamDownload schrijft de CSV regel per regel rechtstreeks naar de response
+        // (php://output) — er wordt nooit een volledig bestand in het geheugen of op
+        // schijf opgebouwd, dus ook een groot rapport blijft licht.
         return response()->streamDownload(function () use ($lines) {
             $handle = fopen('php://output', 'w');
             fputcsv($handle, ['Warehouse', 'Location Code', 'Location Name', 'Product', 'SKU', 'Category', 'Quantity']);

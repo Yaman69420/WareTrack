@@ -4,6 +4,14 @@ namespace App\Exceptions;
 
 use Exception;
 
+/**
+ * Domeinuitzondering voor een uitgifte of transfer die meer vraagt dan er beschikbaar is.
+ *
+ * Eigen exception-klasse zodat Livewire-componenten dit verwachte geval gericht kunnen
+ * opvangen en een nette foutmelding tonen, terwijl onverwachte fouten gewoon
+ * doorbubbelen naar de algemene afhandeling. Het gooien ervan rolt bovendien de
+ * lopende DB-transactie in StockService automatisch terug.
+ */
 class InsufficientStockException extends Exception
 {
     public function __construct(int $requested, int $available)

@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Eén regel van een levering: een product, een doellocatie en de aantallen.
+ *
+ * Het verschil tussen quantity_ordered en quantity_received bepaalt of de
+ * levering volledig of gedeeltelijk binnenkwam (status op Delivery). Geen
+ * soft deletes: een regel bestaat enkel binnen zijn (soft-deletable) levering.
+ */
 class DeliveryItem extends Model
 {
     use HasFactory;

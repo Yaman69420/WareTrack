@@ -9,6 +9,13 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * Historiek van alle stockbewegingen — het audit-spoor van de voorraad.
+ *
+ * Puur leescomponent: bewegingen worden nooit aangepast of verwijderd,
+ * enkel doorzocht en gefilterd. Samen met de stock-tabel maakt deze lijst
+ * elke voorraadstand verklaarbaar.
+ */
 #[Layout('layouts.app')]
 class Movements extends Component
 {
@@ -18,6 +25,8 @@ class Movements extends Component
 
     public string $filterType = '';
 
+    // Terug naar pagina 1 bij een nieuwe zoekterm of filter: de huidige pagina
+    // bestaat mogelijk niet meer binnen de gefilterde resultaten.
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -28,10 +37,15 @@ class Movements extends Component
         $this->resetPage();
     }
 
+    /**
+     * Gepagineerde bewegingslijst, nieuwste eerst, doorzoekbaar op product.
+     */
     #[Computed]
     public function movements()
     {
         return StockMovement::query()
+            // Alle drie de locatierelaties eager: welke gevuld is hangt af van het
+            // type (transfer = from/to, rest = location). Zonder dit N+1 per rij.
             ->with(['product', 'location.warehouse', 'fromLocation.warehouse', 'toLocation.warehouse', 'user'])
             ->when($this->search, function ($q) {
                 $q->whereHas('product', fn ($pq) => $pq->where('name', 'like', "%{$this->search}%")

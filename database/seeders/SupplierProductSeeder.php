@@ -6,6 +6,13 @@ use App\Models\Product;
 use App\Models\Supplier;
 use Illuminate\Database\Seeder;
 
+/**
+ * Koppelt elke demo-leverancier aan zijn assortiment via de supplier_product-pivot.
+ *
+ * Staat bewust los van SupplierSeeder: deze sync verwijst naar producten en moet
+ * dus NA ProductSeeder draaien (zie de volgorde in DatabaseSeeder). sync() maakt
+ * de pivot exact gelijk aan de lijst — herhaald draaien geeft geen duplicaten.
+ */
 class SupplierProductSeeder extends Seeder
 {
     public function run(): void

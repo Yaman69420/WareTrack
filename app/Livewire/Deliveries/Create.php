@@ -11,6 +11,14 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+/**
+ * Aanmaakformulier voor een verwachte levering (admin-only).
+ *
+ * De levering wordt hier enkel geregistreerd met status Pending; de effectieve
+ * stockverhoging gebeurt pas bij het verwerken in Deliveries\Show. Itemrijen
+ * verschijnen bewust pas ná de leverancierkeuze, zodat de productdropdown
+ * altijd gefilterd is op wat die leverancier effectief levert.
+ */
 #[Layout('layouts.app')]
 class Create extends Component
 {
@@ -22,19 +30,24 @@ class Create extends Component
 
     public array $items = [];
 
+    /**
+     * Wisselt de gebruiker van leverancier, dan vervallen alle itemrijen.
+     * Zo kan er nooit een product van de vórige leverancier blijven hangen
+     * in een rij terwijl de dropdown intussen andere producten toont.
+     */
     public function updatedSupplierId(): void
     {
-        // Reset items when supplier changes so stale product selections are cleared
         $this->items = [];
         $this->addItem();
     }
 
     public function mount(): void
     {
-        // Creating deliveries is admin-only (DeliveryPolicy); workers only process them
+        // Leveringen aanmaken is admin-only (DeliveryPolicy); workers verwerken ze enkel
         $this->authorize('create', Delivery::class);
 
-        // Items are added once the supplier is selected (see updatedSupplierId)
+        // Bewust geen addItem() hier: rijen verschijnen pas na leverancierkeuze
+        // (zie updatedSupplierId), anders staat er een rij zonder bruikbare productlijst.
     }
 
     #[Computed]
@@ -43,6 +56,11 @@ class Create extends Component
         return Supplier::orderBy('name')->get();
     }
 
+    /**
+     * Productlijst voor de itemrijen, gefilterd op de gekozen leverancier
+     * via de supplier_product-pivot. Zonder leverancier: lege collectie,
+     * de UI toont dan geen itemrijen.
+     */
     #[Computed]
     public function products()
     {
@@ -50,7 +68,8 @@ class Create extends Component
             $supplier = Supplier::find($this->supplierId);
             $products = $supplier?->products()->orderBy('name')->get() ?? collect();
 
-            // Fall back to all products if supplier has none linked yet
+            // Fallback naar álle producten als de leverancier er nog geen gekoppeld heeft:
+            // een lege dropdown zou het aanmaken volledig blokkeren voor nieuwe leveranciers.
             return $products->isNotEmpty() ? $products : Product::orderBy('name')->get();
         }
 
@@ -77,9 +96,15 @@ class Create extends Component
         array_splice($this->items, $index, 1);
     }
 
+    /**
+     * Slaat de levering met items op. De levering start altijd als Pending
+     * met quantity_received op 0 — ontvangst wordt pas geregistreerd bij het
+     * verwerken in Show, waar ook de stock effectief verhoogd wordt.
+     */
     public function save(): void
     {
-        // Re-check on the action itself: Livewire action requests bypass route middleware
+        // Guard herhaald in de actie zelf: mount() beschermt enkel de eerste paginalading,
+        // een latere Livewire-actierequest kan rechtstreeks deze methode aanroepen.
         $this->authorize('create', Delivery::class);
 
         $this->validate([
@@ -105,6 +130,8 @@ class Create extends Component
                 'product_id' => $item['product_id'],
                 'location_id' => $item['location_id'],
                 'quantity_ordered' => $item['quantity_ordered'],
+                // Expliciet 0 i.p.v. een DB-default: het verschil ordered/received
+                // is de kern van de partial-flow en hoort zichtbaar in de code te staan.
                 'quantity_received' => 0,
             ]);
         }

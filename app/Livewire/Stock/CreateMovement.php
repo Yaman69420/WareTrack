@@ -15,6 +15,14 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+/**
+ * Formulier voor het registreren van één stockbeweging (alle vier de types).
+ *
+ * Dit component verzorgt enkel de UX en de invoervalidatie; de eigenlijke
+ * mutatie loopt altijd via StockService, zodat transactie-, lock- en
+ * auditlogica op één plek blijven. Eén formulier voor vier types houdt de
+ * flow voor de gebruiker uniform: type kiezen, product, plaats, aantal.
+ */
 #[Layout('layouts.app')]
 class CreateMovement extends Component
 {
@@ -22,12 +30,12 @@ class CreateMovement extends Component
 
     public ?int $productId = null;
 
-    // Warehouse step (non-transfer)
+    // Plaats-stap voor incoming/outgoing/correction: één warehouse → locatie
     public ?int $warehouseId = null;
 
     public ?int $locationId = null;
 
-    // Warehouse step (transfer)
+    // Plaats-stap voor transfer: aparte van/naar-cascade (bron en doel onafhankelijk)
     public ?int $fromWarehouseId = null;
 
     public ?int $fromLocationId = null;
@@ -42,7 +50,13 @@ class CreateMovement extends Component
 
     public string $notes = '';
 
-    // Reset location when warehouse changes
+    /**
+     * Cascade-UX: bij een nieuwe warehouse-keuze wordt de locatie gewist.
+     *
+     * Zonder deze reset kan een locatie van het vórige magazijn geselecteerd
+     * blijven terwijl de dropdown al nieuwe opties toont — een stille
+     * inconsistentie die pas bij het opslaan zou opvallen.
+     */
     public function updatedWarehouseId(): void
     {
         $this->locationId = null;
@@ -58,7 +72,13 @@ class CreateMovement extends Component
         $this->toLocationId = null;
     }
 
-    // Reset warehouse + location when type changes
+    /**
+     * Bij een typewissel worden álle plaatsvelden gewist.
+     *
+     * Transfer gebruikt van/naar-velden, de andere types één warehouse/locatie.
+     * Door beide sets te resetten kan geen verborgen waarde van het vorige
+     * type meevalideren of -opslaan.
+     */
     public function updatedType(): void
     {
         $this->warehouseId = null;
@@ -81,6 +101,11 @@ class CreateMovement extends Component
         return Warehouse::orderBy('name')->get(['id', 'name']);
     }
 
+    /**
+     * Locatie-opties, afhankelijk van de gekozen warehouse (tweede stap van
+     * de cascade). Lege collectie zolang er geen warehouse gekozen is, zodat
+     * de view geen aparte null-check nodig heeft.
+     */
     #[Computed]
     public function locations()
     {
@@ -112,7 +137,11 @@ class CreateMovement extends Component
     }
 
     /**
-     * Current stock for the selected product + location (shown as a hint).
+     * Huidige voorraad voor het gekozen product + locatie, getoond als hint.
+     *
+     * Null betekent "nog niets gekozen" (geen hint tonen); 0 betekent dat de
+     * combinatie wél compleet is maar er geen stockrij bestaat — dat
+     * onderscheid heeft de view nodig.
      */
     #[Computed]
     public function currentStock(): ?int
@@ -126,15 +155,29 @@ class CreateMovement extends Component
             ->value('quantity') ?? 0;
     }
 
+    /**
+     * Valideert de invoer en delegeert de mutatie naar StockService.
+     *
+     * StockService komt binnen via method injection: Livewire resolvet hem
+     * uit de container op het moment van de actie, zodat hij niet als state
+     * in het component hoeft te leven (componenten worden geserialiseerd
+     * tussen requests).
+     */
     public function save(StockService $stockService): void
     {
-        // Allowed for both roles, but the decision lives in the policy, not here
+        // Beide rollen mogen dit, maar die beslissing ligt in de policy — niet hier.
+        // Verandert de regel ooit, dan hoeft alleen de policy aangepast te worden.
         $this->authorize('create', StockMovement::class);
 
         $this->validate([
             'type' => 'required|in:incoming,outgoing,transfer,correction',
             'productId' => 'required|exists:products,id',
+            // Conditioneel minimum: een correctie zet de absolute voorraad en mag dus
+            // 0 zijn (locatie leegmaken); de andere types verplaatsen een aantal en
+            // hebben pas betekenis vanaf 1.
             'quantity' => 'required|integer|'.($this->type === 'correction' ? 'min:0' : 'min:1'),
+            // Transfer gebruikt van/naar-velden; de overige types één locatie.
+            // 'different' blokkeert een transfer naar dezelfde locatie al bij validatie.
             'locationId' => 'required_unless:type,transfer|nullable|exists:locations,id',
             'fromLocationId' => 'required_if:type,transfer|nullable|exists:locations,id',
             'toLocationId' => 'required_if:type,transfer|nullable|exists:locations,id|different:fromLocationId',
@@ -146,6 +189,8 @@ class CreateMovement extends Component
         $user = auth()->user();
 
         try {
+            // match in plaats van if/else: PHP dwingt af dat elk type een tak heeft,
+            // een nieuw movement-type zonder tak faalt hard in plaats van stil.
             match ($this->type) {
                 'incoming' => $stockService->registerIncoming(
                     $product,
@@ -183,6 +228,9 @@ class CreateMovement extends Component
             Flux::toast(__('Stock movement registered.'), variant: 'success');
             $this->redirect(route('stock.movements'), navigate: true);
         } catch (InsufficientStockException $e) {
+            // Domeinfout vertaald naar een veld-error op 'quantity': de gebruiker ziet
+            // de melding bij het veld dat hij moet aanpassen, in plaats van een 500
+            // of een losse flash-melding. De service heeft de transactie al teruggerold.
             $this->addError('quantity', __('Insufficient stock: ').$e->getMessage());
         }
     }

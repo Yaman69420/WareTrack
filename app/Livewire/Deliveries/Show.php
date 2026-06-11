@@ -10,12 +10,20 @@ use Flux\Flux;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+/**
+ * Detailpagina én verwerkingsflow van een levering: hier wordt de stock écht verhoogd.
+ *
+ * De gebruiker geeft per item op hoeveel er effectief binnenkwam; process() boekt dat
+ * via de StockService (transactie + audit) en zet de status op Partial of Received.
+ * Deelleveringen zijn dus een eersteklas scenario: dezelfde pagina kan meermaals
+ * verwerkt worden tot alles binnen is.
+ */
 #[Layout('layouts.app')]
 class Show extends Component
 {
     public Delivery $delivery;
 
-    // keyed by delivery_item id → quantity to receive now
+    // Per delivery_item-id: het aantal dat de gebruiker nú wil ontvangen
     public array $receivedQuantities = [];
 
     public function mount(Delivery $delivery): void
@@ -24,6 +32,12 @@ class Show extends Component
         $this->initReceivedQuantities();
     }
 
+    /**
+     * Vult de invoervelden vooraf in met het nog openstaande aantal per item
+     * (besteld min al ontvangen): het meest waarschijnlijke scenario is dat
+     * de rest in één keer binnenkomt. max(0, ...) vangt historische data af
+     * waarbij er ooit meer ontvangen dan besteld werd.
+     */
     private function initReceivedQuantities(): void
     {
         $this->receivedQuantities = $this->delivery->items
@@ -31,10 +45,24 @@ class Show extends Component
             ->toArray();
     }
 
+    /**
+     * Verwerkt de opgegeven ontvangsten. De spelregels:
+     * - aantallen boven het nog openstaande worden gecapt op maxReceivable (met warning-toast),
+     *   zodat quantity_received nooit boven quantity_ordered uitkomt;
+     * - elke boeking loopt via StockService::registerIncoming, nooit rechtstreeks op de
+     *   stock-tabel — daar zitten transactie, lock en audit-record;
+     * - status wordt afgeleid uit de items: alles binnen → Received, anders Partial.
+     * De StockService komt via method injection binnen: Livewire resolvet die uit de
+     * container, zodat de component zelf geen service hoeft te construeren.
+     */
     public function process(StockService $stockService): void
     {
+        // 'process' is een aparte policy-ability: workers mogen verwerken,
+        // ook al mogen ze geen leveringen aanmaken of verwijderen.
         $this->authorize('process', $this->delivery);
 
+        // Idempotentie-guard: een volledig ontvangen levering nogmaals verwerken
+        // zou de stock dubbel verhogen.
         if ($this->delivery->status === DeliveryStatus::Received) {
             Flux::toast(__('This delivery has already been fully received.'), variant: 'warning');
 
@@ -51,12 +79,16 @@ class Show extends Component
             foreach ($this->delivery->items as $item) {
                 $qty = (int) ($this->receivedQuantities[$item->id] ?? 0);
 
+                // Items met 0 overslaan: zo kan de gebruiker een deellevering boeken
+                // door enkel de geleverde rijen in te vullen.
                 if ($qty <= 0) {
                     continue;
                 }
 
                 $maxReceivable = $item->quantity_ordered - $item->quantity_received;
 
+                // Cappen i.p.v. weigeren: te veel intikken blokkeert de verwerking niet,
+                // we boeken het maximum en melden het achteraf via een warning-toast.
                 if ($qty > $maxReceivable) {
                     $cappedItems[] = $item->product->name;
                     $qty = $maxReceivable;
@@ -74,6 +106,8 @@ class Show extends Component
                 $item->increment('quantity_received', $qty);
             }
 
+            // Eerst herladen: de increments hierboven gebeurden op DB-niveau, de modellen
+            // in geheugen lopen achter. De statusbeslissing hieronder moet op verse data.
             $this->delivery->refresh()->load(['supplier', 'user', 'items.product', 'items.location.warehouse']);
 
             $allReceived = $this->delivery->items->every(
@@ -82,9 +116,12 @@ class Show extends Component
 
             $this->delivery->update([
                 'status' => $allReceived ? DeliveryStatus::Received : DeliveryStatus::Partial,
+                // received_at markeert de vólledige ontvangst; bij een deellevering
+                // blijft een eventueel eerdere waarde ongemoeid.
                 'received_at' => $allReceived ? now() : $this->delivery->received_at,
             ]);
 
+            // Tweede refresh zodat de render direct de nieuwe status en aantallen toont
             $this->delivery->refresh()->load(['supplier', 'user', 'items.product', 'items.location.warehouse']);
 
             activity()->causedBy(auth()->user())->performedOn($this->delivery)->log('processed');
@@ -101,8 +138,11 @@ class Show extends Component
                 variant: 'success'
             );
 
+            // Velden opnieuw vullen met het resterende saldo, klaar voor een volgende deellevering
             $this->initReceivedQuantities();
         } catch (InsufficientStockException $e) {
+            // Domeinfout uit de StockService wordt als toast getoond i.p.v. een 500-pagina;
+            // de service heeft zijn transactie dan al teruggerold.
             Flux::toast(__('Stock error: ').$e->getMessage(), variant: 'danger');
         }
     }

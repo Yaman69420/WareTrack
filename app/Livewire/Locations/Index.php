@@ -11,6 +11,13 @@ use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * Globaal beheerscherm voor magazijnlocaties, over alle magazijnen heen
+ * (Warehouses\Show beheert dezelfde locaties binnen één magazijn).
+ *
+ * Bevat de delete-bescherming: een locatie met actieve voorraad mag nooit
+ * verdwijnen, anders zou er fysieke stock zonder registratie bestaan.
+ */
 #[Layout('layouts.app')]
 class Index extends Component
 {
@@ -33,6 +40,10 @@ class Index extends Component
     #[Rule('nullable|string|max:100')]
     public string $name = '';
 
+    /**
+     * Terug naar pagina 1 zodra een filter of zoekterm wijzigt, anders kan de
+     * paginator op een lege pagina van het nieuwe resultaat blijven staan.
+     */
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -79,12 +90,17 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Eén save-methode voor create én update; $editingId bepaalt de modus.
+     */
     public function save(): void
     {
         $this->validate();
 
         $data = [
             'warehouse_id' => $this->warehouseId,
+            // Locatiecodes altijd in hoofdletters: zo blijft de notatie uniform
+            // ('a-01-2' en 'A-01-2' zijn dezelfde fysieke plek).
             'code' => strtoupper($this->code),
             'name' => $this->name ?: null,
         ];
@@ -102,14 +118,24 @@ class Index extends Component
 
         $this->showModal = false;
         $this->reset(['warehouseId', 'code', 'name', 'editingId']);
+        // Computed-cache legen zodat de lijst de wijziging meteen toont.
         unset($this->locations);
     }
 
+    /**
+     * Verwijdert een locatie, maar enkel als er geen actieve voorraad ligt.
+     * Eerst alles wegboeken (outgoing of transfer), dan pas verwijderen —
+     * anders zou voorraad spoorloos uit het systeem verdwijnen.
+     */
     public function delete(Location $location): void
     {
+        // Enkel rijen met quantity > 0 tellen: een leeg stock-record (alles
+        // ooit weggeboekt) mag het verwijderen niet blokkeren.
         $activeStock = $location->stock()->where('quantity', '>', 0)->count();
 
         if ($activeStock > 0) {
+            // Danger-toast met het aantal producten: de gebruiker ziet meteen
+            // wat er eerst weggeboekt of verplaatst moet worden.
             Flux::toast(
                 __('Cannot delete: :count product(s) still have stock at this location.', ['count' => $activeStock]),
                 variant: 'danger'

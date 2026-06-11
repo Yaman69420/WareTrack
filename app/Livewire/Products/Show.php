@@ -9,6 +9,14 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+/**
+ * Detailpagina van één product: stock per locatie, recente bewegingen en
+ * de minimumvoorraad-indicator.
+ *
+ * Puur leesweergave — alle gegevens komen via computed properties zodat ze
+ * per request maar één keer worden opgevraagd, ook al gebruikt de view ze
+ * op meerdere plaatsen.
+ */
 #[Layout('layouts.app')]
 class Show extends Component
 {
@@ -16,11 +24,15 @@ class Show extends Component
 
     public function mount(Product $product): void
     {
+        // Relaties in één keer mee-laden: de view leest stock, locatie en
+        // magazijn per lijn — zonder load() wordt dat een reeks losse queries.
         $this->product = $product->load(['category', 'stock.location.warehouse']);
     }
 
     /**
-     * Stock breakdown per location, sorted by warehouse then location code.
+     * Stockoverzicht per locatie, gesorteerd op magazijn en dan locatiecode.
+     * Sorteren gebeurt in PHP omdat beide sleutels uit geneste relaties komen;
+     * voor de paar locaties van één product is dat goedkoper dan een join.
      */
     #[Computed]
     public function stockLines()
@@ -35,7 +47,8 @@ class Show extends Component
     }
 
     /**
-     * Recent movements for this product (last 25).
+     * Recentste bewegingen van dit product, gecapt op 25: de detailpagina is
+     * een snapshot, de volledige historiek staat op de Activity-pagina.
      */
     #[Computed]
     public function movements()
@@ -48,7 +61,8 @@ class Show extends Component
     }
 
     /**
-     * Total stock across all locations.
+     * Totale voorraad over alle locaties heen, gesommeerd uit de al geladen
+     * stock-relatie (geen extra query).
      */
     #[Computed]
     public function totalStock(): int
@@ -57,7 +71,8 @@ class Show extends Component
     }
 
     /**
-     * Whether the product is below its minimum stock.
+     * Onder minimumvoorraad? min_stock = 0 betekent "geen minimum ingesteld"
+     * en mag dus nooit een waarschuwing tonen — vandaar de eerste check.
      */
     #[Computed]
     public function isBelowMinStock(): bool

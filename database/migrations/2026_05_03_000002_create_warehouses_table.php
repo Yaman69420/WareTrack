@@ -4,6 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Magazijnen — de top van de hiërarchie magazijn > locatie > stock.
+ *
+ * Soft deletes: een magazijn verdwijnt nooit hard, want stockbewegingen en
+ * leveringen uit het verleden moeten erop kunnen blijven verwijzen in rapporten.
+ */
 return new class extends Migration
 {
     public function up(): void

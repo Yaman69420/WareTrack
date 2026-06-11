@@ -14,6 +14,14 @@ use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
+/**
+ * Beheerscherm voor de productcatalogus: zoeken, filteren op categorie en
+ * CRUD via modals, inclusief afbeelding-upload en het koppelen van locaties.
+ *
+ * Dit component beheert enkel stamgegevens. Voorraadhoeveelheden worden hier
+ * bewust nooit aangepast — elke stockmutatie loopt via de StockService zodat
+ * de transactie- en auditlogica op één plek blijft.
+ */
 #[Layout('layouts.app')]
 class Index extends Component
 {
@@ -50,6 +58,10 @@ class Index extends Component
 
     public array $selectedLocations = [];
 
+    /**
+     * Terug naar pagina 1 zodra de zoekterm wijzigt: wie op pagina 5 stond,
+     * zou anders een lege pagina van het nieuwe (kortere) resultaat zien.
+     */
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -70,6 +82,8 @@ class Index extends Component
     public function products()
     {
         return Product::query()
+            // Eager loading van de categorie: zonder with() zou elke rij in de
+            // tabel een extra query veroorzaken (N+1-probleem).
             ->with('category')
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%")
                 ->orWhere('sku', 'like', "%{$this->search}%"))
@@ -114,14 +128,24 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Opent de locatie-modal met de huidige koppelingen alvast aangevinkt.
+     */
     public function openLocations(Product $product): void
     {
         $this->managingProductId = $product->id;
+        // Cast naar string: Livewire bindt checkbox-waarden als strings, dus
+        // integer-id's zouden nooit matchen en geen enkel vinkje zou aanstaan.
         $this->selectedLocations = $product->locations()->pluck('locations.id')->map(fn ($id) => (string) $id)->toArray();
+        // Computed-cache legen zodat de modal niet het vorige product toont.
         unset($this->managingProduct);
         $this->showLocationsModal = true;
     }
 
+    /**
+     * Slaat de locatie-koppelingen op. sync() vervangt de volledige set in de
+     * pivot-tabel: niet-aangevinkte locaties worden dus bewust ontkoppeld.
+     */
     public function saveLocations(): void
     {
         $product = Product::findOrFail($this->managingProductId);
@@ -133,8 +157,15 @@ class Index extends Component
         unset($this->managingProduct, $this->products);
     }
 
+    /**
+     * Eén save-methode voor create én update; $editingId bepaalt de modus.
+     * Valideert de afbeelding strikt (type-whitelist + groottelimiet) en ruimt
+     * bij vervanging het oude bestand op de disk op.
+     */
     public function save(): void
     {
+        // Bij bewerken moet de unique-check het eigen record negeren, anders
+        // zou elke update falen op de bestaande (eigen) SKU.
         $skuRule = $this->editingId
             ? "required|string|max:50|unique:products,sku,{$this->editingId}"
             : 'required|string|max:50|unique:products,sku';
@@ -145,11 +176,15 @@ class Index extends Component
             'categoryId' => 'required|exists:categories,id',
             'description' => 'nullable|string',
             'minStock' => 'nullable|integer|min:0',
+            // Whitelist van afbeeldingstypes plus cap van 2 MB: 'image' checkt de
+            // echte inhoud (niet enkel de extensie), de limiet beschermt de server.
             'image' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
         ]);
 
         $data = [
             'name' => $this->name,
+            // SKU genormaliseerd naar hoofdletters: zo kunnen 'abc-1' en 'ABC-1'
+            // nooit als twee verschillende producten bestaan.
             'sku' => strtoupper($this->sku),
             'category_id' => $this->categoryId,
             'description' => $this->description ?: null,
@@ -157,13 +192,17 @@ class Index extends Component
         ];
 
         if ($this->image) {
+            // store() genereert een willekeurige bestandsnaam: gebruikers kunnen
+            // zo nooit elkaars bestanden overschrijven via een gekozen naam.
             $data['image_path'] = $this->image->store('products', 'public');
         }
 
         if ($this->editingId) {
             $product = Product::findOrFail($this->editingId);
 
-            // Delete old image if a new one was uploaded
+            // Oude afbeelding pas verwijderen nadat de nieuwe veilig is
+            // opgeslagen; zonder deze opruiming blijven verweesde bestanden
+            // de publieke disk vullen.
             if ($this->image && $product->image_path) {
                 Storage::disk('public')->delete($product->image_path);
             }
@@ -179,9 +218,14 @@ class Index extends Component
 
         $this->showModal = false;
         $this->reset(['name', 'sku', 'categoryId', 'description', 'minStock', 'editingId', 'image', 'existingImagePath']);
+        // Computed-cache legen zodat de lijst de wijziging meteen toont.
         unset($this->products);
     }
 
+    /**
+     * Soft delete: het product verdwijnt uit de lijsten, maar historische
+     * stockbewegingen en audit-records blijven ernaar verwijzen.
+     */
     public function delete(Product $product): void
     {
         $product->delete();

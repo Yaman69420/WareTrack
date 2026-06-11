@@ -5,6 +5,13 @@ namespace App\Policies;
 use App\Models\Category;
 use App\Models\User;
 
+/**
+ * Autorisatieregels voor productcategorieën (masterdata).
+ *
+ * Raadplegen mag elke aangemelde gebruiker: magazijniers hebben categorieën
+ * nodig om producten terug te vinden. Beheren is admin-only, want wijzigingen
+ * aan masterdata raken meteen de volledige catalogus en de rapportering.
+ */
 class CategoryPolicy
 {
     public function viewAny(User $user): bool

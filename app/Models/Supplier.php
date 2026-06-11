@@ -8,6 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Leverancier: de externe partij waarvan leveringen binnenkomen.
+ *
+ * Gekoppeld aan producten via een many-to-many (een leverancier levert
+ * meerdere producten, een product kan meerdere leveranciers hebben).
+ * Soft deletes: oude leveringen blijven hun leverancier tonen, ook nadat
+ * de samenwerking is stopgezet.
+ */
 class Supplier extends Model
 {
     use HasFactory, SoftDeletes;
@@ -21,6 +29,8 @@ class Supplier extends Model
 
     public function products(): BelongsToMany
     {
+        // Tabelnaam expliciet: Laravel zou alfabetisch 'product_supplier' genereren,
+        // de migratie heet 'supplier_product'. Zonder deze parameter faalt de relatie.
         return $this->belongsToMany(Product::class, 'supplier_product');
     }
 }

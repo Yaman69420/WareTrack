@@ -11,52 +11,63 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Queued listener die admins verwittigt zodra een product onder zijn minimum zakt.
+ *
+ * ShouldQueue is hier essentieel: de check en het mailen draaien op een queue-worker,
+ * zodat het request van de magazijnier nooit hoeft te wachten op SMTP-verkeer.
+ */
 class SendLowStockNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
     /**
-     * The queue the listener should be pushed to.
+     * Aparte 'notifications'-queue: mailverkeer wordt zo los van de default-queue
+     * verwerkt, en een trage mailserver blokkeert geen andere jobs.
      */
     public string $queue = 'notifications';
 
     /**
-     * The number of times the job may be attempted.
+     * Maximaal drie pogingen: een tijdelijke mailserver-hapering krijgt herkansingen,
+     * een structureel probleem belandt na drie keer in de failed_jobs-tabel.
      */
     public int $tries = 3;
 
     /**
-     * Handle the event.
+     * Controleert na elke mutatie of het product onder zijn minimum zit en mailt dan.
      *
-     * Re-fetches stock fresh from DB so we always use the post-transaction
-     * quantity (the event's product may still be in-memory from before the update).
+     * fresh() haalt het product opnieuw uit de databank: het model in het event werd
+     * geserialiseerd op het moment van dispatchen en kan verouderd zijn tegen de tijd
+     * dat de worker dit verwerkt. Zo rekenen we altijd met de stand ná de transactie.
      */
     public function handle(StockMovementRegistered $event): void
     {
         $product = $event->product->fresh(['stock', 'category']);
 
-        // Skip if no minimum is configured
+        // min_stock 0 betekent: geen bewaking gewenst voor dit product.
         if ($product->min_stock <= 0) {
             return;
         }
 
-        // Skip if stock is at or above minimum
+        // Voorraad op of boven het minimum: niets te melden.
         if (! $product->isBelowMinStock()) {
             return;
         }
 
-        // Throttle: send at most once per 24 h per product.
-        // Cache::add is atomic, so parallel workers can't both pass the check.
+        // Throttle: maximaal één melding per product per 24 uur, anders spamt elke
+        // volgende uitgifte de admins opnieuw. Cache::add is atomair (zet alleen als de
+        // sleutel nog niet bestaat), dus parallelle workers passeren nooit allebei.
         $cacheKey = "low_stock_alert:{$product->id}";
 
         if (! Cache::add($cacheKey, true, now()->addHours(24))) {
             return;
         }
 
-        // Notify every admin
         $admins = User::where('role', UserRole::Admin)->get();
 
         foreach ($admins as $admin) {
+            // Eén falende mail mag de melding voor de andere admins niet tegenhouden:
+            // log de fout en ga verder met de volgende ontvanger.
             try {
                 $admin->notify(new LowStockAlert($product));
             } catch (\Throwable $e) {

@@ -10,6 +10,14 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * Volledig leveranciersbeheer in één component: lijst, zoeken, en CRUD via modal.
+ *
+ * Aparte Create/Edit-pagina's zouden voor dit kleine formulier overkill zijn;
+ * één modal met een nullable editingId dekt beide gevallen. Hier worden ook de
+ * productkoppelingen (supplier_product-pivot) beheerd waarop Deliveries\Create
+ * zijn productdropdown filtert.
+ */
 #[Layout('layouts.app')]
 class Index extends Component
 {
@@ -17,7 +25,7 @@ class Index extends Component
 
     public string $search = '';
 
-    // Create/Edit modal
+    // Eén modal voor create én edit: editingId null = create, gevuld = edit
     public bool $showModal = false;
 
     public ?int $editingId = null;
@@ -36,6 +44,8 @@ class Index extends Component
 
     public function updatedSearch(): void
     {
+        // Terug naar pagina 1 bij elke zoekterm, anders kan de gebruiker op een
+        // pagina staan die na het filteren niet meer bestaat.
         $this->resetPage();
     }
 
@@ -70,14 +80,23 @@ class Index extends Component
         $this->phone = $supplier->phone ?? '';
         $this->address = $supplier->address ?? '';
         $this->notes = $supplier->notes ?? '';
+        // 'products.id' expliciet geprefixt: de pivot-join heeft ook een id-kolom.
+        // Cast naar string omdat checkbox-bindings strings opleveren — anders matcht
+        // de bestaande selectie niet en lijken alle vinkjes uit te staan.
         $this->selectedProductIds = $supplier->products()->pluck('products.id')->map(fn ($id) => (string) $id)->toArray();
         $this->resetValidation();
         $this->showModal = true;
     }
 
+    /**
+     * Slaat een nieuwe of bestaande leverancier op, inclusief productkoppelingen.
+     * sync() vervangt de volledige pivot-set door de huidige selectie — koppelingen
+     * uitvinken verwijdert ze dus ook, zonder aparte detach-logica.
+     */
     public function save(): void
     {
-        // Route is shared with workers — the policy is the real gate, not the hidden UI buttons
+        // De route is gedeeld met workers — de policy is de echte poort,
+        // niet de in de UI verborgen knoppen.
         if ($this->editingId) {
             $this->authorize('update', Supplier::findOrFail($this->editingId));
         } else {
@@ -115,6 +134,8 @@ class Index extends Component
 
         $this->showModal = false;
         $this->reset(['name', 'email', 'phone', 'address', 'notes', 'editingId', 'selectedProductIds']);
+        // #[Computed] cachet per request: unset gooit de cache weg zodat de lijst
+        // nog in dezelfde render de wijziging toont.
         unset($this->suppliers);
     }
 
