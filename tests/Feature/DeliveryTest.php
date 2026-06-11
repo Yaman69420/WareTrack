@@ -214,6 +214,60 @@ test('fully received delivery cannot be processed again', function () {
     expect(Stock::where('product_id', $this->product->id)->value('quantity') ?? 0)->toBe($stockBefore);
 });
 
+test('over-receiving is capped at the ordered quantity', function () {
+    $delivery = Delivery::factory()->create([
+        'supplier_id' => $this->supplier->id,
+        'user_id' => $this->admin->id,
+        'status' => DeliveryStatus::Pending,
+    ]);
+
+    $delivery->items()->create([
+        'product_id' => $this->product->id,
+        'location_id' => $this->location->id,
+        'quantity_ordered' => 10,
+        'quantity_received' => 0,
+    ]);
+
+    $item = $delivery->items()->first();
+
+    Livewire::actingAs($this->admin)
+        ->test(Show::class, ['delivery' => $delivery])
+        ->set("receivedQuantities.{$item->id}", 15)
+        ->call('process');
+
+    // Gecapt op het bestelde aantal: nooit meer ontvangen dan besteld
+    expect($item->fresh()->quantity_received)->toBe(10);
+    expect(Stock::where('product_id', $this->product->id)->where('location_id', $this->location->id)->value('quantity'))->toBe(10);
+    expect($delivery->fresh()->status)->toBe(DeliveryStatus::Received);
+});
+
+test('over-receiving on a partial delivery is capped at the remaining quantity', function () {
+    $delivery = Delivery::factory()->create([
+        'supplier_id' => $this->supplier->id,
+        'user_id' => $this->admin->id,
+        'status' => DeliveryStatus::Partial,
+    ]);
+
+    $delivery->items()->create([
+        'product_id' => $this->product->id,
+        'location_id' => $this->location->id,
+        'quantity_ordered' => 10,
+        'quantity_received' => 4,
+    ]);
+
+    $item = $delivery->items()->first();
+
+    Livewire::actingAs($this->admin)
+        ->test(Show::class, ['delivery' => $delivery])
+        ->set("receivedQuantities.{$item->id}", 99)
+        ->call('process');
+
+    // Max ontvangbaar was 10 - 4 = 6: de stock stijgt met exact dat saldo
+    expect($item->fresh()->quantity_received)->toBe(10);
+    expect(Stock::where('product_id', $this->product->id)->where('location_id', $this->location->id)->value('quantity'))->toBe(6);
+    expect($delivery->fresh()->status)->toBe(DeliveryStatus::Received);
+});
+
 test('deliveries can be filtered by status', function () {
     Delivery::factory()->create(['supplier_id' => $this->supplier->id, 'user_id' => $this->admin->id, 'status' => DeliveryStatus::Pending]);
     Delivery::factory()->create(['supplier_id' => $this->supplier->id, 'user_id' => $this->admin->id, 'status' => DeliveryStatus::Received, 'received_at' => now()]);
