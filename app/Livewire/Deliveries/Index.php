@@ -22,8 +22,12 @@ class Index extends Component
 {
     use WithPagination;
 
+    // Gekozen statusfilter; lege string betekent "alle statussen tonen"
     public string $filterStatus = '';
 
+    /**
+     * Livewire-hook die afgaat telkens de statusfilter wijzigt.
+     */
     public function updatedFilterStatus(): void
     {
         // Terug naar pagina 1: na filteren kan de huidige pagina buiten bereik vallen
@@ -31,6 +35,9 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * Gepagineerde leveringen, nieuwste eerst, optioneel beperkt tot één status.
+     */
     #[Computed]
     public function deliveries()
     {
@@ -43,12 +50,18 @@ class Index extends Component
             ->paginate(15);
     }
 
+    /**
+     * Alle mogelijke leveringsstatussen (enum-cases) voor de filterdropdown.
+     */
     #[Computed]
     public function statuses(): array
     {
         return DeliveryStatus::cases();
     }
 
+    /**
+     * Rendert het leveringenoverzicht.
+     */
     public function render()
     {
         return view('livewire.deliveries.index');

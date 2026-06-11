@@ -5,8 +5,15 @@ namespace Database\Seeders;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
 
+/**
+ * Maakt de 5 demo-categorieën aan (Electronics, Office Supplies, Packaging,
+ * Tools & Equipment, Safety) waar de producten naar verwijzen.
+ */
 class CategorySeeder extends Seeder
 {
+    /**
+     * Maakt de 5 vaste productcategorieën aan waarnaar ProductSeeder later op naam verwijst.
+     */
     public function run(): void
     {
         $categories = [

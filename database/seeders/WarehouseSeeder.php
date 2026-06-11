@@ -6,8 +6,16 @@ use App\Models\Location;
 use App\Models\Warehouse;
 use Illuminate\Database\Seeder;
 
+/**
+ * Maakt de 3 demo-magazijnen (A Gent, B Brussel, C Antwerpen koelopslag)
+ * met samen 12 locaties, elk met eigen codeprefix.
+ */
 class WarehouseSeeder extends Seeder
 {
+    /**
+     * Maakt 3 magazijnen (Gent, Brussel, Antwerpen) met samen 12 locaties: 5 gangen in A,
+     * 3 secties in B en 4 zones in C. De locatiecodes liggen vast voor de andere seeders.
+     */
     public function run(): void
     {
         $warehouseA = Warehouse::create([

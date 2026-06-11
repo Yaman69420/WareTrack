@@ -6,8 +6,16 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
 
+/**
+ * Maakt de 20 demo-producten aan (5 EL, 5 OF, 4 PK, 3 TL, 3 SF), elk met
+ * unieke SKU en een min_stock-drempel voor de low-stock-bewaking.
+ */
 class ProductSeeder extends Seeder
 {
+    /**
+     * Maakt 20 demo-producten verdeeld over de 5 categorieën (5 EL, 5 OF, 4 PK, 3 TL, 3 SF).
+     * De SKU's liggen vast omdat StockSeeder, SupplierProductSeeder en DeliverySeeder erop opzoeken.
+     */
     public function run(): void
     {
         $electronics = Category::where('name', 'Electronics')->first();

@@ -171,6 +171,7 @@ class Dashboard extends Component
         ];
     }
 
+    /** Rendert de dashboard-view; alle widgetdata komt via de computed properties hierboven. */
     public function render()
     {
         return view('livewire.dashboard');

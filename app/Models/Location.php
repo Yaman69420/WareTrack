@@ -22,11 +22,13 @@ class Location extends Model
 
     protected $fillable = ['warehouse_id', 'code', 'name'];
 
+    /** Het magazijn waarbinnen deze locatie zich bevindt. */
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }
 
+    /** De producten die aan deze locatie zijn toegewezen (many-to-many via product_location). */
     public function products(): BelongsToMany
     {
         // Tabelnaam expliciet: de Laravel-conventie zou alfabetisch 'location_product'
@@ -34,11 +36,13 @@ class Location extends Model
         return $this->belongsToMany(Product::class, 'product_location');
     }
 
+    /** De actuele voorraadrijen op deze locatie, één per product dat hier ligt. */
     public function stock(): HasMany
     {
         return $this->hasMany(Stock::class);
     }
 
+    /** Alle stockbewegingen die op deze locatie geboekt werden (historiek). */
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);

@@ -27,16 +27,19 @@ class Index extends Component
 
     // Terug naar pagina 1 bij een nieuwe zoekterm of filter: de huidige pagina
     // bestaat mogelijk niet meer binnen de gefilterde resultaten.
+    /** Reset de paginering wanneer de zoekterm wijzigt. */
     public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
+    /** Reset de paginering wanneer de magazijnfilter wijzigt. */
     public function updatedFilterWarehouse(): void
     {
         $this->resetPage();
     }
 
+    /** Magazijnopties voor de filterdropdown, alfabetisch. */
     #[Computed]
     public function warehouses()
     {
@@ -69,6 +72,7 @@ class Index extends Component
             ->paginate(20);
     }
 
+    /** Tekent het voorraadoverzicht; de pagina-layout komt uit het #[Layout]-attribuut. */
     public function render()
     {
         return view('livewire.stock.index');

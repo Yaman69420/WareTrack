@@ -22,11 +22,13 @@ class Supplier extends Model
 
     protected $fillable = ['name', 'email', 'phone', 'address', 'notes'];
 
+    /** Alle leveringen die van deze leverancier binnenkwamen. */
     public function deliveries(): HasMany
     {
         return $this->hasMany(Delivery::class);
     }
 
+    /** De producten die deze leverancier kan leveren (many-to-many via supplier_product). */
     public function products(): BelongsToMany
     {
         // Tabelnaam expliciet: Laravel zou alfabetisch 'product_supplier' genereren,

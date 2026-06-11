@@ -39,6 +39,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    /** Attribuutcasts: wachtwoord automatisch gehasht, rol als enum, verificatie als datetime. */
     protected function casts(): array
     {
         return [
@@ -54,21 +55,25 @@ class User extends Authenticatable
 
     // Rolchecks als benoemde helpers: de enum-vergelijking staat op één plek,
     // policies en views lezen $user->isAdmin() i.p.v. overal de enum te importeren.
+    /** Waar als deze gebruiker de admin-rol heeft (volledig beheer, incl. correcties). */
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
     }
 
+    /** Waar als deze gebruiker de rol magazijnmedewerker heeft (operationele taken). */
     public function isWarehouseWorker(): bool
     {
         return $this->role === UserRole::WarehouseWorker;
     }
 
+    /** De stockbewegingen die deze gebruiker registreerde. */
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
     }
 
+    /** De leveringen die deze gebruiker ontving en registreerde. */
     public function deliveries(): HasMany
     {
         return $this->hasMany(Delivery::class);

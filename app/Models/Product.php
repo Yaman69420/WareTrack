@@ -30,6 +30,7 @@ class Product extends Model
         'min_stock',
     ];
 
+    /** Attribuutcast: min_stock als integer, zodat de drempelvergelijking numeriek klopt. */
     protected function casts(): array
     {
         return [
@@ -37,11 +38,13 @@ class Product extends Model
         ];
     }
 
+    /** De categorie waartoe dit product behoort. */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
+    /** De locaties waaraan dit product is toegewezen (many-to-many via product_location). */
     public function locations(): BelongsToMany
     {
         // Tabelnaam expliciet: de Laravel-conventie zou alfabetisch 'location_product'
@@ -49,21 +52,25 @@ class Product extends Model
         return $this->belongsToMany(Location::class, 'product_location');
     }
 
+    /** De actuele voorraadrijen van dit product, één per locatie waar het ligt. */
     public function stock(): HasMany
     {
         return $this->hasMany(Stock::class);
     }
 
+    /** De volledige bewegingshistoriek van dit product. */
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
     }
 
+    /** De leveringsregels waarin dit product besteld of ontvangen werd. */
     public function deliveryItems(): HasMany
     {
         return $this->hasMany(DeliveryItem::class);
     }
 
+    /** De leveranciers die dit product kunnen leveren (many-to-many via supplier_product). */
     public function suppliers(): BelongsToMany
     {
         // Tabelnaam expliciet: Laravel zou alfabetisch 'product_supplier' genereren,

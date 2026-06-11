@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /** @extends Factory<StockMovement> */
 class StockMovementFactory extends Factory
 {
+    /**
+     * Recept voor een voorraadbeweging: standaard een inkomende boeking van 1 tot 50 stuks.
+     * De van/naar-locaties blijven leeg — die zijn enkel relevant bij transfers en worden
+     * in tests per geval ingevuld.
+     */
     public function definition(): array
     {
         return [

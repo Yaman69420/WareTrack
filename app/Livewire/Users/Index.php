@@ -12,6 +12,14 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * Beheerscherm voor gebruikersaccounts: zoeken plus CRUD via een modal, met
+ * rollen uit de UserRole-enum (admin of magazijnier).
+ *
+ * Bevat twee beschermingen bij verwijderen: een gebruiker kan zichzelf nooit
+ * wissen, en accounts met gekoppelde stockbewegingen of leveringen blijven
+ * bestaan zodat de historiek altijd haar auteur behoudt.
+ */
 #[Layout('layouts.app')]
 class Index extends Component
 {
@@ -32,11 +40,18 @@ class Index extends Component
 
     public string $role = '';
 
+    /**
+     * Terug naar pagina 1 bij een nieuwe zoekterm, anders kan de gebruiker op
+     * een lege pagina van het gefilterde resultaat belanden.
+     */
     public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
+    /**
+     * Doorzoekbare, gepagineerde gebruikerslijst, alfabetisch op naam.
+     */
     #[Computed]
     public function users()
     {
@@ -50,12 +65,19 @@ class Index extends Component
             ->paginate(15);
     }
 
+    /**
+     * Alle rollen uit de UserRole-enum, voor de rol-select in het formulier.
+     */
     #[Computed]
     public function roles(): array
     {
         return UserRole::cases();
     }
 
+    /**
+     * Opent de modal in create-modus met een leeg formulier. Magazijnier is
+     * de standaardrol (minste rechten); admin moet een bewuste keuze zijn.
+     */
     public function openCreate(): void
     {
         $this->reset(['name', 'email', 'password', 'role', 'editingId']);
@@ -64,6 +86,10 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Opent de modal in edit-modus. Het wachtwoordveld blijft bewust leeg:
+     * enkel een ingevulde waarde leidt bij save tot een wachtwoordwijziging.
+     */
     public function openEdit(User $user): void
     {
         $this->editingId = $user->id;
@@ -75,12 +101,20 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Eén save-methode voor create én update; $editingId bepaalt de modus.
+     * Wachtwoorden worden altijd gehasht opgeslagen, nooit in platte tekst.
+     */
     public function save(): void
     {
+        // Bij bewerken moet de unique-check het eigen record negeren, anders
+        // zou elke update falen op het bestaande (eigen) e-mailadres.
         $emailRule = $this->editingId
             ? "required|email|max:150|unique:users,email,{$this->editingId}"
             : 'required|email|max:150|unique:users,email';
 
+        // Bij bewerken is het wachtwoord optioneel: leeg laten betekent
+        // "behoud het huidige wachtwoord".
         $passwordRule = $this->editingId
             ? 'nullable|string|min:8'
             : 'required|string|min:8';
@@ -99,6 +133,7 @@ class Index extends Component
                 'email' => $this->email,
                 'role' => $this->role,
             ];
+            // Enkel hashen en meesturen als er effectief een nieuw wachtwoord is.
             if ($this->password) {
                 $data['password'] = Hash::make($this->password);
             }
@@ -111,6 +146,7 @@ class Index extends Component
                 'email' => $this->email,
                 'password' => Hash::make($this->password),
                 'role' => $this->role,
+                // Door een admin aangemaakt account: e-mailverificatie is overbodig.
                 'email_verified_at' => now(),
             ]);
             activity()->causedBy(auth()->user())->performedOn($user)->log('created');
@@ -122,14 +158,23 @@ class Index extends Component
         unset($this->users);
     }
 
+    /**
+     * Verwijdert een gebruiker, met twee guards: nooit het eigen account, en
+     * nooit een account waarnaar nog bewegingen of leveringen verwijzen.
+     */
     public function delete(User $user): void
     {
+        // Zelf-verwijdering blokkeren: anders sluit een admin zichzelf buiten
+        // en kan het systeem zelfs zonder enige beheerder vallen.
         if ($user->id === auth()->id()) {
             Flux::toast(__('You cannot delete your own account.'), variant: 'danger');
 
             return;
         }
 
+        // De databank weigert de delete via foreign keys zodra er bewegingen of
+        // leveringen aan de gebruiker hangen; die QueryException vertalen we
+        // naar een verstaanbare melding in plaats van een serverfout.
         try {
             $user->delete();
             activity()->causedBy(auth()->user())->performedOn($user)->log('deleted');
@@ -140,6 +185,9 @@ class Index extends Component
         }
     }
 
+    /**
+     * Rendert de gebruikerslijst-view.
+     */
     public function render()
     {
         return view('livewire.users.index');

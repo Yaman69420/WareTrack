@@ -43,6 +43,9 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * Doorzoekbare, gepagineerde categorielijst met het productaantal per rij.
+     */
     #[Computed]
     public function categories()
     {
@@ -55,6 +58,10 @@ class Index extends Component
             ->paginate(10);
     }
 
+    /**
+     * Opent de modal in create-modus met een leeg formulier en zonder oude
+     * validatiefouten.
+     */
     public function openCreate(): void
     {
         $this->reset(['name', 'description', 'editingId']);
@@ -62,6 +69,9 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Opent de modal in edit-modus, voorgevuld met de bestaande gegevens.
+     */
     public function openEdit(Category $category): void
     {
         $this->editingId = $category->id;
@@ -122,6 +132,9 @@ class Index extends Component
         unset($this->categories);
     }
 
+    /**
+     * Rendert de categorielijst-view.
+     */
     public function render()
     {
         return view('livewire.categories.index');

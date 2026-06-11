@@ -13,8 +13,19 @@ use App\Models\User;
 use App\Services\StockService;
 use Illuminate\Database\Seeder;
 
+/**
+ * Maakt 5 voorbeeldleveringen (PO-2026-001 t/m 005) in verschillende statussen,
+ * zodat de demo meteen de volledige pending/partial/received-flow toont.
+ */
 class DeliverySeeder extends Seeder
 {
+    /**
+     * Maakt 5 demoleveringen (PO-2026-001 t.e.m. 005) met samen 13 leveringsregels:
+     * 3x volledig ontvangen, 1x deels ontvangen en 1x in afwachting, zodat elke status zichtbaar is.
+     * Ontvangen regels worden via StockService geboekt (10 inkomende bewegingen), gevolgd door een
+     * outgoing, een transfer en een correctie voor variatie in de rapporten.
+     * De StockService wordt door de container geïnjecteerd — zo blijven stock én historiek consistent.
+     */
     public function run(StockService $stock): void
     {
         $admin = User::where('email', 'admin@waretrack.test')->first();
@@ -188,6 +199,8 @@ class DeliverySeeder extends Seeder
 
         // Outgoing: screwdrivers picked from A1
         $screwdriverStock = Stock::where('product_id', $screwdriver->id)->first();
+        // StockSeeder geeft willekeurige aantallen; alleen boeken als er genoeg ligt,
+        // anders zou registerOutgoing een tekort-exception gooien
         if ($screwdriverStock && $screwdriverStock->quantity >= 3) {
             $stock->registerOutgoing(
                 $screwdriver,
@@ -204,6 +217,7 @@ class DeliverySeeder extends Seeder
             ->where('location_id', $locationA1->id)
             ->first();
 
+        // Zelfde reden: transfer alleen uitvoeren als A1 de 10 stuks effectief kan missen
         if ($hdmiStockA1 && $hdmiStockA1->quantity >= 10) {
             $stock->transfer($hdmi, $locationA1, $locationA2, 10, $admin, 'Redistribute HDMI stock');
         }
@@ -212,6 +226,7 @@ class DeliverySeeder extends Seeder
         $helmetStock = Stock::where('product_id', $helmet->id)->first();
         if ($helmetStock) {
             $helmetLocation = Location::find($helmetStock->location_id);
+            // adjust() verwacht de nieuwe totaaltelling, niet het verschil — vandaar quantity + 2
             $stock->adjust($helmet, $helmetLocation, $helmetStock->quantity + 2, $admin, 'Physical count correction +2');
         }
     }

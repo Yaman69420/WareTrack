@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /** @extends Factory<Warehouse> */
 class WarehouseFactory extends Factory
 {
+    /**
+     * Recept voor een magazijn: unieke naam ('Warehouse XX'), een stad als ligging
+     * en optioneel een korte beschrijving.
+     */
     public function definition(): array
     {
         return [

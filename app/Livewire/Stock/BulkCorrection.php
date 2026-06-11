@@ -52,6 +52,7 @@ class BulkCorrection extends Component
         $this->prefillQuantities();
     }
 
+    /** Magazijnopties voor de keuzelijst, alfabetisch. */
     #[Computed]
     public function warehouses()
     {
@@ -79,6 +80,12 @@ class BulkCorrection extends Component
             ]);
     }
 
+    /**
+     * Vult $quantities met de huidige aantallen, gekeyed op stock-id.
+     *
+     * Dit is het startpunt "geen wijziging" waartegen changedLines() de delta's
+     * afmeet; de string-cast houdt het formaat gelijk aan wat de inputs sturen.
+     */
     public function prefillQuantities(): void
     {
         $this->quantities = $this->stockLines
@@ -86,6 +93,7 @@ class BulkCorrection extends Component
             ->toArray();
     }
 
+    /** Eenmalige initialisatie bij het eerste laden van het component. */
     public function mount(): void
     {
         // Eénmalig vooraf invullen als warehouseId al gezet is (bv. via de URL):
@@ -172,6 +180,7 @@ class BulkCorrection extends Component
         $this->prefillQuantities();
     }
 
+    /** Tekent de teltabel; de pagina-layout komt uit het #[Layout]-attribuut op de klasse. */
     public function render()
     {
         return view('livewire.stock.bulk-correction');

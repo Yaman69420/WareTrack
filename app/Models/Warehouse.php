@@ -20,6 +20,7 @@ class Warehouse extends Model
 
     protected $fillable = ['name', 'location', 'description'];
 
+    /** Een magazijn bevat meerdere locaties (rekken/schappen) waar de voorraad effectief ligt. */
     public function locations(): HasMany
     {
         return $this->hasMany(Location::class);

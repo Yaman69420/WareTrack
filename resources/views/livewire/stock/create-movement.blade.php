@@ -6,6 +6,8 @@
         <flux:heading size="xl">{{ __('Register Stock Movement') }}</flux:heading>
     </div>
 
+    {{-- Stapsgewijs formulier: elk veld verschijnt pas zodra de vorige keuze gemaakt is.
+         wire:model.live op de selects zorgt dat afhankelijke lijsten meteen meefilteren --}}
     <div class="max-w-xl">
         <div class="flex flex-col gap-6 rounded-xl border border-white/[.08] bg-white p-6 dark:bg-white/[.04]">
 
@@ -21,6 +23,7 @@
                 <flux:error name="type" />
             </flux:field>
 
+            {{-- De rest van het formulier toont pas na de typekeuze (zie empty state onderaan) --}}
             @if ($type)
 
                 {{-- Step 2: Product --}}
@@ -36,6 +39,8 @@
                     <flux:error name="productId" />
                 </flux:field>
 
+                {{-- Eén locatie volstaat voor incoming/outgoing/correction;
+                     een transfer heeft aparte van- en naar-blokken (zie @else) --}}
                 @if ($type !== 'transfer')
 
                     {{-- Step 3a: Warehouse picker --}}
@@ -48,9 +53,10 @@
                         </flux:select>
                     </flux:field>
 
-                    {{-- Step 4a: Location (filtered) --}}
+                    {{-- Step 4a: Location (filtered) — lijst bevat enkel locaties van het gekozen magazijn --}}
                     @if ($warehouseId)
                         <flux:field>
+                            {{-- Label volgt de richting van de beweging: bestemming, bron of neutraal --}}
                             <flux:label>
                                 @if ($type === 'incoming') {{ __('Destination Location') }}
                                 @elseif ($type === 'outgoing') {{ __('Source Location') }}
@@ -67,7 +73,8 @@
                             <flux:error name="locationId" />
                         </flux:field>
 
-                        {{-- Current stock hint --}}
+                        {{-- Current stock hint: helpt fouten voorkomen vóór het opslaan;
+                             strikte null-check omdat een stand van 0 ook getoond moet worden --}}
                         @if ($productId && $locationId && $this->currentStock !== null)
                             <div class="flex items-center gap-2 rounded-lg border border-white/[.06] bg-white/[.03] px-4 py-2.5 text-sm">
                                 <flux:icon.cube class="size-4 text-zinc-500" />
@@ -81,7 +88,7 @@
 
                 @else
 
-                    {{-- Transfer: From --}}
+                    {{-- Transfer: From — bronlocatie; locatielijst volgt het gekozen bronmagazijn --}}
                     <div class="rounded-lg border border-white/[.06] bg-white/[.02] p-4">
                         <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">{{ __('From') }}</p>
 
@@ -111,7 +118,7 @@
                         </div>
                     </div>
 
-                    {{-- Transfer: To --}}
+                    {{-- Transfer: To — doellocatie, zelfde patroon als het From-blok --}}
                     <div class="rounded-lg border border-white/[.06] bg-white/[.02] p-4">
                         <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">{{ __('To') }}</p>
 
@@ -143,7 +150,8 @@
 
                 @endif
 
-                {{-- Quantity --}}
+                {{-- Quantity: een correctie vraagt de absolute nieuwe stand (mag 0 zijn),
+                     de andere types een verplaatst aantal (minstens 1) --}}
                 <flux:field>
                     <flux:label>
                         {{ $type === 'correction' ? __('New Stock Quantity') : __('Quantity') }}
@@ -157,7 +165,8 @@
                     <flux:error name="quantity" />
                 </flux:field>
 
-                {{-- Reference (incoming / outgoing only) --}}
+                {{-- Reference (incoming / outgoing only): bv. bestelbonnummer; bij transfer
+                     of correctie is er geen extern document om naar te verwijzen --}}
                 @if ($type === 'incoming' || $type === 'outgoing')
                     <flux:field>
                         <flux:label>

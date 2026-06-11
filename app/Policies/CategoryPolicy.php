@@ -14,21 +14,25 @@ use App\Models\User;
  */
 class CategoryPolicy
 {
+    /** Elke aangemelde gebruiker: categorieën zijn nodig om producten op te zoeken. */
     public function viewAny(User $user): bool
     {
         return true;
     }
 
+    /** Alleen admins: een nieuwe categorie verandert de indeling van de hele catalogus. */
     public function create(User $user): bool
     {
         return $user->isAdmin();
     }
 
+    /** Alleen admins: een hernoemde categorie wijzigt meteen alle gekoppelde producten. */
     public function update(User $user, Category $category): bool
     {
         return $user->isAdmin();
     }
 
+    /** Alleen admins: verwijderen raakt elk product dat in deze categorie zit. */
     public function delete(User $user, Category $category): bool
     {
         return $user->isAdmin();

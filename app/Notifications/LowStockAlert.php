@@ -15,15 +15,21 @@ use Illuminate\Notifications\Notification;
  */
 class LowStockAlert extends Notification
 {
+    /** Het product dat onder zijn drempel zakte; readonly, de notificatie wijzigt zelf niets. */
     public function __construct(
         public readonly Product $product,
     ) {}
 
+    /** Bepaalt de afleverkanalen: deze waarschuwing vertrekt momenteel enkel via e-mail. */
     public function via(object $notifiable): array
     {
         return ['mail'];
     }
 
+    /**
+     * Stelt de waarschuwingsmail samen: berekent de actuele stand en het tekort,
+     * en rendert die cijfers in de markdown-template emails.low-stock.
+     */
     public function toMail(object $notifiable): MailMessage
     {
         $current = $this->product->totalStock();

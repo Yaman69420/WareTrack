@@ -47,6 +47,10 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * Doorzoekbare, gepagineerde magazijnlijst met per rij het aantal
+     * locaties en de totale voorraad.
+     */
     #[Computed]
     public function warehouses()
     {
@@ -68,6 +72,10 @@ class Index extends Component
             ->paginate(10);
     }
 
+    /**
+     * Opent de modal in create-modus met een leeg formulier en zonder oude
+     * validatiefouten.
+     */
     public function openCreate(): void
     {
         $this->reset(['name', 'location', 'description', 'editingId']);
@@ -75,6 +83,9 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Opent de modal in edit-modus, voorgevuld met de bestaande gegevens.
+     */
     public function openEdit(Warehouse $warehouse): void
     {
         $this->editingId = $warehouse->id;
@@ -129,6 +140,9 @@ class Index extends Component
         unset($this->warehouses);
     }
 
+    /**
+     * Rendert de magazijnlijst-view.
+     */
     public function render()
     {
         return view('livewire.warehouses.index');

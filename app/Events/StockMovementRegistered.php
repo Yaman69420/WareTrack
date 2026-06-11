@@ -18,6 +18,10 @@ class StockMovementRegistered
 {
     use Dispatchable, SerializesModels;
 
+    /**
+     * Payload van het event: het gewijzigde product en de zojuist geboekte beweging.
+     * Readonly promoted properties: listeners kunnen de payload lezen maar nooit aanpassen.
+     */
     public function __construct(
         public readonly Product $product,
         public readonly StockMovement $movement,

@@ -17,11 +17,13 @@ use App\Models\User;
  */
 class StockMovementPolicy
 {
+    /** Elke aangemelde gebruiker: de bewegingshistoriek verklaart elk huidig stocksaldo. */
     public function viewAny(User $user): bool
     {
         return true;
     }
 
+    /** Elke aangemelde gebruiker: een individuele boeking moet altijd controleerbaar zijn. */
     public function view(User $user, StockMovement $movement): bool
     {
         return true;

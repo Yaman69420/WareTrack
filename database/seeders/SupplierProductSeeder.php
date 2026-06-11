@@ -15,6 +15,10 @@ use Illuminate\Database\Seeder;
  */
 class SupplierProductSeeder extends Seeder
 {
+    /**
+     * Kent elk van de 4 leveranciers zijn assortiment toe: één productcategorie per leverancier,
+     * behalve TechSupply BV die zowel Electronics als Tools & Equipment levert (8 producten).
+     */
     public function run(): void
     {
         $techSupply = Supplier::where('name', 'TechSupply BV')->first();

@@ -11,6 +11,13 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
 
+/**
+ * Configureert Laravel Fortify, de headless authenticatielaag van de app.
+ *
+ * Fortify levert enkel de backend-logica (login, registratie, 2FA, reset);
+ * deze provider koppelt er onze eigen actions, Blade-views en rate limiting
+ * aan zodat de auth-flow volledig in de huisstijl van WareTrack draait.
+ */
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
@@ -59,11 +66,15 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureRateLimiting(): void
     {
+        // 2FA-pogingen gekoppeld aan de sessie-id van de halve login, niet aan het
+        // IP: zo remt een aanvaller die codes gokt af zonder collega's te raken.
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
         });
 
         RateLimiter::for('login', function (Request $request) {
+            // Sleutel = e-mailadres + IP, genormaliseerd (lowercase, accenten weg)
+            // zodat "User@x.be" en "user@x.be" niet elk apart 5 pogingen krijgen.
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);

@@ -14,16 +14,19 @@ use App\Models\User;
  */
 class DeliveryPolicy
 {
+    /** Elke aangemelde gebruiker: het leveringsoverzicht stuurt het dagelijkse werk aan. */
     public function viewAny(User $user): bool
     {
         return true;
     }
 
+    /** Elke aangemelde gebruiker: detailgegevens zijn nodig om de levering te kunnen verwerken. */
     public function view(User $user, Delivery $delivery): bool
     {
         return true;
     }
 
+    /** Alleen admins: leveringen inplannen is beheer, geen uitvoerend magazijnwerk. */
     public function create(User $user): bool
     {
         return $user->isAdmin();
@@ -39,11 +42,13 @@ class DeliveryPolicy
         return true;
     }
 
+    /** Alleen admins: een geplande levering aanpassen hoort bij planning, niet bij uitvoering. */
     public function update(User $user, Delivery $delivery): bool
     {
         return $user->isAdmin();
     }
 
+    /** Alleen admins: een levering schrappen wist ook de bestelcontext van de regels. */
     public function delete(User $user, Delivery $delivery): bool
     {
         return $user->isAdmin();

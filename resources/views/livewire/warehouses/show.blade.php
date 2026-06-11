@@ -24,12 +24,13 @@
             </flux:button>
         </div>
 
+        {{-- Omschrijving is optioneel; enkel tonen als ze ingevuld is --}}
         @if ($warehouse->description)
             <p class="mt-3 max-w-2xl text-sm text-zinc-500">{{ $warehouse->description }}</p>
         @endif
     </div>
 
-    {{-- Stats bar --}}
+    {{-- Stats bar: kerncijfers van dit magazijn uit de computed property stats --}}
     <div class="grid grid-cols-3 gap-4">
         <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-violet-50 p-2 dark:bg-violet-900/30">
@@ -62,9 +63,10 @@
         </div>
     </div>
 
-    {{-- Locations header + view toggle --}}
+    {{-- Locations header + view toggle: wisselt tussen kaarten en heatmap via $set('viewMode') --}}
     <div class="flex items-center justify-between">
         <flux:heading size="lg">{{ __('Locations') }}</flux:heading>
+        {{-- Toggle is zinloos zonder locaties, dus dan verbergen we hem --}}
         @if ($this->locations->isNotEmpty())
             <div class="flex items-center gap-1 rounded-lg border border-white/[.08] bg-white/[.03] p-1">
                 <button
@@ -87,7 +89,7 @@
         @endif
     </div>
 
-    {{-- Locations --}}
+    {{-- Locations: drie takken — leeg (empty state), kaartenraster of heatmap --}}
     @if ($this->locations->isEmpty())
         <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/[.10] py-20 text-center">
             <div class="mb-3 rounded-full bg-zinc-100 p-4 dark:bg-zinc-800">
@@ -99,6 +101,7 @@
         </div>
 
     @elseif ($viewMode === 'grid')
+        {{-- Kaartweergave: per locatie de code, acties en voorraadcijfers --}}
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach ($this->locations as $location)
                 <div class="flex flex-col gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
@@ -132,7 +135,7 @@
                         </flux:dropdown>
                     </div>
 
-                    {{-- Stock stats --}}
+                    {{-- Stock stats: totalen komen als subselect-kolommen mee op de locatiequery --}}
                     <div class="flex items-center gap-4 border-t border-zinc-100 pt-3 dark:border-zinc-800">
                         <div class="flex items-center gap-1.5 text-sm">
                             <flux:icon.cube class="size-4 text-zinc-400" />
@@ -151,11 +154,12 @@
 
     @else
         {{-- ===== HEATMAP VIEW ===== --}}
+        {{-- Heatmap: elke locatie kleurt op vulgraad, relatief t.o.v. de voorraadrijkste locatie --}}
         @php
             $maxStock = $this->maxLocationStock;
         @endphp
 
-        {{-- Legend --}}
+        {{-- Legend: kleurverloop leeg → vol, met vermelding van de referentiewaarde (max) --}}
         <div class="flex items-center gap-3 text-xs text-zinc-500">
             <span>{{ __('Empty') }}</span>
             <div class="flex h-3 flex-1 max-w-48 overflow-hidden rounded-full"
@@ -165,20 +169,23 @@
             <span class="ml-4 text-zinc-600">{{ __('Relative to max at this warehouse (') }}{{ $maxStock }}{{ __(')') }}</span>
         </div>
 
-        {{-- Grid --}}
+        {{-- Grid: auto-fill met vaste minimumbreedte zodat de tegels meeschalen met het scherm --}}
         <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(80px, 1fr))">
             @foreach ($this->locations as $location)
                 @php
+                    // Vulgraad 0..1 t.o.v. de drukste locatie; guard tegen deling door nul
                     $pct = $maxStock > 0 ? ($location->total_stock / $maxStock) : 0;
                     // Interpolate colour: empty=zinc-800 → mid=blue-500 → full=emerald-500
                     if ($pct === 0) {
                         $bg = 'rgba(39,39,42,0.8)';
                         $border = 'rgba(255,255,255,0.06)';
                     } elseif ($pct < 0.5) {
+                        // Onderste helft: blauw dat opklaart van alpha 0.15 naar 0.50
                         $alpha = 0.15 + $pct * 0.7;
                         $bg = "rgba(59,130,246,{$alpha})";
                         $border = "rgba(59,130,246,0.4)";
                     } else {
+                        // Bovenste helft: groen dat verzadigt van alpha 0.35 naar 1.0
                         $alpha = 0.35 + ($pct - 0.5) * 1.3;
                         $bg = "rgba(16,185,129,{$alpha})";
                         $border = "rgba(16,185,129,0.5)";
@@ -192,6 +199,7 @@
                     title="{{ $location->code }}{{ $location->name ? ' — ' . $location->name : '' }}: {{ $location->total_stock }} items ({{ $pctLabel }}%)"
                 >
                     <span class="text-xs font-mono font-semibold text-white/90 leading-none">{{ $location->code }}</span>
+                    {{-- Aantal enkel tonen bij gevulde tegels; '0' zou de lege tegels onnodig vervuilen --}}
                     @if ($location->total_stock > 0)
                         <span class="mt-0.5 text-[10px] tabular-nums text-white/60 leading-none">{{ $location->total_stock }}</span>
                     @endif
@@ -212,7 +220,7 @@
         </div>
     @endif
 
-    {{-- Add / Edit Location Modal --}}
+    {{-- Add / Edit Location Modal: hergebruikt voor beide; editingLocationId bepaalt de modus --}}
     <flux:modal wire:model="showModal" class="max-w-sm">
         <div class="flex flex-col gap-6 p-6">
             <div>

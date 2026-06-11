@@ -37,31 +37,40 @@ class Index extends Component
     #[Url]
     public string $to = '';
 
+    /** Terug naar pagina 1 bij een nieuwe zoekterm, anders kan de gebruiker op een lege pagina landen. */
     public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
+    /** Reset de paginering wanneer de typefilter wijzigt. */
     public function updatedType(): void
     {
         $this->resetPage();
     }
 
+    /** Reset de paginering wanneer de gebruikersfilter wijzigt. */
     public function updatedUser(): void
     {
         $this->resetPage();
     }
 
+    /** Reset de paginering wanneer de begindatum wijzigt. */
     public function updatedFrom(): void
     {
         $this->resetPage();
     }
 
+    /** Reset de paginering wanneer de einddatum wijzigt. */
     public function updatedTo(): void
     {
         $this->resetPage();
     }
 
+    /**
+     * De gefilterde, gepagineerde lijst stockbewegingen — de kern van deze pagina.
+     * Elke actieve filter wordt via when() alleen toegevoegd als hij ook ingevuld is.
+     */
     #[Computed]
     public function movements()
     {
@@ -85,18 +94,25 @@ class Index extends Component
             ->paginate(25);
     }
 
+    /** Alle gebruikers (enkel id en naam) als opties voor de gebruikersfilter-dropdown. */
     #[Computed]
     public function users()
     {
         return User::orderBy('name')->get(['id', 'name']);
     }
 
+    /** Alle bewegingstypes uit de enum, zodat de typefilter automatisch meegroeit met nieuwe types. */
     #[Computed]
     public function types(): array
     {
         return StockMovementType::cases();
     }
 
+    /**
+     * Tellers per bewegingstype voor de samenvattingskaarten bovenaan.
+     * Volgt bewust enkel de datumfilters: de kaarten tonen het totaalbeeld van de
+     * gekozen periode, ongeacht zoekterm, type- of gebruikersselectie.
+     */
     #[Computed]
     public function stats(): array
     {
@@ -104,6 +120,8 @@ class Index extends Component
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
             ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to));
 
+        // Elke teller kloont de basisquery: where() muteert een builder, dus zonder
+        // clone zou elke volgende count de type-conditie van de vorige meeslepen.
         return [
             'total' => (clone $base)->count(),
             'incoming' => (clone $base)->where('type', StockMovementType::Incoming)->count(),
@@ -113,12 +131,14 @@ class Index extends Component
         ];
     }
 
+    /** Wist alle filters in één klik (terug naar de defaults) en springt naar pagina 1. */
     public function clearFilters(): void
     {
         $this->reset(['search', 'type', 'user', 'from', 'to']);
         $this->resetPage();
     }
 
+    /** Rendert de activity-log view; alle data komt lazy binnen via de computed properties. */
     public function render()
     {
         return view('livewire.activity.index');

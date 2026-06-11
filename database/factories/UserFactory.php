@@ -21,6 +21,9 @@ class UserFactory extends Factory
     /**
      * Define the model's default state.
      *
+     * Recept voor een user: geverifieerde magazijnier (laagste rol) met wachtwoord "password"
+     * en zonder 2FA. Tests die admin- of 2FA-gedrag nodig hebben, gebruiken de states hieronder.
+     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -29,6 +32,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
+            // Hash één keer berekenen en hergebruiken: bcrypt is traag, dit versnelt grote testsuites
             'password' => static::$password ??= Hash::make('password'),
             'role' => UserRole::WarehouseWorker,
             'remember_token' => Str::random(10),
@@ -39,7 +43,7 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Geeft de user de Admin-rol, voor tests rond beheerrechten (autorisatie via UserRole).
      */
     public function admin(): static
     {
@@ -48,6 +52,9 @@ class UserFactory extends Factory
         ]);
     }
 
+    /**
+     * Zet het e-mailadres als niet-geverifieerd, voor tests rond de e-mailverificatieflow.
+     */
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [

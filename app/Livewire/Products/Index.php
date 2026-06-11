@@ -67,17 +67,27 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * Zelfde paginareset bij een wijziging van de categoriefilter.
+     */
     public function updatedFilterCategory(): void
     {
         $this->resetPage();
     }
 
+    /**
+     * Alle categorieën, alfabetisch, voor de filter-dropdown en het formulier.
+     */
     #[Computed]
     public function categories()
     {
         return Category::orderBy('name')->get();
     }
 
+    /**
+     * Doorzoekbare, gefilterde en gepagineerde productlijst, nieuwste eerst.
+     * #[Computed] cachet het resultaat per request, hoe vaak de view het ook leest.
+     */
     #[Computed]
     public function products()
     {
@@ -96,12 +106,20 @@ class Index extends Component
             ->paginate(10);
     }
 
+    /**
+     * Magazijnen met hun locaties, voor de checkboxlijst in de locatie-modal
+     * (één groep per magazijn).
+     */
     #[Computed]
     public function warehousesWithLocations()
     {
         return Warehouse::with('locations')->orderBy('name')->get();
     }
 
+    /**
+     * Het product waarvan de locaties in de modal beheerd worden, of null
+     * zolang de locatie-modal gesloten is.
+     */
     #[Computed]
     public function managingProduct(): ?Product
     {
@@ -110,6 +128,10 @@ class Index extends Component
             : null;
     }
 
+    /**
+     * Opent de modal in create-modus: alle formuliervelden en oude
+     * validatiefouten worden eerst gewist.
+     */
     public function openCreate(): void
     {
         $this->reset(['name', 'sku', 'categoryId', 'description', 'minStock', 'editingId', 'image', 'existingImagePath']);
@@ -118,6 +140,9 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Opent de modal in edit-modus, voorgevuld met de gegevens van het product.
+     */
     public function openEdit(Product $product): void
     {
         $this->editingId = $product->id;
@@ -238,6 +263,9 @@ class Index extends Component
         unset($this->products);
     }
 
+    /**
+     * Rendert de productlijst-view; de data komt uit de computed properties.
+     */
     public function render()
     {
         return view('livewire.products.index');

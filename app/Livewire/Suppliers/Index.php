@@ -42,6 +42,9 @@ class Index extends Component
 
     public array $selectedProductIds = [];
 
+    /**
+     * Livewire-hook die afgaat telkens de zoekterm wijzigt.
+     */
     public function updatedSearch(): void
     {
         // Terug naar pagina 1 bij elke zoekterm, anders kan de gebruiker op een
@@ -49,12 +52,18 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * Alle producten (enkel id, naam en sku) voor de koppelcheckboxen in de modal.
+     */
     #[Computed]
     public function allProducts()
     {
         return Product::orderBy('name')->get(['id', 'name', 'sku']);
     }
 
+    /**
+     * Gepagineerde leverancierslijst, nieuwste eerst, doorzoekbaar op naam of e-mail.
+     */
     #[Computed]
     public function suppliers()
     {
@@ -68,6 +77,10 @@ class Index extends Component
             ->paginate(10);
     }
 
+    /**
+     * Opent de modal in create-modus: alle velden leeg en oude validatiefouten gewist,
+     * zodat er geen restanten van een eerdere edit-sessie blijven staan.
+     */
     public function openCreate(): void
     {
         $this->reset(['name', 'email', 'phone', 'address', 'notes', 'editingId', 'selectedProductIds']);
@@ -75,6 +88,10 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Opent de modal in edit-modus, voorgevuld met de gegevens en
+     * productkoppelingen van de gekozen leverancier.
+     */
     public function openEdit(Supplier $supplier): void
     {
         $this->editingId = $supplier->id;
@@ -114,6 +131,7 @@ class Index extends Component
             'notes' => 'nullable|string',
         ]);
 
+        // Lege strings worden NULL, zodat optionele velden eenduidig leeg zijn in de databank
         $data = [
             'name' => $this->name,
             'email' => $this->email ?: null,
@@ -142,6 +160,10 @@ class Index extends Component
         unset($this->suppliers);
     }
 
+    /**
+     * Verwijdert een leverancier na policy-check; de unset leegt de computed-cache
+     * zodat de lijst meteen zonder de verwijderde leverancier rendert.
+     */
     public function delete(Supplier $supplier): void
     {
         $this->authorize('delete', $supplier);
@@ -152,6 +174,9 @@ class Index extends Component
         unset($this->suppliers);
     }
 
+    /**
+     * Rendert de leverancierspagina met lijst en modal.
+     */
     public function render()
     {
         return view('livewire.suppliers.index');

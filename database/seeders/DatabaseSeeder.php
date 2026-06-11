@@ -14,6 +14,9 @@ use Illuminate\Database\Seeder;
  */
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Roept alle deel-seeders aan in afhankelijkheidsvolgorde (zie klasse-docblock).
+     */
     public function run(): void
     {
         $this->call([

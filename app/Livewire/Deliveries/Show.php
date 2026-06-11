@@ -26,6 +26,10 @@ class Show extends Component
     // Per delivery_item-id: het aantal dat de gebruiker nú wil ontvangen
     public array $receivedQuantities = [];
 
+    /**
+     * Laadt de levering met alle relaties in één keer (route model binding geeft enkel
+     * het kale model) en vult de ontvangstvelden vooraf in met de openstaande aantallen.
+     */
     public function mount(Delivery $delivery): void
     {
         $this->delivery = $delivery->load(['supplier', 'user', 'items.product', 'items.location.warehouse']);
@@ -147,6 +151,9 @@ class Show extends Component
         }
     }
 
+    /**
+     * Rendert de detail- en verwerkingspagina van de levering.
+     */
     public function render()
     {
         return view('livewire.deliveries.show');

@@ -69,11 +69,13 @@ class CreateMovement extends Component
         $this->locationId = null;
     }
 
+    /** Zelfde cascade-reset, maar voor de bronkant ("van") van een transfer. */
     public function updatedFromWarehouseId(): void
     {
         $this->fromLocationId = null;
     }
 
+    /** Zelfde cascade-reset, maar voor de doelkant ("naar") van een transfer. */
     public function updatedToWarehouseId(): void
     {
         $this->toLocationId = null;
@@ -96,12 +98,14 @@ class CreateMovement extends Component
         $this->toLocationId = null;
     }
 
+    /** Productopties voor de dropdown, alfabetisch; enkel de kolommen die de view nodig heeft. */
     #[Computed]
     public function products()
     {
         return Product::orderBy('name')->get(['id', 'name', 'sku']);
     }
 
+    /** Magazijnopties, eerste stap van de warehouse → locatie-cascade. */
     #[Computed]
     public function warehouses()
     {
@@ -121,6 +125,7 @@ class CreateMovement extends Component
             : collect();
     }
 
+    /** Locatie-opties voor de bronkant van een transfer; zelfde cascadelogica als locations(). */
     #[Computed]
     public function fromLocations()
     {
@@ -129,6 +134,7 @@ class CreateMovement extends Component
             : collect();
     }
 
+    /** Locatie-opties voor de doelkant van een transfer; zelfde cascadelogica als locations(). */
     #[Computed]
     public function toLocations()
     {
@@ -137,6 +143,7 @@ class CreateMovement extends Component
             : collect();
     }
 
+    /** Alle bewegingstypes uit de enum, zodat de view nooit uit de pas loopt met het domein. */
     #[Computed]
     public function types(): array
     {
@@ -242,6 +249,7 @@ class CreateMovement extends Component
         }
     }
 
+    /** Tekent het formulier; de pagina-layout komt uit het #[Layout]-attribuut op de klasse. */
     public function render()
     {
         return view('livewire.stock.create-movement');

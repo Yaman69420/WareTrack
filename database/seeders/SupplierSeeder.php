@@ -5,8 +5,16 @@ namespace Database\Seeders;
 use App\Models\Supplier;
 use Illuminate\Database\Seeder;
 
+/**
+ * Maakt de 4 demo-leveranciers aan (TechSupply BV, OfficePro NV, PackMasters,
+ * SafetyFirst NV); hun assortiment volgt later via SupplierProductSeeder.
+ */
 class SupplierSeeder extends Seeder
 {
+    /**
+     * Maakt de 4 vaste demo-leveranciers aan. PackMasters krijgt bewust geen telefoon of adres,
+     * zodat de UI ook het scenario met ontbrekende (nullable) contactgegevens toont.
+     */
     public function run(): void
     {
         Supplier::create([

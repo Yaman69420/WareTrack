@@ -49,17 +49,27 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * Zelfde paginareset bij een wijziging van de magazijnfilter.
+     */
     public function updatedFilterWarehouse(): void
     {
         $this->resetPage();
     }
 
+    /**
+     * Alle magazijnen, alfabetisch, voor de filter-dropdown en het formulier.
+     */
     #[Computed]
     public function warehouses()
     {
         return Warehouse::orderBy('name')->get();
     }
 
+    /**
+     * Doorzoekbare, gefilterde en gepagineerde locatielijst, met magazijn en
+     * productaantal per rij.
+     */
     #[Computed]
     public function locations()
     {
@@ -76,6 +86,10 @@ class Index extends Component
             ->paginate(10);
     }
 
+    /**
+     * Opent de modal in create-modus met een leeg formulier en zonder oude
+     * validatiefouten.
+     */
     public function openCreate(): void
     {
         $this->reset(['warehouseId', 'code', 'name', 'editingId']);
@@ -83,6 +97,9 @@ class Index extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Opent de modal in edit-modus, voorgevuld met de bestaande gegevens.
+     */
     public function openEdit(Location $location): void
     {
         $this->editingId = $location->id;
@@ -153,6 +170,9 @@ class Index extends Component
         unset($this->locations);
     }
 
+    /**
+     * Rendert de locatielijst-view.
+     */
     public function render()
     {
         return view('livewire.locations.index');

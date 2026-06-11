@@ -20,6 +20,7 @@ class Category extends Model
 
     protected $fillable = ['name', 'description'];
 
+    /** Een categorie groepeert meerdere producten; elk product hoort bij precies één categorie. */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

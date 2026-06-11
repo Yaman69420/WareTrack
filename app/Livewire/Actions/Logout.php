@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Session;
  */
 class Logout
 {
+    /**
+     * Voert de logout uit: beëindigt de sessie veilig (zie inline toelichting)
+     * en stuurt de bezoeker terug naar de publieke startpagina.
+     */
     public function __invoke()
     {
         Auth::guard('web')->logout();

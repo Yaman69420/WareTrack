@@ -11,7 +11,7 @@
         </flux:button>
     </div>
 
-    {{-- Filters --}}
+    {{-- Filters: zoekveld met debounce (max één query per 300 ms) + categoriefilter --}}
     <div class="flex flex-wrap gap-3">
         <div class="w-64">
             <flux:input
@@ -42,9 +42,11 @@
             <flux:table.column></flux:table.column>
         </flux:table.columns>
 
+        {{-- @forelse: producten uit de gepagineerde computed property, met fallback-rij als die leeg is --}}
         <flux:table.rows>
             @forelse ($this->products as $product)
                 <flux:table.row :key="$product->id">
+                    {{-- Thumbnail uit storage, of een neutrale placeholder zonder afbeelding --}}
                     <flux:table.cell>
                         @if ($product->image_path)
                             <img
@@ -81,6 +83,7 @@
                         {{ $product->created_at->diffForHumans() }}
                     </flux:table.cell>
 
+                    {{-- Actiemenu per rij: bekijken, bewerken, locaties beheren, verwijderen --}}
                     <flux:table.cell align="end">
                         <flux:dropdown>
                             <flux:button icon="ellipsis-horizontal" variant="ghost" size="sm" />
@@ -119,6 +122,7 @@
                 </flux:table.row>
             @empty
                 <flux:table.row>
+                    {{-- Boodschap verschilt: actieve filters zonder resultaat versus echt lege catalogus --}}
                     <flux:table.cell colspan="7" class="py-12 text-center">
                         {{ $search || $filterCategory ? __('No products match your filters.') : __('No products yet.') }}
                     </flux:table.cell>
@@ -132,7 +136,7 @@
         {{ $this->products->links() }}
     </div>
 
-    {{-- Create / Edit Modal --}}
+    {{-- Create / Edit Modal: één formulier voor beide; editingId bepaalt titel en knoptekst --}}
     <flux:modal wire:model="showModal" class="max-w-lg">
         <div class="flex flex-col gap-6 p-6">
             <flux:heading size="lg">
@@ -178,6 +182,7 @@
                     <flux:label>{{ __('Image') }} <span class="text-zinc-400 text-xs font-normal">({{ __('optional') }}, JPEG / PNG / WebP, max 2 MB)</span></flux:label>
 
                     {{-- Preview: new upload takes priority, otherwise show existing --}}
+                    {{-- temporaryUrl() toont de upload al vóór het opslaan (Livewire tijdelijke opslag) --}}
                     @if ($image)
                         <img src="{{ $image->temporaryUrl() }}" alt="Preview" class="mb-2 h-24 w-24 rounded-lg object-cover" />
                     @elseif ($existingImagePath)
@@ -205,7 +210,8 @@
         </div>
     </flux:modal>
 
-    {{-- Manage Locations Modal --}}
+    {{-- Manage Locations Modal: koppelt het product via checkboxes aan opslaglocaties,
+         gegroepeerd per magazijn --}}
     <flux:modal wire:model="showLocationsModal" class="max-w-lg">
         <div class="flex flex-col gap-6 p-6">
             <div>
@@ -220,6 +226,7 @@
             @else
                 <div class="flex flex-col gap-4 max-h-80 overflow-y-auto">
                     @foreach($this->warehousesWithLocations as $warehouse)
+                        {{-- Magazijnen zonder locaties overslaan: een lege groepskop heeft geen nut --}}
                         @if($warehouse->locations->isNotEmpty())
                             <div>
                                 <flux:text class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">

@@ -34,6 +34,7 @@ class StockMovement extends Model
         'notes',
     ];
 
+    /** Attribuutcasts: type als StockMovementType-enum, quantity als integer. */
     protected function casts(): array
     {
         return [
@@ -44,11 +45,13 @@ class StockMovement extends Model
         ];
     }
 
+    /** Het product waarop deze beweging betrekking heeft. */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** De locatie van de beweging bij incoming, outgoing en correction. */
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
@@ -56,16 +59,19 @@ class StockMovement extends Model
 
     // Twee extra relaties naar hetzelfde Location-model (voor transfers): de foreign
     // key moet expliciet, anders zou Eloquent voor beide 'location_id' afleiden.
+    /** De bronlocatie waar de goederen vertrokken bij een transfer. */
     public function fromLocation(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'from_location_id');
     }
 
+    /** De doellocatie waar de goederen aankwamen bij een transfer. */
     public function toLocation(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'to_location_id');
     }
 
+    /** De gebruiker die de beweging registreerde — essentieel voor het auditspoor. */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -14,21 +14,25 @@ use App\Models\Warehouse;
  */
 class WarehousePolicy
 {
+    /** Elke aangemelde gebruiker: het magazijnoverzicht is nodig om stock te situeren. */
     public function viewAny(User $user): bool
     {
         return true;
     }
 
+    /** Alleen admins: een nieuw magazijn opzetten is een structurele beheersbeslissing. */
     public function create(User $user): bool
     {
         return $user->isAdmin();
     }
 
+    /** Alleen admins: een magazijn hernoemen raakt alle onderliggende locaties en stock. */
     public function update(User $user, Warehouse $warehouse): bool
     {
         return $user->isAdmin();
     }
 
+    /** Alleen admins: verwijderen trekt de volledige locatiestructuur eronder mee weg. */
     public function delete(User $user, Warehouse $warehouse): bool
     {
         return $user->isAdmin();

@@ -8,6 +8,8 @@
 
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div class="flex items-center gap-4">
+                {{-- Badge-stijl en icoon afleiden uit de leveringsstatus (enum): groen=ontvangen,
+                     oranje=gedeeltelijk, neutraal=in afwachting --}}
                 @php
                     $statusVariant = match($delivery->status->value) {
                         'received' => 'success',
@@ -40,10 +42,11 @@
                 </div>
             </div>
 
-            {{-- Progress summary --}}
+            {{-- Progress summary: ontvangstpercentage over alle leveringsregels heen --}}
             @php
                 $totalOrdered  = $delivery->items->sum('quantity_ordered');
                 $totalReceived = $delivery->items->sum('quantity_received');
+                // Guard tegen deling door nul bij een levering zonder regels
                 $pct = $totalOrdered > 0 ? round(($totalReceived / $totalOrdered) * 100) : 0;
             @endphp
             <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white px-5 py-3 dark:bg-white/[.04]">
@@ -63,6 +66,8 @@
     <div class="flex max-w-4xl flex-col gap-6">
 
         {{-- ===== STATUS TIMELINE ===== --}}
+        {{-- Drie vaste stappen (aangemaakt → verwerking → volledig ontvangen); de 'done'-vlag per
+             stap bepaalt kleur, ring en omschrijving, zodat de markup hieronder generiek blijft --}}
         @php
             $isPartialOrReceived = in_array($delivery->status->value, ['partial', 'received']);
             $isReceived          = $delivery->status === \App\Enums\DeliveryStatus::Received;
@@ -107,16 +112,17 @@
 
             <ol class="relative flex flex-col gap-0">
                 @foreach ($steps as $i => $step)
+                    {{-- Laatste stap krijgt geen verbindingslijn en geen onderpadding --}}
                     @php $isLast = $i === count($steps) - 1; @endphp
 
                     <li class="relative flex gap-4 {{ $isLast ? '' : 'pb-6' }}">
 
-                        {{-- Connector line --}}
+                        {{-- Connector line: vol bij afgewerkte stap, gestreept bij nog te zetten stap --}}
                         @if (! $isLast)
                             <div class="absolute left-[15px] top-8 h-full w-px {{ $step['done'] ? 'bg-white/[.12]' : 'border-l border-dashed border-white/[.08]' }}"></div>
                         @endif
 
-                        {{-- Dot --}}
+                        {{-- Dot: onvoltooide tussenstap toont een kleine stip, anders het stap-icoon --}}
                         <div class="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full {{ $step['color'] }} ring-4 {{ $step['ring'] }}">
                             @if (! $step['done'] && ! $isLast)
                                 <span class="size-2 rounded-full bg-zinc-500"></span>
@@ -144,7 +150,7 @@
             </ol>
         </div>
 
-        {{-- Notes --}}
+        {{-- Notes: enkel tonen wanneer er effectief een opmerking bij de levering hoort --}}
         @if($delivery->notes)
             <div class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-900/10">
                 <flux:icon.information-circle class="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
@@ -162,6 +168,7 @@
                     <flux:table.column>{{ __('Location') }}</flux:table.column>
                     <flux:table.column>{{ __('Ordered') }}</flux:table.column>
                     <flux:table.column>{{ __('Received') }}</flux:table.column>
+                    {{-- Invoerkolom verdwijnt zodra de levering volledig ontvangen is --}}
                     @if($delivery->status !== \App\Enums\DeliveryStatus::Received)
                         <flux:table.column>{{ __('Receive now') }}</flux:table.column>
                     @endif
@@ -169,6 +176,7 @@
 
                 <flux:table.rows>
                     @foreach ($delivery->items as $item)
+                        {{-- Resterend aantal bepaalt de max van het invoerveld en of de regel al af is --}}
                         @php $remaining = $item->quantity_ordered - $item->quantity_received; @endphp
                         <flux:table.row :key="$item->id">
                             <flux:table.cell variant="strong">
@@ -197,6 +205,8 @@
 
                             @if($delivery->status !== \App\Enums\DeliveryStatus::Received)
                                 <flux:table.cell>
+                                    {{-- Open regel: invoerveld gebonden aan receivedQuantities[itemId];
+                                         volledig geleverde regel krijgt een Done-badge --}}
                                     @if($remaining > 0)
                                         <flux:input
                                             wire:model="receivedQuantities.{{ $item->id }}"
@@ -215,6 +225,8 @@
                 </flux:table.rows>
             </flux:table>
 
+            {{-- Verwerken kan enkel zolang de levering open staat; daarna tonen we de afsluitinfo.
+                 wire:confirm vraagt bevestiging omdat process() effectief de voorraad bijwerkt --}}
             @if($delivery->status !== \App\Enums\DeliveryStatus::Received)
                 <div class="flex justify-end pt-2">
                     <flux:button

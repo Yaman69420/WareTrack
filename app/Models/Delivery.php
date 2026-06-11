@@ -29,6 +29,7 @@ class Delivery extends Model
         'received_at',
     ];
 
+    /** Attribuutcasts: status als DeliveryStatus-enum, received_at als Carbon-datetime. */
     protected function casts(): array
     {
         return [
@@ -39,16 +40,19 @@ class Delivery extends Model
         ];
     }
 
+    /** De leverancier van wie deze levering afkomstig is. */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
+    /** De medewerker die de levering registreerde en ontving (voor het auditspoor). */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** Een levering bestaat uit meerdere regels: per regel een product, locatie en aantallen. */
     public function items(): HasMany
     {
         return $this->hasMany(DeliveryItem::class);

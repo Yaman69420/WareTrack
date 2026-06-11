@@ -25,6 +25,7 @@ class DeliveryItem extends Model
         'quantity_received',
     ];
 
+    /** Attribuutcasts: beide aantallen als integer, zodat vergelijkingen nooit op strings rekenen. */
     protected function casts(): array
     {
         return [
@@ -33,16 +34,19 @@ class DeliveryItem extends Model
         ];
     }
 
+    /** De leveringskop waartoe deze regel behoort. */
     public function delivery(): BelongsTo
     {
         return $this->belongsTo(Delivery::class);
     }
 
+    /** Het product dat op deze regel besteld en (deels) ontvangen werd. */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** De doellocatie waar de ontvangen goederen worden weggezet. */
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);

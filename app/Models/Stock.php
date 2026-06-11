@@ -25,6 +25,7 @@ class Stock extends Model
 
     protected $fillable = ['product_id', 'location_id', 'quantity'];
 
+    /** Attribuutcast: quantity als integer, zodat optellen en vergelijken nooit op strings gebeurt. */
     protected function casts(): array
     {
         return [
@@ -32,11 +33,13 @@ class Stock extends Model
         ];
     }
 
+    /** Het product waarvan deze rij de voorraad bijhoudt. */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** De locatie waar deze voorraad fysiek ligt. */
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);

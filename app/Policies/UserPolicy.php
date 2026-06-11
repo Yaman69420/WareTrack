@@ -14,16 +14,19 @@ use App\Models\User;
  */
 class UserPolicy
 {
+    /** Alleen admins: de gebruikerslijst toont e-mailadressen en rollen van collega's. */
     public function viewAny(User $user): bool
     {
         return $user->isAdmin();
     }
 
+    /** Alleen admins: wie accounts aanmaakt, bepaalt wie toegang krijgt tot het systeem. */
     public function create(User $user): bool
     {
         return $user->isAdmin();
     }
 
+    /** Alleen admins: via update wijzig je ook rollen, dus indirect álle rechten. */
     public function update(User $user, User $model): bool
     {
         return $user->isAdmin();

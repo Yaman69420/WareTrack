@@ -28,6 +28,7 @@ class Create extends Component
 
     public string $notes = '';
 
+    // Itemrijen als platte arrays (product, locatie, besteld aantal); de UI bindt per index
     public array $items = [];
 
     /**
@@ -41,6 +42,9 @@ class Create extends Component
         $this->addItem();
     }
 
+    /**
+     * Controleert bij de eerste paginalading of de gebruiker leveringen mag aanmaken.
+     */
     public function mount(): void
     {
         // Leveringen aanmaken is admin-only (DeliveryPolicy); workers verwerken ze enkel
@@ -50,6 +54,9 @@ class Create extends Component
         // (zie updatedSupplierId), anders staat er een rij zonder bruikbare productlijst.
     }
 
+    /**
+     * Alle leveranciers, alfabetisch gesorteerd, voor de leverancierdropdown.
+     */
     #[Computed]
     public function suppliers()
     {
@@ -76,12 +83,18 @@ class Create extends Component
         return collect();
     }
 
+    /**
+     * Alle locaties met hun magazijn (eager loaded), op code gesorteerd, voor de locatiedropdowns.
+     */
     #[Computed]
     public function locations()
     {
         return Location::with('warehouse')->orderBy('code')->get();
     }
 
+    /**
+     * Voegt een lege itemrij toe; standaardaantal 1 omdat 0 de validatie (min:1) toch niet haalt.
+     */
     public function addItem(): void
     {
         $this->items[] = [
@@ -91,6 +104,10 @@ class Create extends Component
         ];
     }
 
+    /**
+     * Verwijdert de itemrij op de gegeven index. array_splice herindexeert de array,
+     * zodat de wire:model-bindingen per index blijven kloppen na het verwijderen.
+     */
     public function removeItem(int $index): void
     {
         array_splice($this->items, $index, 1);
@@ -121,6 +138,7 @@ class Create extends Component
             'supplier_id' => $this->supplierId,
             'user_id' => auth()->id(),
             'status' => DeliveryStatus::Pending,
+            // Lege strings worden NULL, zodat "niet ingevuld" eenduidig is in de databank
             'reference' => $this->reference ?: null,
             'notes' => $this->notes ?: null,
         ]);
@@ -141,6 +159,9 @@ class Create extends Component
         $this->redirect(route('deliveries.show', $delivery), navigate: true);
     }
 
+    /**
+     * Rendert het aanmaakformulier voor leveringen.
+     */
     public function render()
     {
         return view('livewire.deliveries.create');

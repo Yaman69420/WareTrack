@@ -14,6 +14,10 @@ use Exception;
  */
 class InsufficientStockException extends Exception
 {
+    /**
+     * Bouwt de foutmelding op uit het gevraagde en het beschikbare aantal, zodat
+     * meteen zichtbaar is hoe groot het tekort was op het moment van de aanvraag.
+     */
     public function __construct(int $requested, int $available)
     {
         parent::__construct(

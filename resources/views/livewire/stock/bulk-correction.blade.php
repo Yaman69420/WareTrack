@@ -11,7 +11,7 @@
 
     <div class="max-w-4xl space-y-6">
 
-        {{-- Step 1: Select warehouse --}}
+        {{-- Step 1: Select warehouse — wire:model.live laadt meteen de voorraadlijnen van dat magazijn --}}
         <div class="rounded-xl border border-white/[.08] bg-white/[.04] p-6">
             <flux:heading size="sm" class="mb-4 text-zinc-400">{{ __('1. Select warehouse') }}</flux:heading>
             <div class="max-w-xs">
@@ -23,9 +23,10 @@
             </div>
         </div>
 
+        {{-- Stappen 2 en 3 verschijnen pas nadat een magazijn gekozen is --}}
         @if ($warehouseId)
 
-            {{-- Step 2: Edit quantities --}}
+            {{-- Step 2: Edit quantities — per lijn de getelde (correcte) hoeveelheid invullen --}}
             <div class="rounded-xl border border-white/[.08] bg-white/[.04] p-6">
                 <div class="mb-4 flex items-center justify-between">
                     <flux:heading size="sm" class="text-zinc-400">{{ __('2. Set correct quantities') }}</flux:heading>
@@ -51,6 +52,8 @@
 
                         <flux:table.rows>
                             @foreach ($this->stockLines as $line)
+                                {{-- Delta per lijn: een leeg of ontbrekend invoerveld telt als ongewijzigd
+                                     (terugvallen op de huidige stand), zodat enkel echte edits meetellen --}}
                                 @php
                                     $newQty = isset($quantities[$line->id]) && $quantities[$line->id] !== ''
                                         ? (int) $quantities[$line->id]
@@ -58,6 +61,7 @@
                                     $diff = $newQty - $line->quantity;
                                 @endphp
 
+                                {{-- Gewijzigde rijen krijgen een amberkleurige achtergrond als visuele marker --}}
                                 <flux:table.row :key="$line->id"
                                     class="{{ $diff !== 0 ? 'bg-amber-500/[.04]' : '' }}">
 
@@ -81,6 +85,7 @@
                                     </flux:table.cell>
 
                                     <flux:table.cell>
+                                        {{-- Live binding aan quantities[lijnId]; ring markeert een afwijkende waarde --}}
                                         <flux:input
                                             wire:model.live="quantities.{{ $line->id }}"
                                             type="number"
@@ -89,6 +94,7 @@
                                         />
                                     </flux:table.cell>
 
+                                    {{-- Δ-kolom: groen bij toename, rood bij afname, streepje bij geen wijziging --}}
                                     <flux:table.cell>
                                         @if ($diff > 0)
                                             <span class="text-sm font-bold text-emerald-400">+{{ $diff }}</span>
@@ -113,7 +119,8 @@
 
                     <div class="flex flex-col gap-4">
 
-                        {{-- Summary of changes --}}
+                        {{-- Summary of changes: teller komt uit de computed property changedLines,
+                             zodat view en save() exact dezelfde definitie van 'gewijzigd' hanteren --}}
                         @php $changedCount = $this->changedLines->count(); @endphp
                         @if ($changedCount > 0)
                             <div class="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[.06] px-4 py-2.5 text-sm text-amber-300">
@@ -140,6 +147,7 @@
                             <flux:button :href="route('stock.index')" wire:navigate variant="ghost">
                                 {{ __('Cancel') }}
                             </flux:button>
+                            {{-- Knop blijft uitgeschakeld zolang er geen enkele afwijkende lijn is --}}
                             <flux:button
                                 wire:click="save"
                                 variant="primary"

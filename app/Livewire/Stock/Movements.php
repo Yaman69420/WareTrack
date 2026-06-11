@@ -27,11 +27,13 @@ class Movements extends Component
 
     // Terug naar pagina 1 bij een nieuwe zoekterm of filter: de huidige pagina
     // bestaat mogelijk niet meer binnen de gefilterde resultaten.
+    /** Reset de paginering wanneer de zoekterm wijzigt. */
     public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
+    /** Reset de paginering wanneer de typefilter wijzigt. */
     public function updatedFilterType(): void
     {
         $this->resetPage();
@@ -48,6 +50,8 @@ class Movements extends Component
             // type (transfer = from/to, rest = location). Zonder dit N+1 per rij.
             ->with(['product', 'location.warehouse', 'fromLocation.warehouse', 'toLocation.warehouse', 'user'])
             ->when($this->search, function ($q) {
+                // Zoeken op naam óf SKU; de OR blijft binnen de whereHas-subquery
+                // en kan dus de typefilter hieronder niet omzeilen.
                 $q->whereHas('product', fn ($pq) => $pq->where('name', 'like', "%{$this->search}%")
                     ->orWhere('sku', 'like', "%{$this->search}%"));
             })
@@ -56,12 +60,14 @@ class Movements extends Component
             ->paginate(25);
     }
 
+    /** Alle bewegingstypes uit de enum voor de filterdropdown. */
     #[Computed]
     public function types(): array
     {
         return StockMovementType::cases();
     }
 
+    /** Tekent de bewegingshistoriek; de pagina-layout komt uit het #[Layout]-attribuut. */
     public function render()
     {
         return view('livewire.stock.movements');

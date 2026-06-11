@@ -34,11 +34,19 @@ class Show extends Component
 
     public string $locationName = '';
 
+    /**
+     * Ontvangt het magazijn via route model binding; de locatiedata laden de
+     * computed properties zelf, inclusief hun subquery-totalen.
+     */
     public function mount(Warehouse $warehouse): void
     {
         $this->warehouse = $warehouse;
     }
 
+    /**
+     * Alle locaties van dit magazijn, gesorteerd op code, met per locatie de
+     * totale voorraad en het aantal verschillende producten.
+     */
     #[Computed]
     public function locations()
     {
@@ -90,6 +98,9 @@ class Show extends Component
         ];
     }
 
+    /**
+     * Opent de locatie-modal in create-modus met een leeg formulier.
+     */
     public function openCreateLocation(): void
     {
         $this->reset(['code', 'locationName', 'editingLocationId']);
@@ -97,6 +108,10 @@ class Show extends Component
         $this->showModal = true;
     }
 
+    /**
+     * Opent de locatie-modal in edit-modus, voorgevuld met de bestaande
+     * gegevens van de locatie.
+     */
     public function openEditLocation(Location $location): void
     {
         $this->editingLocationId = $location->id;
@@ -155,6 +170,9 @@ class Show extends Component
         unset($this->locations, $this->stats, $this->maxLocationStock);
     }
 
+    /**
+     * Rendert de magazijn-detailview (grid- of heatmap-weergave).
+     */
     public function render()
     {
         return view('livewire.warehouses.show');

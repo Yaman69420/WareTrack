@@ -22,6 +22,7 @@
     </div>
 
     {{-- Stats grid --}}
+    {{-- Rol één keer opvragen: bepaalt verderop of de tellers klikbare links of statische kaarten zijn --}}
     @php $isAdmin = auth()->user()->isAdmin(); @endphp
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 
@@ -47,7 +48,7 @@
             </div>
         </div>
 
-        {{-- Low stock alert count (wide) --}}
+        {{-- Low stock alert count (wide): kaart kleurt rood zodra er minstens één alert is --}}
         <div class="col-span-2 flex items-center gap-4 rounded-xl border {{ $this->lowStockProducts->isNotEmpty() ? 'border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/10' : 'border-white/[.08] bg-white dark:bg-white/[.04]' }} p-5">
             <div class="rounded-xl {{ $this->lowStockProducts->isNotEmpty() ? 'bg-red-100 dark:bg-red-900/30' : 'bg-zinc-100 dark:bg-zinc-800' }} p-3">
                 <flux:icon.exclamation-triangle class="size-7 {{ $this->lowStockProducts->isNotEmpty() ? 'text-red-600 dark:text-red-400' : 'text-zinc-400' }}" />
@@ -59,7 +60,7 @@
         </div>
     </div>
 
-    {{-- Small counters --}}
+    {{-- Small counters: admins krijgen klikbare links naar beheer, viewers enkel cijfers --}}
     <div class="grid gap-4 sm:grid-cols-4">
         @if($isAdmin)
         <a href="{{ route('products.index') }}" wire:navigate class="group flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 transition hover:border-blue-300 hover:shadow-sm dark:bg-white/[.04] dark:hover:border-blue-700">
@@ -99,6 +100,7 @@
             </div>
         </a>
         @else
+        {{-- Zelfde tellers, maar zonder <a>: viewers hebben geen toegang tot de beheerpagina's --}}
         <div class="flex items-center gap-3 rounded-xl border border-white/[.08] bg-white p-4 dark:bg-white/[.04]">
             <div class="rounded-lg bg-blue-50 p-2 dark:bg-blue-900/30">
                 <flux:icon.archive-box class="size-5 text-blue-600 dark:text-blue-400" />
@@ -147,6 +149,7 @@
                 <flux:icon.chart-bar class="size-5 text-zinc-400" />
                 <flux:heading>{{ __('Movements – Last 7 Days') }}</flux:heading>
             </div>
+            {{-- wire:ignore: Livewire mag de canvas niet hertekenen, anders verliest Chart.js zijn instantie --}}
             <div wire:ignore class="relative min-h-52 flex-1">
                 <canvas id="chart-movements"></canvas>
             </div>
@@ -158,6 +161,7 @@
                 <flux:icon.building-office class="size-5 text-zinc-400" />
                 <flux:heading>{{ __('Stock by Warehouse') }}</flux:heading>
             </div>
+            {{-- Canvas enkel renderen als er data is; anders toont de doughnut een lege cirkel --}}
             <div wire:ignore class="relative min-h-52 flex-1">
                 @if(count($this->chartStockByWarehouse['labels']) > 0)
                     <canvas id="chart-warehouse"></canvas>
@@ -193,6 +197,7 @@
                     <flux:text class="text-zinc-500">{{ __('All products are sufficiently stocked.') }}</flux:text>
                 </div>
             @else
+                {{-- Per product: huidige voorraad versus ingestelde minimumdrempel --}}
                 <div class="flex flex-col gap-2">
                     @foreach($this->lowStockProducts as $product)
                         <div class="flex items-center justify-between rounded-lg border border-red-100 bg-red-50 px-4 py-3 dark:border-red-900/30 dark:bg-red-900/10">
@@ -208,6 +213,7 @@
                         </div>
                     @endforeach
                 </div>
+                {{-- Snelkoppeling naar inkomende beweging: enkel admins mogen voorraad registreren --}}
                 @if($isAdmin)
                     <flux:button :href="route('stock.movements.create')" wire:navigate variant="filled" size="sm" icon="plus" class="mt-1 self-start">
                         {{ __('Register Incoming') }}
@@ -231,6 +237,7 @@
                     <flux:text class="text-zinc-500">{{ __('No activity yet.') }}</flux:text>
                 </div>
             @else
+                {{-- Activiteitenfeed: causer kan null zijn (bv. seeder of console), dan tonen we 'System' --}}
                 <div class="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
                     @foreach($this->recentActivity as $activity)
                         <div class="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
@@ -257,17 +264,21 @@
 
 </div>
 
+{{-- Chart.js via CDN in de <head>, zodat de bibliotheek klaar is vóór het @script-blok draait --}}
 @push('head-scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 @endpush
 
+{{-- @script: Livewire voert dit pas uit als de component gemount is (ook na wire:navigate) --}}
 @script
 <script>
+    // Globale Chart.js-defaults afgestemd op het donkere thema van de app
     Chart.defaults.color       = 'rgba(255,255,255,.45)';
     Chart.defaults.borderColor = 'rgba(255,255,255,.07)';
     Chart.defaults.font.family = 'inherit';
 
     /* ── Movements bar chart ── */
+    // Datasets (in/uit per dag) komen server-side uit de computed property mee als JSON
     const movementsEl = document.getElementById('chart-movements');
     if (movementsEl) {
         new Chart(movementsEl, {
@@ -299,6 +310,7 @@
     }
 
     /* ── Stock by warehouse doughnut ── */
+    // Element bestaat enkel als er voorraad is (zie de if-conditie hierboven), dus eerst checken
     const warehouseEl = document.getElementById('chart-warehouse');
     if (warehouseEl) {
         const wd = @json($this->chartStockByWarehouse);

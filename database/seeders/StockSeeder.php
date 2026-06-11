@@ -7,8 +7,17 @@ use App\Models\Product;
 use App\Models\Stock;
 use Illuminate\Database\Seeder;
 
+/**
+ * Vult de stock-tabel met beginvoorraad én registreert via product_location
+ * welke producten op welke locaties mogen staan.
+ */
 class StockSeeder extends Seeder
 {
+    /**
+     * Geeft elk van de 20 producten voorraad op 1 à 3 willekeurige locaties, met aantallen die
+     * passen bij de categorie. Forceert daarna EL-0001 (2 stuks) en SF-0002 (1 stuk) onder hun
+     * min_stock zodat de low-stock-melding altijd iets toont in de demo.
+     */
     public function run(): void
     {
         $products = Product::all();
@@ -18,6 +27,8 @@ class StockSeeder extends Seeder
             $assignedLocations = $locations->random(rand(1, 3));
 
             foreach ($assignedLocations as $location) {
+                // Realistische ranges per SKU-prefix: kantoor/verpakking in bulk, rest kleinschalig;
+                // PK en default kunnen 0 zijn, zodat ook lege voorraadrijen voorkomen
                 $quantity = match (true) {
                     str_starts_with($product->sku, 'EL') => rand(5, 50),
                     str_starts_with($product->sku, 'OF') => rand(10, 200),
@@ -30,6 +41,7 @@ class StockSeeder extends Seeder
                     ['quantity' => $quantity]
                 );
 
+                // Pivot product↔locatie mee bijhouden zonder eerder toegekende locaties te wissen
                 $product->locations()->syncWithoutDetaching([$location->id]);
             }
         }

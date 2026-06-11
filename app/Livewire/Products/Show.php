@@ -22,6 +22,10 @@ class Show extends Component
 {
     public Product $product;
 
+    /**
+     * Ontvangt het product via route model binding en laadt de relaties die
+     * de view nodig heeft in één keer mee.
+     */
     public function mount(Product $product): void
     {
         // Relaties in één keer mee-laden: de view leest stock, locatie en
@@ -80,6 +84,9 @@ class Show extends Component
         return $this->product->min_stock > 0 && $this->totalStock < $this->product->min_stock;
     }
 
+    /**
+     * Publieke URL van de productafbeelding, of null als er geen geüpload is.
+     */
     public function imageUrl(): ?string
     {
         return $this->product->image_path
@@ -87,6 +94,9 @@ class Show extends Component
             : null;
     }
 
+    /**
+     * Rendert de detailview; de productnaam dient meteen als paginatitel.
+     */
     public function render()
     {
         return view('livewire.products.show', ['title' => $this->product->name]);
