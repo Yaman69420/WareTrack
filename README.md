@@ -47,7 +47,7 @@ WareTrack is een volledig uitgewerkt Warehouse Management System (WMS) gebouwd m
 | Styling | Tailwind CSS 4, GSAP (login animatie) |
 | Database | MySQL 8.0 |
 | Authenticatie | Laravel Fortify |
-| Testing | Pest 4 (210 tests, 432 assertions) |
+| Testing | Pest 4 (217 tests, 450 assertions) |
 | Queues | Laravel Queue — database driver |
 | Audit log | Tweeledig: eigen `stock_movements` tabel voor stockmutaties (user, type, qty, locatie, timestamp) + `spatie/laravel-activitylog` voor masterdata-wijzigingen (dashboard "recente activiteit") |
 | Code stijl | Laravel Pint |
