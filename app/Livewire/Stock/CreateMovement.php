@@ -22,6 +22,13 @@ use Livewire\Component;
  * mutatie loopt altijd via StockService, zodat transactie-, lock- en
  * auditlogica op één plek blijven. Eén formulier voor vier types houdt de
  * flow voor de gebruiker uniform: type kiezen, product, plaats, aantal.
+ *
+ * Architectuurnoot (geldt voor elk full-page component in deze app): deze
+ * klasse vervult de controller-rol — de route in web.php wijst rechtstreeks
+ * hierheen, er is bewust geen aparte Controller-klasse — én houdt de
+ * schermstaat bij (de publieke properties waar de view via wire:model aan
+ * bindt). De presentatie blijft apart: de bijbehorende Blade-view is
+ * resources/views/livewire/stock/create-movement.blade.php.
  */
 #[Layout('layouts.app')]
 class CreateMovement extends Component
