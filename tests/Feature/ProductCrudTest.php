@@ -217,6 +217,21 @@ test('products can be filtered by category', function () {
         ->assertDontSee('Product B');
 });
 
+test('products can be sorted by name via column header', function () {
+    Product::factory()->create(['name' => 'Alpha Widget', 'category_id' => $this->category->id]);
+    Product::factory()->create(['name' => 'Zulu Widget', 'category_id' => $this->category->id]);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('sort', 'name');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->products->first()->name)->toBe('Alpha Widget');
+
+    $component->call('sort', 'name');
+    expect($component->instance()->products->first()->name)->toBe('Zulu Widget');
+});
+
 test('search combined with category filter does not leak other categories', function () {
     $other = Category::factory()->create();
     Product::factory()->create(['name' => 'Wireless Mouse', 'sku' => 'WM-100', 'category_id' => $this->category->id]);

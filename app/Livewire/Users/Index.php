@@ -3,6 +3,7 @@
 namespace App\Livewire\Users;
 
 use App\Enums\UserRole;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\User;
 use Flux\Flux;
 use Illuminate\Database\QueryException;
@@ -24,6 +25,10 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+    use WithSorting;
+
+    /** Kolommen waarop gesorteerd mag worden (whitelist voor orderBy). */
+    protected array $sortable = ['name', 'email', 'role'];
 
     public string $search = '';
 
@@ -61,7 +66,8 @@ class Index extends Component
             ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
                 ->orWhere('email', 'like', "%{$this->search}%")))
-            ->orderBy('name')
+            // Klikbare kolomkoppen; zonder keuze blijft alfabetisch op naam de default.
+            ->tap(fn ($q) => $this->applySort($q, 'name', 'asc'))
             ->paginate(15);
     }
 

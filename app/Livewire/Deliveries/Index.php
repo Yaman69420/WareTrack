@@ -3,6 +3,7 @@
 namespace App\Livewire\Deliveries;
 
 use App\Enums\DeliveryStatus;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Delivery;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -21,6 +22,10 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+    use WithSorting;
+
+    /** Kolommen waarop gesorteerd mag worden (whitelist voor orderBy). */
+    protected array $sortable = ['reference', 'status', 'created_at'];
 
     // Gekozen statusfilter; lege string betekent "alle statussen tonen"
     public string $filterStatus = '';
@@ -46,8 +51,18 @@ class Index extends Component
             // zonder with() zou dat drie extra queries per levering kosten (N+1).
             ->with(['supplier', 'user', 'items'])
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
-            ->latest()
+            // Klikbare kolomkoppen; zonder keuze blijft nieuwste-eerst de default.
+            ->tap(fn ($q) => $this->applySort($q, 'created_at', 'desc'))
             ->paginate(15);
+    }
+
+    /**
+     * Rij-klik in de tabel: navigeer naar de detailpagina van de levering.
+     * SPA-navigatie (navigate: true) houdt de ervaring gelijk aan wire:navigate-links.
+     */
+    public function open(Delivery $delivery): void
+    {
+        $this->redirectRoute('deliveries.show', $delivery, navigate: true);
     }
 
     /**

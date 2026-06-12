@@ -37,11 +37,11 @@
     {{-- Table --}}
     <flux:table>
         <flux:table.columns>
-            <flux:table.column>{{ __('Code') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'code'" :direction="$sortDirection" wire:click="sort('code')">{{ __('Code') }}</flux:table.column>
             <flux:table.column>{{ __('Name') }}</flux:table.column>
             <flux:table.column>{{ __('Warehouse') }}</flux:table.column>
             <flux:table.column>{{ __('Products') }}</flux:table.column>
-            <flux:table.column>{{ __('Created') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('Created') }}</flux:table.column>
             <flux:table.column></flux:table.column>
         </flux:table.columns>
 

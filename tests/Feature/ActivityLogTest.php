@@ -40,3 +40,30 @@ test('search combined with type filter does not leak other types', function () {
     expect($names)->toContain('Alpha Widget')
         ->not->toContain('Alpha Gadget');
 });
+
+test('movements can be sorted by quantity via column header', function () {
+    StockMovement::factory()->create(['quantity' => 5]);
+    StockMovement::factory()->create(['quantity' => 50]);
+
+    $component = Livewire::actingAs(workerUser())
+        ->test(Index::class)
+        ->call('sort', 'quantity');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->movements->first()->quantity)->toBe(5);
+
+    $component->call('sort', 'quantity');
+    expect($component->instance()->movements->first()->quantity)->toBe(50);
+});
+
+test('sorting ignores columns outside the whitelist', function () {
+    StockMovement::factory()->create();
+
+    $component = Livewire::actingAs(workerUser())
+        ->test(Index::class)
+        ->call('sort', 'user_id; DROP TABLE stock_movements')
+        ->assertSet('sortBy', '');
+
+    // Onbekende kolom: stille no-op, de default sortering blijft gelden.
+    expect($component->instance()->movements->count())->toBe(1);
+});

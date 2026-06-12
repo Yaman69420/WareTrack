@@ -85,3 +85,18 @@ test('warehouses are searchable by name and location', function () {
         ->assertSee('Warehouse Alpha')
         ->assertDontSee('Warehouse Beta');
 });
+
+test('warehouses can be sorted by name via sort control', function () {
+    Warehouse::factory()->create(['name' => 'Alpha Depot']);
+    Warehouse::factory()->create(['name' => 'Zulu Depot']);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('sort', 'name');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->warehouses->first()->name)->toBe('Alpha Depot');
+
+    $component->call('sort', 'name');
+    expect($component->instance()->warehouses->first()->name)->toBe('Zulu Depot');
+});

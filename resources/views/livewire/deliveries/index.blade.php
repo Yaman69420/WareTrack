@@ -30,18 +30,23 @@
     {{-- Table --}}
     <flux:table>
         <flux:table.columns>
-            <flux:table.column>{{ __('Reference') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'reference'" :direction="$sortDirection" wire:click="sort('reference')">{{ __('Reference') }}</flux:table.column>
             <flux:table.column>{{ __('Supplier') }}</flux:table.column>
-            <flux:table.column>{{ __('Status') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'status'" :direction="$sortDirection" wire:click="sort('status')">{{ __('Status') }}</flux:table.column>
             <flux:table.column>{{ __('Items') }}</flux:table.column>
             <flux:table.column>{{ __('Created by') }}</flux:table.column>
-            <flux:table.column>{{ __('Date') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('Date') }}</flux:table.column>
             <flux:table.column></flux:table.column>
         </flux:table.columns>
 
         <flux:table.rows>
             @forelse ($this->deliveries as $delivery)
-                <flux:table.row :key="$delivery->id">
+                {{-- Hele rij klikbaar naar de detailpagina; hover + cursor maken dat zichtbaar --}}
+                <flux:table.row
+                    :key="$delivery->id"
+                    wire:click="open({{ $delivery->id }})"
+                    class="cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5"
+                >
                     <flux:table.cell variant="strong">
                         {{ $delivery->reference ?? '—' }}
                     </flux:table.cell>
@@ -73,7 +78,8 @@
                         {{ $delivery->created_at->diffForHumans() }}
                     </flux:table.cell>
 
-                    <flux:table.cell align="end">
+                    {{-- .stop: anders bubbelt de klik op het oog-icoon door naar de rij-klik (dubbele navigatie) --}}
+                    <flux:table.cell align="end" x-on:click.stop>
                         <flux:button
                             :href="route('deliveries.show', $delivery)"
                             wire:navigate

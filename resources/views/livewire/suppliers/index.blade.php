@@ -25,10 +25,10 @@
     {{-- Table --}}
     <flux:table>
         <flux:table.columns>
-            <flux:table.column>{{ __('Name') }}</flux:table.column>
-            <flux:table.column>{{ __('Email') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('Name') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'email'" :direction="$sortDirection" wire:click="sort('email')">{{ __('Email') }}</flux:table.column>
             <flux:table.column>{{ __('Phone') }}</flux:table.column>
-            <flux:table.column>{{ __('Created') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('Created') }}</flux:table.column>
             @if(auth()->user()->isAdmin())
                 <flux:table.column></flux:table.column>
             @endif

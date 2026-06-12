@@ -146,6 +146,31 @@ test('movements page filters by type', function () {
         ->assertSee($this->product->name);
 });
 
+test('movements can be sorted by quantity via column header', function () {
+    StockMovement::factory()->create([
+        'product_id' => $this->product->id,
+        'location_id' => $this->location->id,
+        'user_id' => $this->admin->id,
+        'quantity' => 5,
+    ]);
+    StockMovement::factory()->create([
+        'product_id' => $this->product->id,
+        'location_id' => $this->location->id,
+        'user_id' => $this->admin->id,
+        'quantity' => 50,
+    ]);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(Movements::class)
+        ->call('sort', 'quantity');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->movements->first()->quantity)->toBe(5);
+
+    $component->call('sort', 'quantity');
+    expect($component->instance()->movements->first()->quantity)->toBe(50);
+});
+
 // =========================================================
 // Stock/CreateMovement
 // =========================================================

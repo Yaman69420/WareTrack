@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Suppliers;
 
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Product;
 use App\Models\Supplier;
 use Flux\Flux;
@@ -22,6 +23,10 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+    use WithSorting;
+
+    /** Kolommen waarop gesorteerd mag worden (whitelist voor orderBy). */
+    protected array $sortable = ['name', 'email', 'created_at'];
 
     public string $search = '';
 
@@ -73,7 +78,8 @@ class Index extends Component
             ->when($this->search, fn ($q) => $q->where(fn ($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
                 ->orWhere('email', 'like', "%{$this->search}%")))
-            ->latest()
+            // Klikbare kolomkoppen; zonder keuze blijft nieuwste-eerst de default.
+            ->tap(fn ($q) => $this->applySort($q))
             ->paginate(10);
     }
 

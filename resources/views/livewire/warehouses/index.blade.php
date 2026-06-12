@@ -11,13 +11,31 @@
         </flux:button>
     </div>
 
-    {{-- Search --}}
-    <div class="max-w-sm">
-        <flux:input
-            wire:model.live.debounce.300ms="search"
-            icon="magnifying-glass"
-            placeholder="{{ __('Search by name or location...') }}"
-        />
+    {{-- Search + sort --}}
+    <div class="flex flex-wrap items-center gap-3">
+        <div class="w-full max-w-sm">
+            <flux:input
+                wire:model.live.debounce.300ms="search"
+                icon="magnifying-glass"
+                placeholder="{{ __('Search by name or location...') }}"
+            />
+        </div>
+
+        {{-- Sorteerknoppen: de kaartweergave heeft geen tabelkoppen, dus de
+             klikbare sortering staat hier naast het zoekveld. --}}
+        <div class="flex items-center gap-1">
+            <span class="text-xs font-medium uppercase tracking-wide text-zinc-500">{{ __('Sort') }}</span>
+            @foreach (['name' => __('Name'), 'location' => __('Location'), 'created_at' => __('Created')] as $column => $label)
+                <flux:button
+                    wire:click="sort('{{ $column }}')"
+                    variant="{{ $sortBy === $column ? 'filled' : 'ghost' }}"
+                    size="sm"
+                    icon:trailing="{{ $sortBy === $column ? ($sortDirection === 'desc' ? 'chevron-down' : 'chevron-up') : 'chevron-up-down' }}"
+                >
+                    {{ $label }}
+                </flux:button>
+            @endforeach
+        </div>
     </div>
 
     {{-- Card Grid --}}

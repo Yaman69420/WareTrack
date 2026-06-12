@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Locations;
 
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Location;
 use App\Models\Warehouse;
 use Flux\Flux;
@@ -22,6 +23,10 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+    use WithSorting;
+
+    /** Kolommen waarop gesorteerd mag worden (whitelist voor orderBy). */
+    protected array $sortable = ['code', 'created_at'];
 
     public string $search = '';
 
@@ -82,7 +87,8 @@ class Index extends Component
                 ->orWhere('name', 'like', "%{$this->search}%")))
             ->when($this->filterWarehouse, fn ($q) => $q->where('warehouse_id', $this->filterWarehouse))
             ->withCount('products')
-            ->latest()
+            // Klikbare kolomkoppen; zonder keuze blijft nieuwste-eerst de default.
+            ->tap(fn ($q) => $this->applySort($q, 'created_at', 'desc'))
             ->paginate(10);
     }
 

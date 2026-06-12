@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Warehouses;
 
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Warehouse;
 use Flux\Flux;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,14 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+    use WithSorting;
+
+    /**
+     * Kolommen waarop gesorteerd mag worden (whitelist voor orderBy).
+     * Magazijnen hebben geen code-kolom; 'location' is de tweede directe
+     * tekstkolom die op de kaarten getoond wordt.
+     */
+    protected array $sortable = ['name', 'location', 'created_at'];
 
     public string $search = '';
 
@@ -68,7 +77,8 @@ class Index extends Component
                 ->where('name', 'like', "%{$this->search}%")
                 ->orWhere('location', 'like', "%{$this->search}%")))
             ->withCount('locations')
-            ->latest()
+            // Klikbare sorteerknoppen; zonder keuze blijft nieuwste-eerst de default.
+            ->tap(fn ($q) => $this->applySort($q, 'created_at', 'desc'))
             ->paginate(10);
     }
 

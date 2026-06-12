@@ -103,6 +103,21 @@ test('admin can delete another user', function () {
     expect(User::find($target->id))->toBeNull();
 });
 
+test('users can be sorted by email via column header', function () {
+    User::factory()->create(['email' => 'aaa@sort.test']);
+    User::factory()->create(['email' => 'zzz@sort.test']);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('sort', 'email');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->users->first()->email)->toBe('aaa@sort.test');
+
+    $component->call('sort', 'email');
+    expect($component->instance()->users->first()->email)->toBe('zzz@sort.test');
+});
+
 test('users can be searched by name', function () {
     User::factory()->create(['name' => 'Unique Zoekterm']);
 

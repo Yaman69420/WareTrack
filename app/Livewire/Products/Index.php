@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Products;
 
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Warehouse;
@@ -26,6 +27,10 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithFileUploads, WithPagination;
+    use WithSorting;
+
+    /** Kolommen waarop gesorteerd mag worden (whitelist voor orderBy). */
+    protected array $sortable = ['name', 'sku', 'min_stock', 'created_at'];
 
     public string $search = '';
 
@@ -102,7 +107,8 @@ class Index extends Component
                 ->where('name', 'like', "%{$this->search}%")
                 ->orWhere('sku', 'like', "%{$this->search}%")))
             ->when($this->filterCategory, fn ($q) => $q->where('category_id', $this->filterCategory))
-            ->latest()
+            // Klikbare kolomkoppen; zonder keuze blijft nieuwste-eerst de default.
+            ->tap(fn ($q) => $this->applySort($q))
             ->paginate(10);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Activity;
 
 use App\Enums\StockMovementType;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\StockMovement;
 use App\Models\User;
 use Livewire\Attributes\Computed;
@@ -21,6 +22,10 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+    use WithSorting;
+
+    /** Kolommen waarop gesorteerd mag worden (whitelist voor orderBy). */
+    protected array $sortable = ['type', 'quantity', 'reference', 'created_at'];
 
     #[Url(as: 'q')]
     public string $search = '';
@@ -90,7 +95,8 @@ class Index extends Component
             ->when($this->user, fn ($q) => $q->where('user_id', $this->user))
             ->when($this->from, fn ($q) => $q->whereDate('created_at', '>=', $this->from))
             ->when($this->to, fn ($q) => $q->whereDate('created_at', '<=', $this->to))
-            ->latest()
+            // Klikbare kolomkoppen; zonder keuze blijft nieuwste-eerst de default.
+            ->tap(fn ($q) => $this->applySort($q))
             ->paginate(25);
     }
 

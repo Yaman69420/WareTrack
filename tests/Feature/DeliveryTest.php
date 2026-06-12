@@ -278,3 +278,18 @@ test('deliveries can be filtered by status', function () {
 
     expect($component->get('deliveries')->total())->toBe(1);
 });
+
+test('deliveries can be sorted by reference via column header', function () {
+    Delivery::factory()->create(['supplier_id' => $this->supplier->id, 'user_id' => $this->admin->id, 'reference' => 'PO-0001']);
+    Delivery::factory()->create(['supplier_id' => $this->supplier->id, 'user_id' => $this->admin->id, 'reference' => 'PO-9999']);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('sort', 'reference');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->deliveries->first()->reference)->toBe('PO-0001');
+
+    $component->call('sort', 'reference');
+    expect($component->instance()->deliveries->first()->reference)->toBe('PO-9999');
+});

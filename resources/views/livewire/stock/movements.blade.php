@@ -38,12 +38,12 @@
     <flux:table>
         <flux:table.columns>
             <flux:table.column>{{ __('Product') }}</flux:table.column>
-            <flux:table.column>{{ __('Type') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'type'" :direction="$sortDirection" wire:click="sort('type')">{{ __('Type') }}</flux:table.column>
             <flux:table.column>{{ __('Location') }}</flux:table.column>
-            <flux:table.column>{{ __('Qty') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'quantity'" :direction="$sortDirection" wire:click="sort('quantity')">{{ __('Qty') }}</flux:table.column>
             <flux:table.column>{{ __('Reference') }}</flux:table.column>
             <flux:table.column>{{ __('By') }}</flux:table.column>
-            <flux:table.column>{{ __('Date') }}</flux:table.column>
+            <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('Date') }}</flux:table.column>
         </flux:table.columns>
 
         <flux:table.rows>

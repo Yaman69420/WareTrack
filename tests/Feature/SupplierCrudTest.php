@@ -146,6 +146,21 @@ test('suppliers can be searched by name', function () {
     expect($component->get('suppliers')->total())->toBe(1);
 });
 
+test('suppliers can be sorted by name via column header', function () {
+    Supplier::factory()->create(['name' => 'Acme Corp']);
+    Supplier::factory()->create(['name' => 'Zenith Ltd']);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('sort', 'name');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->suppliers->first()->name)->toBe('Acme Corp');
+
+    $component->call('sort', 'name');
+    expect($component->instance()->suppliers->first()->name)->toBe('Zenith Ltd');
+});
+
 test('suppliers can be searched by email', function () {
     Supplier::factory()->create(['name' => 'Acme Corp', 'email' => 'acme@example.com']);
     Supplier::factory()->create(['name' => 'Beta Supplies', 'email' => 'beta@example.com']);

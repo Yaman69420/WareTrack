@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Categories;
 
+use App\Livewire\Concerns\WithSorting;
 use App\Models\Category;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
@@ -21,6 +22,10 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
+    use WithSorting;
+
+    /** Kolommen waarop gesorteerd mag worden (whitelist voor orderBy). */
+    protected array $sortable = ['name', 'created_at'];
 
     public string $search = '';
 
@@ -54,7 +59,8 @@ class Index extends Component
             // withCount levert het productaantal als subquery: één query voor
             // de hele pagina in plaats van een count per rij.
             ->withCount('products')
-            ->latest()
+            // Klikbare kolomkoppen; zonder keuze blijft nieuwste-eerst de default.
+            ->tap(fn ($q) => $this->applySort($q, 'created_at', 'desc'))
             ->paginate(10);
     }
 

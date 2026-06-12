@@ -149,3 +149,18 @@ test('search combined with warehouse filter does not leak other warehouses', fun
         ->assertSee('RACK-01')
         ->assertDontSee('RACK-02');
 });
+
+test('locations can be sorted by code via column header', function () {
+    Location::factory()->create(['warehouse_id' => $this->warehouse->id, 'code' => 'AA-01']);
+    Location::factory()->create(['warehouse_id' => $this->warehouse->id, 'code' => 'ZZ-99']);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('sort', 'code');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->locations->first()->code)->toBe('AA-01');
+
+    $component->call('sort', 'code');
+    expect($component->instance()->locations->first()->code)->toBe('ZZ-99');
+});

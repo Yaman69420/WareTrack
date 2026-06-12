@@ -3,6 +3,7 @@
 namespace App\Livewire\Stock;
 
 use App\Enums\StockMovementType;
+use App\Livewire\Concerns\WithSorting;
 use App\Models\StockMovement;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -20,6 +21,10 @@ use Livewire\WithPagination;
 class Movements extends Component
 {
     use WithPagination;
+    use WithSorting;
+
+    /** Kolommen waarop gesorteerd mag worden (whitelist voor orderBy). */
+    protected array $sortable = ['type', 'quantity', 'created_at'];
 
     public string $search = '';
 
@@ -56,7 +61,8 @@ class Movements extends Component
                     ->orWhere('sku', 'like', "%{$this->search}%"));
             })
             ->when($this->filterType, fn ($q) => $q->where('type', $this->filterType))
-            ->latest()
+            // Klikbare kolomkoppen; zonder keuze blijft nieuwste-eerst de default.
+            ->tap(fn ($q) => $this->applySort($q, 'created_at', 'desc'))
             ->paginate(25);
     }
 

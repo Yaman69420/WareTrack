@@ -119,6 +119,23 @@ test('category with only soft-deleted products can be deleted', function () {
     expect(Category::withTrashed()->find($category->id))->not->toBeNull();
 });
 
+test('categories can be sorted by name via column header', function () {
+    // Alpha eerst aangemaakt: de default (nieuwste eerst) zou Beta bovenaan
+    // zetten, dus een Alpha-bovenaan bewijst dat de naamsortering werkt.
+    Category::factory()->create(['name' => 'Alpha']);
+    Category::factory()->create(['name' => 'Beta']);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test(Index::class)
+        ->call('sort', 'name');
+
+    // Eerste klik sorteert oplopend; tweede klik draait de richting om.
+    expect($component->instance()->categories->first()->name)->toBe('Alpha');
+
+    $component->call('sort', 'name');
+    expect($component->instance()->categories->first()->name)->toBe('Beta');
+});
+
 test('categories are searchable', function () {
     Category::factory()->create(['name' => 'Electronics']);
     Category::factory()->create(['name' => 'Furniture']);
