@@ -26,12 +26,16 @@
             />
         </div>
         <div class="w-56">
-            <flux:select wire:model.live="filterWarehouse" placeholder="{{ __('All warehouses') }}">
-                <flux:select.option value="">{{ __('All warehouses') }}</flux:select.option>
+            {{-- Warehouse filter — native select for reliable Livewire binding --}}
+            <select
+                wire:model.live="filterWarehouse"
+                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+            >
+                <option value="">{{ __('All warehouses') }}</option>
                 @foreach ($this->warehouses as $warehouse)
-                    <flux:select.option value="{{ $warehouse->id }}">{{ $warehouse->name }}</flux:select.option>
+                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                 @endforeach
-            </flux:select>
+            </select>
         </div>
     </div>
 

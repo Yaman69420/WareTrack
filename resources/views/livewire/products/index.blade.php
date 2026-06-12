@@ -21,12 +21,16 @@
             />
         </div>
         <div class="w-56">
-            <flux:select wire:model.live="filterCategory" placeholder="{{ __('All categories') }}">
-                <flux:select.option value="">{{ __('All categories') }}</flux:select.option>
+            {{-- Category filter — native select for reliable Livewire binding --}}
+            <select
+                wire:model.live="filterCategory"
+                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+            >
+                <option value="">{{ __('All categories') }}</option>
                 @foreach ($this->categories as $category)
-                    <flux:select.option value="{{ $category->id }}">{{ $category->name }}</flux:select.option>
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
                 @endforeach
-            </flux:select>
+            </select>
         </div>
     </div>
 
@@ -156,15 +160,20 @@
                     <flux:error name="sku" />
                 </flux:field>
 
-                <flux:field>
+                {{-- Category — native select for reliable Livewire binding --}}
+                <div class="flex flex-col gap-1">
                     <flux:label>{{ __('Category') }}</flux:label>
-                    <flux:select wire:model="categoryId" placeholder="{{ __('Select category') }}">
+                    <select
+                        wire:model="categoryId"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                    >
+                        <option value="">{{ __('Select category') }}</option>
                         @foreach ($this->categories as $category)
-                            <flux:select.option value="{{ $category->id }}">{{ $category->name }}</flux:select.option>
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
-                    </flux:select>
+                    </select>
                     <flux:error name="categoryId" />
-                </flux:field>
+                </div>
 
                 <flux:field>
                     <flux:label>{{ __('Min. Stock') }}</flux:label>

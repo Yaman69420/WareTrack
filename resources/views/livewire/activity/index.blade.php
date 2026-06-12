@@ -39,21 +39,29 @@
         </div>
 
         <div class="w-44">
-            <flux:select wire:model.live="type" placeholder="{{ __('All types') }}">
-                <flux:select.option value="">{{ __('All types') }}</flux:select.option>
+            {{-- Type filter — native select for reliable Livewire binding --}}
+            <select
+                wire:model.live="type"
+                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+            >
+                <option value="">{{ __('All types') }}</option>
                 @foreach ($this->types as $t)
-                    <flux:select.option value="{{ $t->value }}">{{ ucfirst($t->value) }}</flux:select.option>
+                    <option value="{{ $t->value }}">{{ ucfirst($t->value) }}</option>
                 @endforeach
-            </flux:select>
+            </select>
         </div>
 
         <div class="w-44">
-            <flux:select wire:model.live="user" placeholder="{{ __('All users') }}">
-                <flux:select.option value="">{{ __('All users') }}</flux:select.option>
+            {{-- User filter — native select for reliable Livewire binding --}}
+            <select
+                wire:model.live="user"
+                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+            >
+                <option value="">{{ __('All users') }}</option>
                 @foreach ($this->users as $u)
-                    <flux:select.option value="{{ $u->id }}">{{ $u->name }}</flux:select.option>
+                    <option value="{{ $u->id }}">{{ $u->name }}</option>
                 @endforeach
-            </flux:select>
+            </select>
         </div>
 
         <div class="flex items-center gap-2">

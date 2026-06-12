@@ -77,12 +77,16 @@
     @if($tab === 'stock-per-location')
         <div class="flex items-center gap-3">
             <div class="w-56">
-                <flux:select wire:model.live="filterWarehouse" placeholder="{{ __('All warehouses') }}">
-                    <flux:select.option value="">{{ __('All warehouses') }}</flux:select.option>
+                {{-- Warehouse filter — native select for reliable Livewire binding --}}
+                <select
+                    wire:model.live="filterWarehouse"
+                    class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                >
+                    <option value="">{{ __('All warehouses') }}</option>
                     @foreach($this->warehouses as $warehouse)
-                        <flux:select.option value="{{ $warehouse->id }}">{{ $warehouse->name }}</flux:select.option>
+                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                     @endforeach
-                </flux:select>
+                </select>
             </div>
             <span class="text-sm text-zinc-400">{{ $this->stockPerLocation->count() }} {{ __('lines') }}</span>
             <flux:button
@@ -148,15 +152,20 @@
                 <flux:label>{{ __('To') }}</flux:label>
                 <flux:input wire:model.live="filterTo" type="date" />
             </flux:field>
-            <flux:field>
+            {{-- Type — native select for reliable Livewire binding --}}
+            <div class="flex w-40 flex-col gap-1">
                 <flux:label>{{ __('Type') }}</flux:label>
-                <flux:select wire:model.live="filterType" placeholder="{{ __('All types') }}" class="w-40">
-                    <flux:select.option value="">{{ __('All types') }}</flux:select.option>
+                <select
+                    wire:model.live="filterType"
+                    class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                >
+                    <option value="">{{ __('All types') }}</option>
                     @foreach($this->types as $type)
-                        <flux:select.option value="{{ $type->value }}">{{ ucfirst($type->value) }}</flux:select.option>
+                        <option value="{{ $type->value }}">{{ ucfirst($type->value) }}</option>
                     @endforeach
-                </flux:select>
-            </flux:field>
+                </select>
+                <flux:error name="filterType" />
+            </div>
             <p class="mb-2 text-sm text-zinc-400">{{ $this->movements->count() }} {{ __('movements') }}</p>
             <flux:button
                 wire:click="exportMovements"

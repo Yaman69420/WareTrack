@@ -15,12 +15,16 @@
 
     {{-- Filter --}}
     <div class="w-48">
-        <flux:select wire:model.live="filterStatus" placeholder="{{ __('All statuses') }}">
-            <flux:select.option value="">{{ __('All statuses') }}</flux:select.option>
+        {{-- Status filter — native select for reliable Livewire binding --}}
+        <select
+            wire:model.live="filterStatus"
+            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+        >
+            <option value="">{{ __('All statuses') }}</option>
             @foreach ($this->statuses as $status)
-                <flux:select.option value="{{ $status->value }}">{{ ucfirst($status->value) }}</flux:select.option>
+                <option value="{{ $status->value }}">{{ ucfirst($status->value) }}</option>
             @endforeach
-        </flux:select>
+        </select>
     </div>
 
     {{-- Table --}}

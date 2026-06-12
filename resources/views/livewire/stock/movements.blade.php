@@ -21,12 +21,16 @@
             />
         </div>
         <div class="w-48">
-            <flux:select wire:model.live="filterType" placeholder="{{ __('All types') }}">
-                <flux:select.option value="">{{ __('All types') }}</flux:select.option>
+            {{-- Type filter — native select for reliable Livewire binding --}}
+            <select
+                wire:model.live="filterType"
+                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+            >
+                <option value="">{{ __('All types') }}</option>
                 @foreach ($this->types as $type)
-                    <flux:select.option value="{{ $type->value }}">{{ ucfirst($type->value) }}</flux:select.option>
+                    <option value="{{ $type->value }}">{{ ucfirst($type->value) }}</option>
                 @endforeach
-            </flux:select>
+            </select>
         </div>
     </div>
 

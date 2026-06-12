@@ -15,11 +15,16 @@
         <div class="rounded-xl border border-white/[.08] bg-white/[.04] p-6">
             <flux:heading size="sm" class="mb-4 text-zinc-400">{{ __('1. Select warehouse') }}</flux:heading>
             <div class="max-w-xs">
-                <flux:select wire:model.live="warehouseId" placeholder="{{ __('Choose warehouse…') }}">
+                {{-- Warehouse — native select for reliable Livewire binding --}}
+                <select
+                    wire:model.live="warehouseId"
+                    class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                >
+                    <option value="">{{ __('Choose warehouse…') }}</option>
                     @foreach ($this->warehouses as $warehouse)
-                        <flux:select.option value="{{ $warehouse->id }}">{{ $warehouse->name }}</flux:select.option>
+                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                     @endforeach
-                </flux:select>
+                </select>
             </div>
         </div>
 

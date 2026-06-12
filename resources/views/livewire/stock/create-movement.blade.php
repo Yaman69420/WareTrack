@@ -11,51 +11,65 @@
     <div class="max-w-xl">
         <div class="flex flex-col gap-6 rounded-xl border border-white/[.08] bg-white p-6 dark:bg-white/[.04]">
 
-            {{-- Step 1: Type --}}
-            <flux:field>
+            {{-- Step 1: Type — native select for reliable Livewire binding --}}
+            <div class="flex flex-col gap-1">
                 <flux:label>{{ __('Movement Type') }}</flux:label>
-                <flux:select wire:model.live="type" placeholder="{{ __('Select type…') }}">
-                    <flux:select.option value="incoming">⬇ {{ __('Incoming') }}</flux:select.option>
-                    <flux:select.option value="outgoing">⬆ {{ __('Outgoing') }}</flux:select.option>
-                    <flux:select.option value="transfer">⇄ {{ __('Transfer') }}</flux:select.option>
-                    <flux:select.option value="correction">✎ {{ __('Correction') }}</flux:select.option>
-                </flux:select>
+                <select
+                    wire:model.live="type"
+                    class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                >
+                    <option value="">{{ __('Select type…') }}</option>
+                    <option value="incoming">⬇ {{ __('Incoming') }}</option>
+                    <option value="outgoing">⬆ {{ __('Outgoing') }}</option>
+                    <option value="transfer">⇄ {{ __('Transfer') }}</option>
+                    <option value="correction">✎ {{ __('Correction') }}</option>
+                </select>
                 <flux:error name="type" />
-            </flux:field>
+            </div>
 
             {{-- De rest van het formulier toont pas na de typekeuze (zie empty state onderaan) --}}
             @if ($type)
 
-                {{-- Step 2: Product --}}
-                <flux:field>
+                {{-- Step 2: Product — native select for reliable Livewire binding --}}
+                <div class="flex flex-col gap-1">
                     <flux:label>{{ __('Product') }}</flux:label>
-                    <flux:select wire:model.live="productId" placeholder="{{ __('Select product…') }}">
+                    <select
+                        wire:model.live="productId"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                    >
+                        <option value="">{{ __('Select product…') }}</option>
                         @foreach ($this->products as $product)
-                            <flux:select.option value="{{ $product->id }}">
+                            <option value="{{ $product->id }}">
                                 {{ $product->name }} — {{ $product->sku }}
-                            </flux:select.option>
+                            </option>
                         @endforeach
-                    </flux:select>
+                    </select>
                     <flux:error name="productId" />
-                </flux:field>
+                </div>
 
                 {{-- Eén locatie volstaat voor incoming/outgoing/correction;
                      een transfer heeft aparte van- en naar-blokken (zie @else) --}}
                 @if ($type !== 'transfer')
 
-                    {{-- Step 3a: Warehouse picker --}}
-                    <flux:field>
+                    {{-- Step 3a: Warehouse picker — native select for reliable Livewire binding --}}
+                    <div class="flex flex-col gap-1">
                         <flux:label>{{ __('Warehouse') }}</flux:label>
-                        <flux:select wire:model.live="warehouseId" placeholder="{{ __('Select warehouse…') }}">
+                        <select
+                            wire:model.live="warehouseId"
+                            class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                        >
+                            <option value="">{{ __('Select warehouse…') }}</option>
                             @foreach ($this->warehouses as $warehouse)
-                                <flux:select.option value="{{ $warehouse->id }}">{{ $warehouse->name }}</flux:select.option>
+                                <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                             @endforeach
-                        </flux:select>
-                    </flux:field>
+                        </select>
+                        <flux:error name="warehouseId" />
+                    </div>
 
-                    {{-- Step 4a: Location (filtered) — lijst bevat enkel locaties van het gekozen magazijn --}}
+                    {{-- Step 4a: Location (filtered) — native select for reliable Livewire binding;
+                         lijst bevat enkel locaties van het gekozen magazijn --}}
                     @if ($warehouseId)
-                        <flux:field>
+                        <div class="flex flex-col gap-1">
                             {{-- Label volgt de richting van de beweging: bestemming, bron of neutraal --}}
                             <flux:label>
                                 @if ($type === 'incoming') {{ __('Destination Location') }}
@@ -63,15 +77,19 @@
                                 @else {{ __('Location') }}
                                 @endif
                             </flux:label>
-                            <flux:select wire:model.live="locationId" placeholder="{{ __('Select location…') }}">
+                            <select
+                                wire:model.live="locationId"
+                                class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                            >
+                                <option value="">{{ __('Select location…') }}</option>
                                 @foreach ($this->locations as $location)
-                                    <flux:select.option value="{{ $location->id }}">
+                                    <option value="{{ $location->id }}">
                                         {{ $location->code }}{{ $location->name ? ' — ' . $location->name : '' }}
-                                    </flux:select.option>
+                                    </option>
                                 @endforeach
-                            </flux:select>
+                            </select>
                             <flux:error name="locationId" />
-                        </flux:field>
+                        </div>
 
                         {{-- Current stock hint: helpt fouten voorkomen vóór het opslaan;
                              strikte null-check omdat een stand van 0 ook getoond moet worden --}}
@@ -93,27 +111,38 @@
                         <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">{{ __('From') }}</p>
 
                         <div class="flex flex-col gap-4">
-                            <flux:field>
+                            {{-- From warehouse — native select for reliable Livewire binding --}}
+                            <div class="flex flex-col gap-1">
                                 <flux:label>{{ __('Warehouse') }}</flux:label>
-                                <flux:select wire:model.live="fromWarehouseId" placeholder="{{ __('Select warehouse…') }}">
+                                <select
+                                    wire:model.live="fromWarehouseId"
+                                    class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                                >
+                                    <option value="">{{ __('Select warehouse…') }}</option>
                                     @foreach ($this->warehouses as $warehouse)
-                                        <flux:select.option value="{{ $warehouse->id }}">{{ $warehouse->name }}</flux:select.option>
+                                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                                     @endforeach
-                                </flux:select>
-                            </flux:field>
+                                </select>
+                                <flux:error name="fromWarehouseId" />
+                            </div>
 
                             @if ($fromWarehouseId)
-                                <flux:field>
+                                {{-- From location — native select for reliable Livewire binding --}}
+                                <div class="flex flex-col gap-1">
                                     <flux:label>{{ __('Location') }}</flux:label>
-                                    <flux:select wire:model.live="fromLocationId" placeholder="{{ __('Select location…') }}">
+                                    <select
+                                        wire:model.live="fromLocationId"
+                                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                                    >
+                                        <option value="">{{ __('Select location…') }}</option>
                                         @foreach ($this->fromLocations as $location)
-                                            <flux:select.option value="{{ $location->id }}">
+                                            <option value="{{ $location->id }}">
                                                 {{ $location->code }}{{ $location->name ? ' — ' . $location->name : '' }}
-                                            </flux:select.option>
+                                            </option>
                                         @endforeach
-                                    </flux:select>
+                                    </select>
                                     <flux:error name="fromLocationId" />
-                                </flux:field>
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -123,27 +152,38 @@
                         <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-500">{{ __('To') }}</p>
 
                         <div class="flex flex-col gap-4">
-                            <flux:field>
+                            {{-- To warehouse — native select for reliable Livewire binding --}}
+                            <div class="flex flex-col gap-1">
                                 <flux:label>{{ __('Warehouse') }}</flux:label>
-                                <flux:select wire:model.live="toWarehouseId" placeholder="{{ __('Select warehouse…') }}">
+                                <select
+                                    wire:model.live="toWarehouseId"
+                                    class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                                >
+                                    <option value="">{{ __('Select warehouse…') }}</option>
                                     @foreach ($this->warehouses as $warehouse)
-                                        <flux:select.option value="{{ $warehouse->id }}">{{ $warehouse->name }}</flux:select.option>
+                                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                                     @endforeach
-                                </flux:select>
-                            </flux:field>
+                                </select>
+                                <flux:error name="toWarehouseId" />
+                            </div>
 
                             @if ($toWarehouseId)
-                                <flux:field>
+                                {{-- To location — native select for reliable Livewire binding --}}
+                                <div class="flex flex-col gap-1">
                                     <flux:label>{{ __('Location') }}</flux:label>
-                                    <flux:select wire:model.live="toLocationId" placeholder="{{ __('Select location…') }}">
+                                    <select
+                                        wire:model.live="toLocationId"
+                                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                                    >
+                                        <option value="">{{ __('Select location…') }}</option>
                                         @foreach ($this->toLocations as $location)
-                                            <flux:select.option value="{{ $location->id }}">
+                                            <option value="{{ $location->id }}">
                                                 {{ $location->code }}{{ $location->name ? ' — ' . $location->name : '' }}
-                                            </flux:select.option>
+                                            </option>
                                         @endforeach
-                                    </flux:select>
+                                    </select>
                                     <flux:error name="toLocationId" />
-                                </flux:field>
+                                </div>
                             @endif
                         </div>
                     </div>

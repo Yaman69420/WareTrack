@@ -197,6 +197,13 @@ class CreateMovement extends Component
             'toLocationId' => 'required_if:type,transfer|nullable|exists:locations,id|different:fromLocationId',
             'reference' => 'nullable|string|max:100',
             'notes' => 'nullable|string',
+        ], [], [
+            // Nette veldnamen in foutmeldingen: "The product field is required"
+            // i.p.v. het uit de property afgeleide "product id".
+            'productId' => 'product',
+            'locationId' => 'location',
+            'fromLocationId' => 'source location',
+            'toLocationId' => 'destination location',
         ]);
 
         $product = Product::findOrFail($this->productId);

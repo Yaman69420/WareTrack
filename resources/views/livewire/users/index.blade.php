@@ -119,17 +119,22 @@
                     <flux:error name="password" />
                 </flux:field>
 
-                <flux:field>
+                {{-- Role — native select for reliable Livewire binding --}}
+                <div class="flex flex-col gap-1">
                     <flux:label>{{ __('Role') }}</flux:label>
-                    <flux:select wire:model="role">
+                    <select
+                        wire:model="role"
+                        class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-100 dark:focus:border-blue-400"
+                    >
+                        <option value="">{{ __('Select role…') }}</option>
                         @foreach ($this->roles as $roleOption)
-                            <flux:select.option value="{{ $roleOption->value }}">
+                            <option value="{{ $roleOption->value }}">
                                 {{ $roleOption === \App\Enums\UserRole::Admin ? __('Admin') : __('Warehouse Worker') }}
-                            </flux:select.option>
+                            </option>
                         @endforeach
-                    </flux:select>
+                    </select>
                     <flux:error name="role" />
-                </flux:field>
+                </div>
             </div>
 
             <div class="flex justify-end gap-3">
