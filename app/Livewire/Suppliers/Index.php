@@ -106,7 +106,9 @@ class Index extends Component
         $this->phone = $supplier->phone ?? '';
         $this->address = $supplier->address ?? '';
         $this->notes = $supplier->notes ?? '';
-        // 'products.id' expliciet geprefixt: de pivot-join heeft ook een id-kolom.
+        // 'products.id' expliciet geprefixt: dit is een belongsToMany-query die joint met
+        // de pivot supplier_product, dus 'id' alleen zou dubbelzinnig zijn — products.id maakt
+        // ondubbelzinnig dat we de id uit de products-tabel willen.
         // Cast naar string omdat checkbox-bindings strings opleveren — anders matcht
         // de bestaande selectie niet en lijken alle vinkjes uit te staan.
         $this->selectedProductIds = $supplier->products()->pluck('products.id')->map(fn ($id) => (string) $id)->toArray();
