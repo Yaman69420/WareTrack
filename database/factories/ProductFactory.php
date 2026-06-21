@@ -10,6 +10,10 @@ use Illuminate\Support\Str;
 /** @extends Factory<Product> */
 class ProductFactory extends Factory
 {
+    /**
+     * Recept voor een product: gekoppelde categorie via geneste factory, SKU in 'ABC-1234'-formaat
+     * (het cijferdeel is uniek per run) en een willekeurige min_stock van 0 tot 20.
+     */
     public function definition(): array
     {
         $name = fake()->words(3, true);

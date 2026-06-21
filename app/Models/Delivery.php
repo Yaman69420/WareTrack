@@ -3,14 +3,22 @@
 namespace App\Models;
 
 use App\Enums\DeliveryStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Kop van een inkomende levering van een leverancier.
+ *
+ * De eigenlijke regels (welk product, hoeveel) zitten in DeliveryItem; dit
+ * model bewaart de context: leverancier, ontvanger (user), status en moment
+ * van ontvangst. Soft deletes houden geannuleerde leveringen traceerbaar.
+ */
 class Delivery extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'supplier_id',
@@ -21,24 +29,30 @@ class Delivery extends Model
         'received_at',
     ];
 
+    /** Attribuutcasts: status als DeliveryStatus-enum, received_at als Carbon-datetime. */
     protected function casts(): array
     {
         return [
+            // Enum-cast: status is overal in de code een DeliveryStatus-case (pending/
+            // partial/received), nooit een losse string. Tikfouten breken zo al bij PHP zelf.
             'status' => DeliveryStatus::class,
             'received_at' => 'datetime',
         ];
     }
 
+    /** De leverancier van wie deze levering afkomstig is. */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
+    /** De medewerker die de levering registreerde en ontving (voor het auditspoor). */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** Een levering bestaat uit meerdere regels: per regel een product, locatie en aantallen. */
     public function items(): HasMany
     {
         return $this->hasMany(DeliveryItem::class);

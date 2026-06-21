@@ -8,6 +8,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
+/**
+ * Fortify-action die een nieuwe gebruiker valideert en registreert.
+ *
+ * Afkomstig uit de officiële Livewire starter kit (laravel/livewire-starter-kit);
+ * Fortify roept deze class aan via de koppeling in FortifyServiceProvider.
+ * De validatieregels zelf zitten herbruikbaar in de twee concerns-traits.
+ */
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules, ProfileValidationRules;

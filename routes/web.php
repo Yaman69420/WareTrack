@@ -1,47 +1,66 @@
 <?php
 
-use App\Livewire\Products\Create;
-use App\Livewire\Products\Edit;
+use App\Livewire\Dashboard;
+use App\Livewire\Deliveries\Create;
+use App\Livewire\Deliveries\Show;
+use App\Livewire\Stock\BulkCorrection;
+use App\Livewire\Stock\CreateMovement;
 use App\Livewire\Stock\Movements;
 use App\Livewire\Suppliers\Index;
-use App\Livewire\Suppliers\Show;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+/*
+|--------------------------------------------------------------------------
+| Routestructuur in drie ringen
+|--------------------------------------------------------------------------
+| 1. Publiek: enkel de root, die doorstuurt naar dashboard of login.
+| 2. auth + verified: de gedeelde werkruimte voor beide rollen.
+| 3. admin (genest): masterdata en gebruikersbeheer, enkel voor admins.
+|
+| Er zijn geen controllers: elke route wijst rechtstreeks naar een full-page
+| Livewire-component, die zelf valideert/autoriseert en naar services delegeert.
+*/
+
+// Geen landingspagina — dit is een interne app: ingelogd → dashboard, anders → login.
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', Dashboard::class)->name('dashboard');
 
-    // Accessible by admin and warehouse_worker
+    // Gedeeld: workers mogen leveranciers bekijken (muterende acties zijn in de
+    // component zelf afgeschermd via SupplierPolicy).
     Route::get('/suppliers', Index::class)->name('suppliers.index');
-    Route::get('/suppliers/{supplier}', Show::class)->name('suppliers.show');
 
     Route::get('/deliveries', App\Livewire\Deliveries\Index::class)->name('deliveries.index');
-    Route::get('/deliveries/{delivery}', App\Livewire\Deliveries\Show::class)->name('deliveries.show');
-
-    Route::get('/stock', App\Livewire\Stock\Index::class)->name('stock.index');
-    Route::get('/stock/movements', Movements::class)->name('stock.movements');
+    // Admin-only, maar bewust hiér geregistreerd met inline middleware: Laravel matcht
+    // routes in registratievolgorde, dus /deliveries/create moet vóór de
+    // {delivery}-wildcard staan — anders vangt die het woord "create" als ID (404 i.p.v. 403).
+    Route::get('/deliveries/create', Create::class)->middleware('admin')->name('deliveries.create');
+    // Route-modelbinding: {delivery} wordt automatisch een Delivery-instantie (of 404).
+    Route::get('/deliveries/{delivery}', Show::class)->name('deliveries.show');
 
     Route::get('/reports', App\Livewire\Reports\Index::class)->name('reports.index');
+    Route::get('/activity', App\Livewire\Activity\Index::class)->name('activity.index');
 
-    // Admin only
+    // Stockbewegingen registreren is het dagelijkse werk van een warehouse worker —
+    // daarom gedeeld, met de policy-check (StockMovementPolicy) in de componenten.
+    Route::get('/stock', App\Livewire\Stock\Index::class)->name('stock.index');
+    Route::get('/stock/movements', Movements::class)->name('stock.movements');
+    Route::get('/stock/movements/create', CreateMovement::class)->name('stock.movements.create');
+    Route::get('/stock/bulk-correction', BulkCorrection::class)->name('stock.bulk-correction');
+
+    // Masterdata en gebruikersbeheer: EnsureUserIsAdmin geeft workers een 403.
     Route::middleware(['admin'])->group(function () {
-        Route::get('/products', App\Livewire\Products\Index::class)->name('products.index');
-        Route::get('/products/create', Create::class)->name('products.create');
-        Route::get('/products/{product}', App\Livewire\Products\Show::class)->name('products.show');
-        Route::get('/products/{product}/edit', Edit::class)->name('products.edit');
-
         Route::get('/categories', App\Livewire\Categories\Index::class)->name('categories.index');
-
+        Route::get('/products', App\Livewire\Products\Index::class)->name('products.index');
+        Route::get('/products/{product}', App\Livewire\Products\Show::class)->name('products.show');
         Route::get('/warehouses', App\Livewire\Warehouses\Index::class)->name('warehouses.index');
         Route::get('/warehouses/{warehouse}', App\Livewire\Warehouses\Show::class)->name('warehouses.show');
-
         Route::get('/locations', App\Livewire\Locations\Index::class)->name('locations.index');
-
-        Route::get('/suppliers/create', App\Livewire\Suppliers\Create::class)->name('suppliers.create');
-        Route::get('/suppliers/{supplier}/edit', App\Livewire\Suppliers\Edit::class)->name('suppliers.edit');
-
-        Route::get('/deliveries/create', App\Livewire\Deliveries\Create::class)->name('deliveries.create');
 
         Route::get('/users', App\Livewire\Users\Index::class)->name('users.index');
     });

@@ -4,6 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Standaard Laravel-migratie voor users/sessies, uitgebreid met één projectkolom: 'role'.
+ *
+ * De rol zit rechtstreeks op de user (geen aparte rollentabel) omdat WareTrack maar
+ * twee vaste rollen kent (admin en warehouse_worker). Een pivot-gebaseerd
+ * permissiesysteem zou hier onnodige complexiteit toevoegen.
+ */
 return new class extends Migration
 {
     /**
@@ -17,6 +24,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            // String i.p.v. DB-enum: nieuwe rollen vereisen dan geen migratie. De waarden
+            // worden afgedwongen via de UserRole-enum cast in het model, niet in de databank.
+            // Default = laagste rechten: een nieuw account is nooit per ongeluk admin.
             $table->string('role')->default('warehouse_worker');
             $table->rememberToken();
             $table->timestamps();

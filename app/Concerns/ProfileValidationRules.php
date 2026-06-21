@@ -6,6 +6,17 @@ use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
+/**
+ * Herbruikbare validatieregels voor profielgegevens (naam en e-mailadres).
+ *
+ * Gedeeld tussen registratie en profielbewerking; de optionele $userId zorgt
+ * dat de unique-check op e-mail het eigen record overslaat bij een update,
+ * terwijl een nieuwe registratie wél elke bestaande mailbox blokkeert.
+ */
+/**
+ * Herbruikbare profielvalidatieregels (naam, e-mail) uit de starter kit,
+ * gedeeld door registratie en de profiel-instellingenpagina.
+ */
 trait ProfileValidationRules
 {
     /**
@@ -43,6 +54,8 @@ trait ProfileValidationRules
             'string',
             'email',
             'max:255',
+            // Bij een update telt het eigen e-mailadres niet als duplicaat;
+            // bij registratie ($userId null) blokkeert élk bestaand adres.
             $userId === null
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),

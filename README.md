@@ -2,75 +2,87 @@
 
 # WareTrack
 
-**A Warehouse Management System built with Laravel 13 + Livewire 4**
+**Warehouse Management System — Laravel 13 + Livewire 4**
 
 ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
 ![Livewire](https://img.shields.io/badge/Livewire-4-4E56A6?style=for-the-badge&logo=livewire&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-232%20passing-22c55e?style=for-the-badge&logo=checkmarx&logoColor=white)
+
+*Eindwerk 2025–2026 — Traject B*
 
 </div>
 
 ---
 
-## About
+## Overzicht
 
-WareTrack is a full-featured Warehouse Management System developed as an eindwerk (final project) for the 2025–2026 academic year. It allows businesses to manage warehouses, products, stock levels, incoming deliveries, and stock movements across multiple locations — with full audit logging and role-based access control.
+WareTrack is een volledig uitgewerkt Warehouse Management System (WMS) gebouwd met Laravel 13 en Livewire 4. Het laat bedrijven toe om magazijnen, producten, stockniveaus, leveringen van leveranciers en stockbewegingen over meerdere locaties te beheren — met volledige auditlogging, rol-gebaseerde toegangscontrole en automatische low-stock notificaties.
 
-**Key features:**
-- Multi-warehouse and multi-location stock management
-- Incoming delivery tracking (supplier → products → stock)
-- Full stock movement audit log (incoming, outgoing, transfer, correction)
-- Minimum stock warnings and low-stock overview
-- Role-based access: Admin and Warehouse Worker
-- Dashboard with stock summary and recent activity
-- Reporting and stock history
+### Functionaliteiten
+
+| Domein | Wat |
+|---|---|
+| **Stock** | Incoming, outgoing, transfer en correctie — elk met DB-transactie en concurrent-safe locking |
+| **Magazijnen** | Multi-warehouse, multi-locatie; heatmap-visualisatie van stock per locatie |
+| **Producten** | CRUD met afbeelding, SKU, categorie en minimum stockniveau |
+| **Leveringen** | Supplier → delivery items → automatische stockverhoging; status timeline |
+| **Bulk correctie** | Meerdere locaties tegelijk corrigeren via inline tabel |
+| **Activity log** | Volledige audit trail van alle stockbewegingen, filterbaar op user/type/datum |
+| **Notificaties** | Low-stock e-mailwaarschuwingen via Laravel Queues (ShouldQueue, 24h throttle) |
+| **Rapportage** | Stock per locatie + bewegingshistoriek, exporteerbaar als CSV |
+| **Dashboard** | Chart.js grafieken: bewegingen per dag en stock per magazijn |
+| **Rollen** | Admin (volledig beheer) en Warehouse Worker (stock operaties) |
 
 ---
 
-## Tech Stack
+## Tech stack
 
-| Layer | Technology |
+| Laag | Technologie |
 |---|---|
 | Framework | Laravel 13 |
-| Frontend | Livewire 4, Flux UI, Tailwind CSS, GSAP |
+| Reactieve UI | Livewire 4 (full-page components) |
+| UI componenten | Flux UI (free tier) |
+| Styling | Tailwind CSS 4, GSAP (login animatie) |
 | Database | MySQL 8.0 |
-| Auth | Laravel Fortify (2FA support) |
-| Testing | Pest 4 |
-| Audit log | spatie/laravel-activitylog |
+| Authenticatie | Laravel Fortify |
+| Testing | Pest 4 (232 tests, 481 assertions) |
+| Queues | Laravel Queue — database driver |
+| Audit log | Tweeledig: eigen `stock_movements` tabel voor stockmutaties (user, type, qty, locatie, timestamp) + `spatie/laravel-activitylog` voor masterdata-wijzigingen (dashboard "recente activiteit") |
+| Code stijl | Laravel Pint |
 
 ---
 
-## Requirements
+## Vereisten
 
 - PHP 8.4+
 - Composer
-- Node.js + npm
+- Node.js 20+ en npm
 - MySQL 8.0+
-- [Laravel Herd](https://herd.laravel.com) (recommended) or another local server
+- Lokale server (MAMP, Herd, Valet, …)
 
 ---
 
-## Installation
+## Installatie
 
 ```bash
-# 1. Clone the repository
+# 1. Clone de repository
 git clone https://github.com/Yaman69420/WareTrack.git
 cd WareTrack
 
-# 2. Install PHP dependencies
+# 2. PHP dependencies
 composer install
 
-# 3. Install JS dependencies
+# 3. JS dependencies
 npm install
 
-# 4. Configure environment
+# 4. Environment bestand
 cp .env.example .env
 php artisan key:generate
 ```
 
-Edit `.env` and set your database credentials:
+Pas `.env` aan met jouw database-instellingen:
 
 ```env
 DB_CONNECTION=mysql
@@ -79,61 +91,140 @@ DB_PORT=3306
 DB_DATABASE=waretrack
 DB_USERNAME=root
 DB_PASSWORD=
+
+MAIL_MAILER=log          # e-mails worden gelogd naar storage/logs/laravel.log
+QUEUE_CONNECTION=database
 ```
 
 ```bash
-# 5. Create the database (in MySQL)
+# 5. Maak de database aan (in MySQL)
 # CREATE DATABASE waretrack CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-# 6. Run migrations and seed demo data
+# 6. Migraties + demo data
 php artisan migrate --seed
 
-# 7. Create storage symlink
+# 7. Storage symlink
 php artisan storage:link
 
-# 8. Build assets (or run dev server)
+# 8. Assets builden
 npm run build
-# or for development:
-npm run dev
 ```
 
-The application is now available at **http://waretrack.test** (Herd) or your configured `APP_URL`.
+De applicatie is beschikbaar op de URL die je hebt ingesteld als `APP_URL` (bv. `http://waretrack.test`).
+
+### Queue worker (voor notificaties)
+
+Low-stock notificaties worden asynchroon verstuurd via de database queue. Start de worker met:
+
+```bash
+php artisan queue:work --queue=notifications,default
+```
+
+> **Demo-tip:** zonder actieve queue worker worden notificaties niet verstuurd. Met `MAIL_MAILER=log` verschijnen ze in `storage/logs/laravel.log`.
 
 ---
 
-## Demo Accounts
+## Demo accounts
 
-| Role | Email | Password |
+| Rol | E-mail | Wachtwoord |
 |---|---|---|
-| Admin | admin@waretrack.test | password |
-| Warehouse Worker | worker@waretrack.test | password |
+| **Admin** | admin@waretrack.test | password |
+| **Warehouse Worker** | worker@waretrack.test | password |
+
+De seeder laadt automatisch demo-data: 3 magazijnen, 12 locaties, producten, categorieën, leveranciers, leveringen en stockbewegingen.
 
 ---
 
-## Project Structure
+## Demo flow (voor de jury)
+
+1. Login als **Admin** → bekijk het dashboard (grafieken, low-stock widget)
+2. Ga naar **Stock** → toon de heatmap op een magazijn (Warehouses → show → Heatmap)
+3. Registreer een **stockbeweging** (Register Movement) — toon de warehouse-cascade UX
+4. Maak een **bulk correctie** (Stock → Bulk Correction) voor een heel magazijn
+5. Open **Activity log** → filter op type/user/datum
+6. Maak een **levering** aan en process hem → bekijk de status timeline
+7. Login als **Warehouse Worker** → toon beperkte navigatie (geen admin-sectie)
+8. Check `storage/logs/laravel.log` voor de low-stock e-mail
+
+---
+
+## Tests uitvoeren
+
+```bash
+# Alle tests
+./vendor/bin/pest
+
+# Specifieke suite
+./vendor/bin/pest tests/Feature/StockServiceTest.php
+
+# Code stijl controleren
+./vendor/bin/pint --test
+```
+
+Huidig resultaat: **232 tests, 481 assertions — all passing**.
+
+---
+
+## Projectstructuur
 
 ```
 app/
-├── Actions/          # Single-responsibility business actions
-├── Enums/            # UserRole, StockMovementType, DeliveryStatus
-├── Exceptions/       # InsufficientStockException
-├── Http/Middleware/  # EnsureUserIsAdmin
-├── Livewire/         # Full-page Livewire components per domain
-├── Models/           # Eloquent models with relationships
-├── Policies/         # Authorization policies per model
-└── Services/         # StockService, WarehouseService, ReportService
+├── Enums/              # UserRole, StockMovementType, DeliveryStatus
+├── Events/             # StockMovementRegistered
+├── Exceptions/         # InsufficientStockException
+├── Http/Middleware/    # EnsureUserIsAdmin
+├── Listeners/          # SendLowStockNotification (ShouldQueue)
+├── Livewire/           # Full-page Livewire componenten per domein
+│   ├── Activity/       # Audit log pagina
+│   ├── Categories/
+│   ├── Deliveries/     # Index, Show, Create
+│   ├── Locations/
+│   ├── Products/       # Index, Show
+│   ├── Reports/
+│   ├── Stock/          # Index, Movements, CreateMovement, BulkCorrection
+│   ├── Suppliers/
+│   ├── Users/
+│   ├── Warehouses/     # Index, Show (met heatmap)
+│   └── Dashboard.php
+├── Models/             # Eloquent models met relaties en policies
+├── Notifications/      # LowStockAlert (Markdown mail)
+├── Policies/           # Autorisatie per model
+└── Services/           # StockService, WarehouseService, ReportService
+
+database/
+├── migrations/         # Alle migraties in chronologische volgorde
+├── factories/          # Model factories voor testen en seeding
+└── seeders/            # DatabaseSeeder + domein-seeders voor demo
+
+resources/
+├── css/app.css         # Tailwind + WareTrack dark theme overrides
+├── views/
+│   ├── emails/         # Low-stock Markdown mail template
+│   ├── layouts/        # App layout (sidebar) + auth layout
+│   └── livewire/       # Blade views per Livewire component
+
+tests/
+└── Feature/            # Pest feature tests per domein
 ```
 
 ---
 
-## Running Tests
+## Bekende beperkingen
 
-```bash
-./vendor/bin/pest
-```
+- Geen publieke webshop of API — WareTrack is een interne backoffice-applicatie.
+- Geen barcode-/RFID-scanning (voorzien als toekomstige uitbreiding).
+- Geen multi-tenant: één bedrijf per installatie.
+- Geen browser-/E2E-tests; de testdekking zit op feature-niveau (Pest + Livewire).
+- Low-stock notificaties vereisen een actieve queue worker (`php artisan queue:work`).
 
 ---
 
-## License
+## Gebaseerd op
 
-This project was developed as an academic eindwerk and is not licensed for commercial use.
+Het authenticatie-fundament (login, registratie, wachtwoord-reset, two-factor) komt uit **Laravel Fortify** en de officiële **Laravel Livewire starter kit** — beproefde beveiligingscode. De voorraadlogica, het rollenmodel, de toegangsstructuur, de events/queues en de volledige interface zijn eigen werk.
+
+---
+
+## Licentie
+
+Dit project is ontwikkeld als academisch eindwerk en is niet gelicenseerd voor commercieel gebruik.

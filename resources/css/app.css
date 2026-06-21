@@ -64,3 +64,51 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+/* ═══════════════════════════════════════
+   WareTrack dark-theme overrides
+   Body bg: #04060f — all overrides below
+   ensure Flux components stay in palette.
+   ═══════════════════════════════════════ */
+
+/* Table: transparent bg so body/card bg shows through */
+.dark [data-flux-table] table,
+.dark [data-flux-table] {
+    background: transparent !important;
+}
+
+/* First/last column — more breathing room so text doesn't hug the edge */
+.dark [data-flux-table] th:first-child,
+.dark [data-flux-table] td:first-child {
+    padding-left: 1.25rem !important;
+}
+
+.dark [data-flux-table] th:last-child,
+.dark [data-flux-table] td:last-child {
+    padding-right: 1.25rem !important;
+}
+
+/* Table row dividers — subtle white lines instead of zinc */
+.dark [data-flux-table] tbody tr {
+    border-color: rgba(255, 255, 255, .06) !important;
+}
+
+/* Table header cell — slightly elevated from row bg */
+.dark [data-flux-table] thead th,
+.dark [data-flux-table] tfoot td {
+    background: rgba(255, 255, 255, .035) !important;
+    border-color: rgba(255, 255, 255, .06) !important;
+}
+
+/* Modal dialog — match card glassmorphism */
+.dark [data-flux-modal] {
+    background: rgb(10, 12, 24) !important;
+    border-color: rgba(255, 255, 255, .08) !important;
+}
+
+/* Dropdown/menu panels */
+.dark [data-flux-menu],
+.dark [data-flux-select-button] {
+    background: rgb(12, 14, 26) !important;
+    border-color: rgba(255, 255, 255, .08) !important;
+}

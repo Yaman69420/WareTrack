@@ -7,6 +7,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
 
+/**
+ * Fortify-action die het wachtwoord van een gebruiker reset na een vergeten-flow.
+ *
+ * Afkomstig uit de officiële Livewire starter kit (laravel/livewire-starter-kit);
+ * forceFill is hier veilig: het nieuwe wachtwoord is net gevalideerd en de
+ * gebruiker bewees eigenaarschap via de getekende resetlink uit de mail.
+ */
 class ResetUserPassword implements ResetsUserPasswords
 {
     use PasswordValidationRules;

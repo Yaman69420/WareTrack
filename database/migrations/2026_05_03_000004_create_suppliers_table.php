@@ -4,6 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Leveranciers — bron van elke levering en via supplier_product gekoppeld aan producten.
+ *
+ * Contactvelden zijn nullable: een leverancier kan al geregistreerd worden vóór
+ * alle gegevens bekend zijn. Soft deletes houden oude leveringen raadpleegbaar.
+ */
 return new class extends Migration
 {
     public function up(): void
