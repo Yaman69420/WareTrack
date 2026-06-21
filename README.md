@@ -209,6 +209,22 @@ tests/
 
 ---
 
+## Bekende beperkingen
+
+- Geen publieke webshop of API — WareTrack is een interne backoffice-applicatie.
+- Geen barcode-/RFID-scanning (voorzien als toekomstige uitbreiding).
+- Geen multi-tenant: één bedrijf per installatie.
+- Geen browser-/E2E-tests; de testdekking zit op feature-niveau (Pest + Livewire).
+- Low-stock notificaties vereisen een actieve queue worker (`php artisan queue:work`).
+
+---
+
+## Gebaseerd op
+
+Het authenticatie-fundament (login, registratie, wachtwoord-reset, two-factor) komt uit **Laravel Fortify** en de officiële **Laravel Livewire starter kit** — beproefde beveiligingscode. De voorraadlogica, het rollenmodel, de toegangsstructuur, de events/queues en de volledige interface zijn eigen werk.
+
+---
+
 ## Licentie
 
 Dit project is ontwikkeld als academisch eindwerk en is niet gelicenseerd voor commercieel gebruik.
