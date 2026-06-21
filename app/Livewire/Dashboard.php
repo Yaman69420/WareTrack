@@ -60,7 +60,7 @@ class Dashboard extends Component
     #[Computed]
     public function lowStockProducts()
     {
-        return Product::with('category')
+        return Product::with(['category', 'stock'])
             ->where('min_stock', '>', 0)
             ->get()
             ->filter(fn ($p) => $p->isBelowMinStock())
