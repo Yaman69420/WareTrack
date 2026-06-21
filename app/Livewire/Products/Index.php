@@ -184,6 +184,7 @@ class Index extends Component
     public function saveLocations(): void
     {
         $product = Product::findOrFail($this->managingProductId);
+        $this->authorize('update', $product);
         $product->locations()->sync($this->selectedLocations);
         activity()->causedBy(auth()->user())->performedOn($product)->log('locations updated');
         Flux::toast(__('Locations updated.'), variant: 'success');
@@ -234,6 +235,7 @@ class Index extends Component
 
         if ($this->editingId) {
             $product = Product::findOrFail($this->editingId);
+            $this->authorize('update', $product);
 
             // Oude afbeelding pas verwijderen nadat de nieuwe veilig is
             // opgeslagen; zonder deze opruiming blijven verweesde bestanden
@@ -246,6 +248,8 @@ class Index extends Component
             activity()->causedBy(auth()->user())->performedOn($product)->log('updated');
             Flux::toast(__('Product updated.'), variant: 'success');
         } else {
+            $this->authorize('create', Product::class);
+
             $product = Product::create($data);
             activity()->causedBy(auth()->user())->performedOn($product)->log('created');
             Flux::toast(__('Product created.'), variant: 'success');
@@ -263,6 +267,8 @@ class Index extends Component
      */
     public function delete(Product $product): void
     {
+        $this->authorize('delete', $product);
+
         $product->delete();
         activity()->causedBy(auth()->user())->performedOn($product)->log('deleted');
         Flux::toast(__('Product deleted.'), variant: 'success');

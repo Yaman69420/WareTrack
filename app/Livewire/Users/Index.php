@@ -134,6 +134,7 @@ class Index extends Component
 
         if ($this->editingId) {
             $user = User::findOrFail($this->editingId);
+            $this->authorize('update', $user);
             $data = [
                 'name' => $this->name,
                 'email' => $this->email,
@@ -147,6 +148,8 @@ class Index extends Component
             activity()->causedBy(auth()->user())->performedOn($user)->log('updated');
             Flux::toast(__('User updated.'), variant: 'success');
         } else {
+            $this->authorize('create', User::class);
+
             $user = User::create([
                 'name' => $this->name,
                 'email' => $this->email,
@@ -170,6 +173,8 @@ class Index extends Component
      */
     public function delete(User $user): void
     {
+        $this->authorize('delete', $user);
+
         // Zelf-verwijdering blokkeren: anders sluit een admin zichzelf buiten
         // en kan het systeem zelfs zonder enige beheerder vallen.
         if ($user->id === auth()->id()) {

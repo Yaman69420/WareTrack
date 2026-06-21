@@ -97,10 +97,13 @@ class Index extends Component
 
         if ($this->editingId) {
             $category = Category::findOrFail($this->editingId);
+            $this->authorize('update', $category);
             $category->update(['name' => $this->name, 'description' => $this->description ?: null]);
             activity()->causedBy(auth()->user())->performedOn($category)->log('updated');
             Flux::toast(__('Category updated.'), variant: 'success');
         } else {
+            $this->authorize('create', Category::class);
+
             $category = Category::create(['name' => $this->name, 'description' => $this->description ?: null]);
             activity()->causedBy(auth()->user())->performedOn($category)->log('created');
             Flux::toast(__('Category created.'), variant: 'success');
@@ -119,6 +122,8 @@ class Index extends Component
      */
     public function delete(Category $category): void
     {
+        $this->authorize('delete', $category);
+
         $productCount = $category->products()->count();
 
         if ($productCount > 0) {

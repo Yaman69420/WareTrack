@@ -115,6 +115,7 @@ class Index extends Component
 
         if ($this->editingId) {
             $warehouse = Warehouse::findOrFail($this->editingId);
+            $this->authorize('update', $warehouse);
             $warehouse->update([
                 'name' => $this->name,
                 'location' => $this->location,
@@ -123,6 +124,8 @@ class Index extends Component
             activity()->causedBy(auth()->user())->performedOn($warehouse)->log('updated');
             Flux::toast(__('Warehouse updated.'), variant: 'success');
         } else {
+            $this->authorize('create', Warehouse::class);
+
             $warehouse = Warehouse::create([
                 'name' => $this->name,
                 'location' => $this->location,
@@ -144,6 +147,8 @@ class Index extends Component
      */
     public function delete(Warehouse $warehouse): void
     {
+        $this->authorize('delete', $warehouse);
+
         $warehouse->delete();
         activity()->causedBy(auth()->user())->performedOn($warehouse)->log('deleted');
         Flux::toast(__('Warehouse deleted.'), variant: 'success');

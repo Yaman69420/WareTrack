@@ -133,10 +133,13 @@ class Index extends Component
 
         if ($this->editingId) {
             $location = Location::findOrFail($this->editingId);
+            $this->authorize('update', $location);
             $location->update($data);
             activity()->causedBy(auth()->user())->performedOn($location)->log('updated');
             Flux::toast(__('Location updated.'), variant: 'success');
         } else {
+            $this->authorize('create', Location::class);
+
             $location = Location::create($data);
             activity()->causedBy(auth()->user())->performedOn($location)->log('created');
             Flux::toast(__('Location created.'), variant: 'success');
@@ -155,6 +158,8 @@ class Index extends Component
      */
     public function delete(Location $location): void
     {
+        $this->authorize('delete', $location);
+
         // Enkel rijen met quantity > 0 tellen: een leeg stock-record (alles
         // ooit weggeboekt) mag het verwijderen niet blokkeren.
         $activeStock = $location->stock()->where('quantity', '>', 0)->count();
