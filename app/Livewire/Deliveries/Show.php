@@ -98,6 +98,12 @@ class Show extends Component
                     $qty = $maxReceivable;
                 }
 
+                // Volledig ontvangen regel (maxReceivable 0) → na het cappen is $qty 0;
+                // overslaan zodat registerIncoming() geen fout op een 0-aantal gooit.
+                if ($qty <= 0) {
+                    continue;
+                }
+
                 $stockService->registerIncoming(
                     $item->product,
                     $item->location,
