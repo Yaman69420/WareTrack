@@ -5,10 +5,13 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\File;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Maakt de 20 demo-producten aan (5 EL, 5 OF, 4 PK, 3 TL, 3 SF), elk met
- * unieke SKU en een min_stock-drempel voor de low-stock-bewaking.
+ * unieke SKU, een min_stock-drempel voor de low-stock-bewaking en een demo-tegel
+ * (database/seeders/product-images/<SKU>.png) die naar de public-disk gekopieerd wordt.
  */
 class ProductSeeder extends Seeder
 {
@@ -52,8 +55,21 @@ class ProductSeeder extends Seeder
             ['category_id' => $safety->id, 'name' => 'High-Vis Vest XL', 'sku' => 'SF-0003', 'min_stock' => 15],
         ];
 
+        $imageDir = database_path('seeders/product-images');
+
         foreach ($products as $product) {
-            Product::create(array_merge($product, ['description' => null, 'image_path' => null]));
+            // De bijhorende demo-tegel uit de repo naar de public-disk kopiëren, zodat
+            // migrate:fresh --seed de productafbeeldingen reproduceert. Ontbreekt het
+            // bestand, dan blijft image_path leeg (de UI toont dan een placeholder).
+            $imagePath = null;
+            $source = $imageDir.'/'.$product['sku'].'.png';
+
+            if (is_file($source)) {
+                Storage::disk('public')->putFileAs('products', new File($source), $product['sku'].'.png');
+                $imagePath = 'products/'.$product['sku'].'.png';
+            }
+
+            Product::create(array_merge($product, ['description' => null, 'image_path' => $imagePath]));
         }
     }
 }

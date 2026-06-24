@@ -43,7 +43,8 @@
                 <img
                     src="{{ $this->imageUrl() }}"
                     alt="{{ $product->name }}"
-                    class="h-36 w-full rounded-lg object-cover"
+                    class="aspect-square w-full cursor-zoom-in rounded-lg object-cover transition hover:opacity-90"
+                    x-on:click="$dispatch('open-lightbox', { src: @js($this->imageUrl()), alt: @js($product->name) })"
                 />
             @else
                 <div class="flex h-36 w-full items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">

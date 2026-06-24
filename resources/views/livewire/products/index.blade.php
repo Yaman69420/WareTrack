@@ -56,7 +56,8 @@
                             <img
                                 src="{{ Storage::url($product->image_path) }}"
                                 alt="{{ $product->name }}"
-                                class="size-10 rounded-lg object-cover"
+                                class="size-10 cursor-zoom-in rounded-lg object-cover transition hover:opacity-80"
+                                x-on:click="$dispatch('open-lightbox', { src: @js(Storage::url($product->image_path)), alt: @js($product->name) })"
                             />
                         @else
                             <div class="flex size-10 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">

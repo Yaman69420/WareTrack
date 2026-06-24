@@ -173,6 +173,21 @@
             </flux:toast.group>
         @endpersist
 
+        {{-- Globale beeld-lightbox: klik op een productfoto (overal in de app) om te vergroten --}}
+        <div
+            x-data="{ open: false, src: '', alt: '' }"
+            x-on:open-lightbox.window="open = true; src = $event.detail.src; alt = $event.detail.alt || ''"
+            x-on:keydown.escape.window="open = false"
+            x-show="open"
+            x-cloak
+            style="display: none;"
+            @click="open = false"
+            x-transition.opacity
+            class="fixed inset-0 z-[200] flex cursor-zoom-out items-center justify-center bg-black/80 p-6 backdrop-blur-sm"
+        >
+            <img :src="src" :alt="alt" @click.stop class="max-h-[88vh] max-w-[88vw] rounded-2xl shadow-2xl ring-1 ring-white/10" />
+        </div>
+
         @fluxScripts
     </body>
 </html>
