@@ -64,7 +64,7 @@
                         {{-- Image --}}
                         <flux:table.cell>
                             @if ($product->image_path)
-                                <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="size-9 rounded-lg object-cover" />
+                                <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="size-9 cursor-zoom-in rounded-lg object-cover transition hover:opacity-80" x-on:click="$dispatch('open-lightbox', { src: @js(Storage::url($product->image_path)), alt: @js($product->name) })" />
                             @else
                                 <div class="flex size-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
                                     <flux:icon.photo class="size-4 text-zinc-400" />
@@ -93,7 +93,7 @@
                             <flux:table.cell>
                                 @if ($i === 0)
                                     @if ($product->image_path)
-                                        <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="size-9 rounded-lg object-cover" />
+                                        <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="size-9 cursor-zoom-in rounded-lg object-cover transition hover:opacity-80" x-on:click="$dispatch('open-lightbox', { src: @js(Storage::url($product->image_path)), alt: @js($product->name) })" />
                                     @else
                                         <div class="flex size-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
                                             <flux:icon.photo class="size-4 text-zinc-400" />
