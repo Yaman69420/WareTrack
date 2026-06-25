@@ -127,7 +127,7 @@
                             @if (! $step['done'] && ! $isLast)
                                 <span class="size-2 rounded-full bg-zinc-500"></span>
                             @else
-                                <flux:icon.{{ $step['icon'] }} class="size-4 text-white" />
+                                <flux:icon :icon="$step['icon']" class="size-4 text-white" />
                             @endif
                         </div>
 
