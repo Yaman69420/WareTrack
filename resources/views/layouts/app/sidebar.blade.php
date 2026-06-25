@@ -37,6 +37,13 @@
                         <x-nav-item href="{{ route('stock.index') }}" :active="request()->routeIs('stock.*')" icon="cube">
                             {{ __('Stock') }}
                         </x-nav-item>
+                        @if(request()->routeIs('stock.*'))
+                            <div class="ml-4 flex flex-col gap-0.5 border-l border-white/10 pl-1.5">
+                                <x-nav-item href="{{ route('stock.movements') }}" :active="request()->routeIs('stock.movements')" icon="list-bullet">
+                                    {{ __('Movements') }}
+                                </x-nav-item>
+                            </div>
+                        @endif
                         <x-nav-item href="{{ route('reports.index') }}" :active="request()->routeIs('reports.*')" icon="chart-bar">
                             {{ __('Reports') }}
                         </x-nav-item>
