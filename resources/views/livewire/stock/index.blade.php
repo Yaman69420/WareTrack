@@ -7,6 +7,9 @@
             <flux:subheading>{{ __('Current stock levels per product and location') }}</flux:subheading>
         </div>
         <div class="flex items-center gap-2">
+            <flux:button :href="route('stock.movements')" wire:navigate variant="ghost" icon="list-bullet">
+                {{ __('Movements') }}
+            </flux:button>
             <flux:button :href="route('stock.bulk-correction')" wire:navigate variant="ghost" icon="pencil-square">
                 {{ __('Bulk Correction') }}
             </flux:button>
