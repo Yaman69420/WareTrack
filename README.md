@@ -82,12 +82,14 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Pas `.env` aan met jouw database-instellingen:
+Pas `.env` aan met jouw instellingen. De meegeleverde `.env.example` is voorzien voor **MAMP**; gebruik je standaard MySQL of Herd/Valet, pas dan de gemarkeerde regels aan:
 
 ```env
+APP_URL=http://localhost:8888/WareTrack/public   # MAMP — Herd/Valet bv. http://waretrack.test
+
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=3306
+DB_PORT=8889                                      # MAMP — standaard MySQL = 3306
 DB_DATABASE=waretrack
 DB_USERNAME=root
 DB_PASSWORD=
@@ -110,7 +112,7 @@ php artisan storage:link
 npm run build
 ```
 
-De applicatie is beschikbaar op de URL die je hebt ingesteld als `APP_URL` (bv. `http://waretrack.test`).
+De applicatie draait op de `APP_URL` uit je `.env` (zie hierboven).
 
 ### Queue worker (voor notificaties)
 
@@ -138,7 +140,7 @@ De seeder laadt automatisch demo-data: 3 magazijnen, 12 locaties, producten, cat
 ## Demo flow (voor de jury)
 
 1. Login als **Admin** → bekijk het dashboard (grafieken, low-stock widget)
-2. Ga naar **Stock** → toon de heatmap op een magazijn (Warehouses → show → Heatmap)
+2. Ga naar **Warehouses** → open een magazijn (show) → toon de stock-heatmap per locatie
 3. Registreer een **stockbeweging** (Register Movement) — toon de warehouse-cascade UX
 4. Maak een **bulk correctie** (Stock → Bulk Correction) voor een heel magazijn
 5. Open **Activity log** → filter op type/user/datum
